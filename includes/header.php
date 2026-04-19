@@ -1,6 +1,17 @@
 <?php
 require_once __DIR__ . '/config.php';
 session_start();
+
+$theme_class = "";
+if (isset($_SESSION['user_id'])) {
+    $db = get_db_connection();
+    $theme_stmt = $db->prepare("SELECT dark_mode FROM users WHERE id = ?");
+    $theme_stmt->execute([$_SESSION['user_id']]);
+    $user_pref = $theme_stmt->fetch();
+    if ($user_pref && $user_pref['dark_mode']) {
+        $theme_class = "dark-mode";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,13 +23,16 @@ session_start();
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <!-- Styles -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/main.css">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0066ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-<body>
+<body class="<?php echo $theme_class; ?>">
     <div id="app-container">

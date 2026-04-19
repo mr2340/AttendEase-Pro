@@ -1,29 +1,19 @@
 /**
- * AttendEase Pro - Main Application Logic
+ * AttendEase Pro - Core Application Logic
  */
-
 const App = {
-    init() {
-        this.bindEvents();
-        this.updateDate();
-    },
+    scanner: null,
 
-    bindEvents() {
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-        }
-    },
-
-    async handleLogin(e) {
-        e.preventDefault();
-        const form = e.target;
+    // Auth Handling
+    handleLogin: async (event) => {
+        event.preventDefault();
+        const form = event.target;
         const formData = new FormData(form);
-        const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtn = form.querySelector('button');
         const originalText = submitBtn.innerText;
 
         submitBtn.disabled = true;
-        submitBtn.innerText = "Signing in...";
+        submitBtn.innerText = 'Authenticating...';
 
         try {
             const response = await fetch(form.action, {
@@ -33,127 +23,98 @@ const App = {
             const result = await response.json();
 
             if (result.success) {
-                this.showToast(result.message, "success");
+                submitBtn.innerText = 'Redirecting...';
                 setTimeout(() => {
-                    window.location.href = 'dashboard.php';
+                    window.location.href = 'student/dashboard.php';
                 }, 800);
             } else {
-                this.showToast(result.message, "danger");
+                alert(result.message || 'Login failed');
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
-                alert(result.message); // Fallback alert
             }
         } catch (error) {
-            this.showToast("Connection error", "danger");
+            console.error('Login Error:', error);
+            alert('An error occurred during login.');
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         }
     },
 
-    updateDate() {
-        const dateText = document.getElementById('date-text');
-        if (dateText) {
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            dateText.innerText = new Date().toLocaleDateString('en-US', options);
+    // QR Scanner Implementation
+    startScanner: async () => {
+        const overlay = document.getElementById('scanner-overlay');
+        overlay.classList.add('active');
+
+        if (!App.scanner) {
+            App.scanner = new Html5Qrcode("reader");
+        }
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        try {
+            await App.scanner.start(
+                { facingMode: "environment" }, 
+                config,
+                App.onScanSuccess,
+                App.onScanFailure
+            );
+        } catch (err) {
+            console.error("Camera access failed", err);
+            alert("Could not access camera. Please ensure you have granted permission.");
+            App.closeScanner();
         }
     },
 
-    navTo(targetId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            if (screen.id === targetId) {
-                screen.setAttribute('data-state', 'active');
-            } else if (screen.getAttribute('data-state') === 'active') {
-                screen.setAttribute('data-state', 'prev');
+    closeScanner: async () => {
+        const overlay = document.getElementById('scanner-overlay');
+        overlay.classList.remove('active');
+        if (App.scanner) {
+            try {
+                await App.scanner.stop();
+            } catch (err) {
+                console.warn("Scanner stop failed", err);
             }
-        });
-
-        // Reset navigation if needed
-        if (targetId === 'main-dashboard') {
-            this.switchTab('home', document.querySelector('.nav-item'));
         }
     },
 
-    switchTab(tabName, element) {
-        // Update Nav UI
-        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-        element.classList.add('active');
+    onScanSuccess: async (decodedText, decodedResult) => {
+        console.log(`Scan Result: ${decodedText}`);
+        
+        // Stop scanner to prevent multiple scans
+        await App.closeScanner();
 
-        // Update Content
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        const targetTab = document.getElementById('tab-' + tabName);
-        if (targetTab) targetTab.classList.add('active');
-
-        // Scroll reset
-        const container = document.querySelector('.tabs-container');
-        if (container) container.scrollTop = 0;
-    },
-
-    openScanner() {
-        const scanner = document.getElementById('scanner-overlay');
-        scanner.classList.add('active');
-
-        // Simulate a successful scan after 2 seconds
-        setTimeout(() => {
-            if (scanner.classList.contains('active')) {
-                this.closeScanner();
-                this.fireConfetti();
-                this.showToast("Attendance marked successfully!", "success");
-                
-                // Update stats simulation
-                const scoreText = document.getElementById('scoreText');
-                const progressBar = document.getElementById('progressBar');
-                if (scoreText) scoreText.innerText = '90%';
-                if (progressBar) progressBar.style.width = '90%';
-            }
-        }, 2000);
-    },
-
-    closeScanner() {
-        document.getElementById('scanner-overlay').classList.remove('active');
-    },
-
-    showToast(message, type = "info") {
-        // Simple toast implementation
-        console.log(`${type.toUpperCase()}: ${message}`);
-        // In a real app, this would show a premium floating UI element
-    },
-
-    fireConfetti() {
-        const container = document.getElementById('confetti-container');
-        if (!container) return;
-
-        const colors = ['#0066ff', '#00d2ff', '#10b981', '#f59e0b', '#8b5cf6'];
-        for (let i = 0; i < 50; i++) {
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            p.style.left = Math.random() * 100 + '%';
-            p.style.top = (Math.random() * 20 + 40) + '%';
-            p.style.position = 'absolute';
-            p.style.width = '8px';
-            p.style.height = '8px';
-            p.style.borderRadius = '2px';
-            
-            // Basic animation via JS if CSS is missing
-            container.appendChild(p);
-            
-            p.animate([
-                { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-                { transform: 'translateY(800px) rotate(720deg)', opacity: 0 }
-            ], {
-                duration: Math.random() * 1000 + 1500,
-                easing: 'ease-in',
-                fill: 'forwards'
+        // Process Attendance
+        try {
+            const response = await fetch('../includes/process_attendance.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: decodedText })
             });
+            const result = await response.json();
 
-            setTimeout(() => p.remove(), 3000);
+            if (result.success) {
+                alert("Success! Your attendance has been marked.");
+                location.reload(); // Refresh to see updated stats
+            } else {
+                alert(result.message || "Failed to mark attendance.");
+            }
+        } catch (err) {
+            alert("Server connection error. Please try again.");
         }
+    },
+
+    onScanFailure: (error) => {
+        // Silent failure (normal during scanning)
     }
 };
 
-// Initialize App
-document.addEventListener('DOMContentLoaded', () => App.init());
-window.navTo = (id) => App.navTo(id);
-window.switchTab = (name, el) => App.switchTab(name, el);
-window.openScanner = () => App.openScanner();
-window.closeScanner = () => App.closeScanner();
+// Global Export
+window.App = App;
+
+// Auto-init for forms
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', App.handleLogin);
+    }
+});

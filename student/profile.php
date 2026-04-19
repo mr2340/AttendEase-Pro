@@ -22,14 +22,22 @@ $student_id = $user['student_id'] ?? 'Not set';
 $role = $user['role'] ?? 'Student';
 $bio_enabled = $user['bio_enabled'] ?? 0;
 $dark_mode = $user['dark_mode'] ?? 0;
+$avatar_url = $user['avatar_url'] ?? null;
+
+// Default Avatar if none uploaded
+$display_avatar = $avatar_url ? BASE_URL . $avatar_url : "https://api.dicebear.com/7.x/avataaars/svg?seed=" . htmlspecialchars($username);
 ?>
 
 <section class="screen" data-state="active">
     <div class="scrollable-content">
-        <form id="profileForm" action="../includes/update_profile.php" method="POST">
+        <form id="profileForm" action="../includes/update_profile.php" method="POST" enctype="multipart/form-data">
             <div style="padding: 40px 24px 20px; text-align: center;">
-                <div class="profile-avatar" style="width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 40px; border: 4px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow);">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo htmlspecialchars($username); ?>" width="100%" height="100%" alt="Profile" style="border-radius: 36px;">
+                <div class="profile-avatar" style="width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 40px; border: 4px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow); position: relative; cursor: pointer;" onclick="document.getElementById('avatarInput').click()">
+                    <img id="avatarPreview" src="<?php echo $display_avatar; ?>" width="100%" height="100%" alt="Profile" style="border-radius: 36px; object-fit: cover;">
+                    <div style="position: absolute; bottom: -5px; right: -5px; background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 12px; display: flex; justify-content: center; align-items: center; border: 3px solid var(--surface);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    </div>
+                    <input type="file" id="avatarInput" name="avatar" style="display: none;" accept="image/*">
                 </div>
                 <h2 style="font-size: 26px; font-weight: 800; color: var(--text-dark);"><?php echo htmlspecialchars($username); ?></h2>
                 <p style="color: var(--text-muted); font-weight: 600; margin-top: 4px;"><?php echo ucfirst($role); ?> • Computer Science</p>
@@ -48,10 +56,6 @@ $dark_mode = $user['dark_mode'] ?? 0;
                     <div class="form-group">
                         <label>Email Address</label>
                         <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($email); ?>" required>
-                    </div>
-                    <div class="form-group" style="opacity: 0.6;">
-                        <label>Student ID (Fixed)</label>
-                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($student_id); ?>" readonly disabled>
                     </div>
                 </div>
 
@@ -85,7 +89,7 @@ $dark_mode = $user['dark_mode'] ?? 0;
                             <h4 style="font-size: 15px; font-weight: 600;">Dark Mode</h4>
                         </div>
                         <div class="toggle-switch">
-                            <input type="checkbox" name="dark_mode" value="1" <?php echo $dark_mode ? 'checked' : ''; ?> style="display: none;">
+                            <input type="checkbox" name="dark_mode" id="darkModeInput" value="1" <?php echo $dark_mode ? 'checked' : ''; ?> style="display: none;">
                             <div class="switch-bg" style="width: 44px; height: 24px; background: <?php echo $dark_mode ? 'var(--primary)' : '#e2e8f0'; ?>; border-radius: 20px; position: relative; padding: 2px; transition: 0.3s;">
                                 <div class="switch-dot" style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; <?php echo $dark_mode ? 'right: 2px;' : 'left: 2px;'; ?> transition: 0.3s;"></div>
                             </div>
@@ -95,7 +99,6 @@ $dark_mode = $user['dark_mode'] ?? 0;
 
                 <button type="submit" class="btn-primary" style="margin-bottom: 20px;">Save Changes</button>
 
-                <!-- Danger Zone -->
                 <a href="logout.php" style="text-decoration: none;">
                     <div style="background: rgba(239, 68, 68, 0.05); border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 24px; padding: 20px; display: flex; align-items: center; justify-content: center; color: var(--danger); font-weight: 700; margin-bottom: 40px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 10px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -113,6 +116,20 @@ $dark_mode = $user['dark_mode'] ?? 0;
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const profileForm = document.getElementById('profileForm');
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+
+    // Avatar Preview
+    avatarInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
     
     // Toggle UI Handling
     document.querySelectorAll('.toggle-switch input').forEach(input => {
@@ -123,10 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 bg.style.background = 'var(--primary)';
                 dot.style.left = 'auto';
                 dot.style.right = '2px';
+                if (this.id === 'darkModeInput') document.body.classList.add('dark-mode');
             } else {
                 bg.style.background = '#e2e8f0';
                 dot.style.right = 'auto';
                 dot.style.left = '2px';
+                if (this.id === 'darkModeInput') document.body.classList.remove('dark-mode');
             }
         });
     });
