@@ -33,6 +33,12 @@ if (isset($_SESSION['user_id'])) {
     <meta name="theme-color" content="#0066ff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script>
+        window.AttendEaseConfig = {
+            baseUrl: '<?php echo BASE_URL; ?>'
+        };
+    </script>
 </head>
 <body class="<?php echo $theme_class; ?>">
     <div id="app-container">

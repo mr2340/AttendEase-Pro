@@ -27,11 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
         
-        echo json_encode(['success' => true, 'message' => 'Login successful!']);
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Login successful!',
+            'role' => $user['role']
+        ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Invalid request method: ' . $_SERVER['REQUEST_METHOD'] . '. Please use POST.'
+    ]);
 }
 ?>

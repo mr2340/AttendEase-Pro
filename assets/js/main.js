@@ -1,7 +1,7 @@
 /**
  * AttendEase Pro - Core Application Logic
  */
-const App = {
+const AttendEase = {
     scanner: null,
 
     // Auth Handling
@@ -25,7 +25,10 @@ const App = {
             if (result.success) {
                 submitBtn.innerText = 'Redirecting...';
                 setTimeout(() => {
-                    window.location.href = 'student/dashboard.php';
+                    // Role-based redirection
+                    const baseUrl = window.AttendEaseConfig ? window.AttendEaseConfig.baseUrl : '/sodex/';
+                    const redirectPath = result.role === 'lecturer' ? baseUrl + 'lecturer/dashboard' : baseUrl + 'student/dashboard';
+                    window.location.href = redirectPath;
                 }, 800);
             } else {
                 alert(result.message || 'Login failed');
@@ -45,32 +48,59 @@ const App = {
         const overlay = document.getElementById('scanner-overlay');
         overlay.classList.add('active');
 
-        if (!App.scanner) {
-            App.scanner = new Html5Qrcode("reader");
+        if (!AttendEase.scanner) {
+            AttendEase.scanner = new Html5Qrcode("reader");
         }
 
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const config = { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
 
         try {
-            await App.scanner.start(
-                { facingMode: "environment" }, 
-                config,
-                App.onScanSuccess,
-                App.onScanFailure
-            );
+            // Get available cameras
+            const devices = await Html5Qrcode.getCameras();
+            if (devices && devices.length > 0) {
+                // Try back camera first
+                let cameraId = devices[0].id;
+                const backCam = devices.find(device => device.label.toLowerCase().includes('back'));
+                if (backCam) cameraId = backCam.id;
+
+                await AttendEase.scanner.start(
+                    cameraId, 
+                    config,
+                    AttendEase.onScanSuccess,
+                    AttendEase.onScanFailure
+                );
+
+                // Setup Switch Camera Button
+                const switchBtn = document.getElementById('switchCamBtn');
+                if (switchBtn) {
+                    switchBtn.onclick = async () => {
+                        const currentId = AttendEase.scanner.getCameraId();
+                        const nextIndex = (devices.findIndex(d => d.id === currentId) + 1) % devices.length;
+                        await AttendEase.scanner.stop();
+                        await AttendEase.scanner.start(devices[nextIndex].id, config, AttendEase.onScanSuccess);
+                    };
+                }
+            } else {
+                // Fallback to default
+                await AttendEase.scanner.start({ facingMode: "environment" }, config, AttendEase.onScanSuccess);
+            }
         } catch (err) {
             console.error("Camera access failed", err);
             alert("Could not access camera. Please ensure you have granted permission.");
-            App.closeScanner();
+            AttendEase.closeScanner();
         }
     },
 
     closeScanner: async () => {
         const overlay = document.getElementById('scanner-overlay');
         overlay.classList.remove('active');
-        if (App.scanner) {
+        if (AttendEase.scanner) {
             try {
-                await App.scanner.stop();
+                await AttendEase.scanner.stop();
             } catch (err) {
                 console.warn("Scanner stop failed", err);
             }
@@ -81,11 +111,11 @@ const App = {
         console.log(`Scan Result: ${decodedText}`);
         
         // Stop scanner to prevent multiple scans
-        await App.closeScanner();
+        await AttendEase.closeScanner();
 
         // Process Attendance
         try {
-            const response = await fetch('../includes/process_attendance.php', {
+            const response = await fetch('../includes/process_attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ session_id: decodedText })
@@ -109,12 +139,13 @@ const App = {
 };
 
 // Global Export
-window.App = App;
+window.AttendEase = AttendEase;
+console.log('AttendEase Core Initialized');
 
 // Auto-init for forms
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', App.handleLogin);
+        loginForm.addEventListener('submit', AttendEase.handleLogin);
     }
 });

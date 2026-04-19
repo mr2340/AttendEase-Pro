@@ -1,0 +1,28 @@
+# AttendEase Pro - Advanced URL Rewrite
+RewriteEngine On
+RewriteBase /sodex/
+
+# 1. Security: Prevent directory browsing
+Options -Indexes +FollowSymLinks
+Options -MultiViews
+
+# 2. Redirect .php requests to extensionless URLs (Only for GET requests)
+RewriteCond %{REQUEST_METHOD} GET [NC]
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# 3. Handle Extensionless URLs (Internal Routing)
+# If the requested name is not a directory
+RewriteCond %{REQUEST_FILENAME} !-d
+# And if the name + .php exists as a file
+RewriteCond %{REQUEST_FILENAME}.php -f
+# Then rewrite to the .php file
+RewriteRule ^(.+)$ $1.php [L]
+
+# 4. Fallback for root directories (Redirection to dashboard)
+# If user goes to /student or /lecturer (without trailing slash)
+RewriteRule ^student$ student/dashboard [R=301,L]
+RewriteRule ^lecturer$ lecturer/dashboard [R=301,L]
+
+# 5. Global Error Handling
+ErrorDocument 404 /sodex/index.php

@@ -12,7 +12,7 @@ include '../includes/header.php';
                 <p>Sign in to your student portal</p>
             </div>
 
-            <form id="loginForm" action="../includes/login_process.php" method="POST">
+            <form id="loginForm" action="<?php echo BASE_URL; ?>includes/login_process.php" method="POST">
                 <div class="form-group">
                     <label>Student ID / Username</label>
                     <input type="text" name="identifier" class="form-control" placeholder="2024/CS/120" required>

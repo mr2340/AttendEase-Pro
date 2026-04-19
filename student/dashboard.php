@@ -4,7 +4,7 @@ include '../includes/header.php';
 
 // Auth Check
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit;
 }
 
@@ -106,7 +106,7 @@ $schedules = $sched_stmt->fetchAll();
         <!-- Upcoming Classes -->
         <div class="section-title">
             <span>Today's Classes</span>
-            <a href="schedule.php" class="view-all" style="display: flex; align-items: center; gap: 4px; text-decoration: none;">
+            <a href="schedule" class="view-all" style="display: flex; align-items: center; gap: 4px; text-decoration: none;">
                 View All <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
             </a>
         </div>
