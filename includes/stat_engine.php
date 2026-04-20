@@ -155,6 +155,20 @@ class StatEngine {
     }
 
     /**
+     * Get identity verification status based on recent attendance activity
+     */
+    public static function getIdentityVerificationStatus($student_id) {
+        $db = get_db_connection();
+        try {
+            $stmt = $db->prepare("SELECT COUNT(*) FROM attendance WHERE student_id = ? AND timestamp > (NOW() - INTERVAL 1 DAY)");
+            $stmt->execute([$student_id]);
+            return (int)$stmt->fetchColumn() > 0;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Get overall lecturer statistics
      */
     public static function getLecturerStats($lecturer_id) {
