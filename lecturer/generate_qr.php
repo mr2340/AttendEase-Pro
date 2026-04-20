@@ -49,116 +49,124 @@ try {
             <div style="width: 40px;"></div>
         </div>
 
-        <div style="padding: 16px; max-width: 500px; margin: 0 auto;">
-            <!-- Setup View -->
-            <div id="setup-view" style="display: <?php echo empty($existing_sessions) ? 'block' : 'none'; ?>;">
-                <div style="background: white; padding: 25px; border-radius: 30px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                    <h3 style="font-size: 20px; font-weight: 900; color: #0f172a; margin-bottom: 5px;">New Session</h3>
-                    <p style="color: #64748b; font-size: 13px; margin-bottom: 25px;">Initialize attendance node.</p>
+        <div style="padding: 16px; max-width: 600px; margin: 0 auto;">
+            <!-- HUB NAVIGATION -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;">
+                <button onclick="showSetup()" id="nav-new-sess" style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="plus-circle" style="width: 16px;"></i> New Class
+                </button>
+                <?php if (!empty($existing_sessions)): ?>
+                    <?php foreach($existing_sessions as $sess): ?>
+                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>')" 
+                                class="session-nav-btn" 
+                                id="nav-sess-<?php echo $sess['id']; ?>"
+                                style="background: white; color: var(--text-dark); border: 1.5px solid var(--border); padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 8px; height: 8px; background: <?php echo $sess['status'] == 'active' ? 'var(--success)' : 'var(--warning)'; ?>; border-radius: 50%;"></span>
+                            <?php echo htmlspecialchars($sess['topic'] ?: $sess['course_name']); ?>
+                        </button>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- Setup View (Creation Form) -->
+            <div id="setup-view" style="display: none;">
+                <div style="background: white; padding: 30px; border-radius: 35px; border: 1.5px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.03);">
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="font-size: 24px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.5px;">Initialize Node</h3>
+                        <p style="color: var(--text-muted); font-size: 14px; font-weight: 500;">Configure your attendance broadcast.</p>
+                    </div>
                     
                     <form id="qrGenForm">
-                        <div class="form-group" style="margin-bottom: 15px;">
-                            <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Target Course</label>
-                            <select name="course_id" class="form-control" style="height: 55px; border-radius: 16px; border: 2px solid #f1f5f9; background: #f8fafc; font-weight: 600; font-size: 14px;">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 10px;">Session Topic</label>
+                            <input type="text" name="topic" placeholder="e.g. Week 4: Introduction to AI" class="form-control" style="height: 55px; border-radius: 18px; border: 2px solid var(--bg-main); background: var(--bg-main); font-weight: 700; font-size: 14px; padding: 0 20px;" required>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 10px;">Target Course</label>
+                            <select name="course_id" class="form-control" style="height: 55px; border-radius: 18px; border: 2px solid var(--bg-main); background: var(--bg-main); font-weight: 700; font-size: 14px; padding: 0 20px;">
                                 <?php foreach($courses as $c): ?>
                                     <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['course_name']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
                             <div class="form-group">
-                                <label style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Expiry</label>
-                                <select name="duration" class="form-control" style="height: 55px; border-radius: 16px; border: 2px solid #f1f5f9; background: #f8fafc; font-weight: 600; font-size: 14px;">
-                                    <option value="15">15m</option>
-                                    <option value="30" selected>30m</option>
-                                    <option value="60">1h</option>
+                                <label style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Duration</label>
+                                <select name="duration" class="form-control" style="height: 55px; border-radius: 18px; border: 2px solid var(--bg-main); background: var(--bg-main); font-weight: 700; font-size: 14px; padding: 0 10px; text-align: center;">
+                                    <option value="15">15 min</option>
+                                    <option value="30" selected>30 min</option>
+                                    <option value="60">1 hour</option>
+                                    <option value="0">Indefinite</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Cap</label>
-                                <input type="number" name="scan_limit" class="form-control" value="0" style="height: 55px; border-radius: 16px; border: 2px solid #f1f5f9; background: #f8fafc; font-weight: 600; text-align: center; font-size: 14px;">
+                                <label style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Scan Cap</label>
+                                <input type="number" name="scan_limit" class="form-control" value="0" placeholder="Unlimited" style="height: 55px; border-radius: 18px; border: 2px solid var(--bg-main); background: var(--bg-main); font-weight: 700; font-size: 14px; text-align: center;">
                             </div>
                         </div>
 
-                        <button type="submit" class="btn-primary" id="genBtn" style="margin-top: 25px; height: 60px; border-radius: 18px; font-weight: 800; font-size: 15px; background: #0066ff; box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2);">
-                            Launch Secure Hub
+                        <button type="submit" class="btn-primary" id="genBtn" style="height: 65px; border-radius: 20px; font-weight: 900; font-size: 16px; background: var(--primary); box-shadow: 0 15px 30px var(--primary-glow); width: 100%;">
+                            Deploy Broadcast Node
                         </button>
                     </form>
                 </div>
-
-                <?php if (!empty($existing_sessions)): ?>
-                    <div style="margin-top: 30px; margin-bottom: 12px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; padding-left: 5px;">Active Nodes</div>
-                    <?php foreach($existing_sessions as $sess): ?>
-                        <div onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo htmlspecialchars($sess['course_name']); ?>', '<?php echo $sess['status']; ?>')" style="background: white; padding: 16px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 40px; height: 40px; background: <?php echo $sess['status'] == 'active' ? '#ecfdf5' : '#fff7ed'; ?>; color: <?php echo $sess['status'] == 'active' ? '#10b981' : '#f59e0b'; ?>; border-radius: 12px; display: flex; justify-content: center; align-items: center;">
-                                    <i data-lucide="<?php echo $sess['status'] == 'active' ? 'zap' : 'pause-circle'; ?>" style="width: 18px;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="font-weight: 700; font-size: 14px; color: #1e293b; margin: 0;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
-                                    <p style="font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 0 0;"><?php echo strtoupper($sess['status']); ?></p>
-                                </div>
-                            </div>
-                            <i data-lucide="chevron-right" style="color: #cbd5e1; width: 16px;"></i>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
             </div>
 
             <!-- Management Hub (Responsive) -->
             <div id="hub-view" style="display: none; width: 100%;">
-                <div id="qr-main-container" style="position: relative; background: white; padding: 30px 20px; border-radius: 35px; text-align: center; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.05); border: 1px solid #f1f5f9; overflow: hidden; margin-bottom: 25px;">
+                <div id="qr-main-container" style="position: relative; background: white; padding: 35px 20px; border-radius: 40px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.05); border: 1.5px solid var(--border); overflow: hidden; margin-bottom: 25px;">
                     
+                    <!-- Performance Glow Background -->
+                    <div style="position: absolute; top: -100px; left: -100px; width: 250px; height: 250px; background: var(--primary-glow); filter: blur(80px); opacity: 0.5; z-index: 0; border-radius: 50%;"></div>
+
                     <!-- Dynamic Integrity Hub -->
-                    <div id="qrcode-wrapper" style="position: relative; display: inline-block; padding: 15px; background: white; border-radius: 30px; border: 2px solid #f8fafc; max-width: 100%; box-sizing: border-box;">
-                        <div id="qrcode" style="display: flex; justify-content: center; overflow: hidden; border-radius: 15px;"></div>
+                    <div id="qrcode-wrapper" style="position: relative; display: inline-block; padding: 20px; background: white; border-radius: 35px; border: 3px solid var(--bg-main); max-width: 100%; box-sizing: border-box; z-index: 1;">
+                        <div id="qrcode" style="display: flex; justify-content: center; overflow: hidden; border-radius: 18px;"></div>
                         
                         <!-- Anti-Photo Rotation Ring -->
-                        <div id="rotation-ring" style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 3px solid #0066ff; border-radius: 35px; border-top-color: transparent; border-left-color: transparent; animation: spin 30s linear infinite;"></div>
+                        <div id="rotation-ring" style="position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border: 4px solid var(--primary); border-radius: 42px; border-top-color: transparent; border-left-color: transparent; animation: spin 30s linear infinite;"></div>
                     </div>
 
-                    <div style="margin-top: 25px;">
-                        <h3 id="liveCourseName" style="font-weight: 900; color: #0f172a; font-size: 22px; letter-spacing: -0.5px; margin: 0;">Course Name</h3>
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 10px;">
-                            <span style="background: #0066ff10; color: #0066ff; padding: 5px 12px; border-radius: 20px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Secure Node</span>
-                            <span id="session-id-badge" style="background: #f8fafc; color: #64748b; padding: 5px 12px; border-radius: 20px; font-size: 9px; font-weight: 700; border: 1px solid #f1f5f9;">ID: --</span>
+                    <div style="margin-top: 30px; position: relative; z-index: 1;">
+                        <span id="liveCourseCode" style="font-size: 11px; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 4px 12px; border-radius: 50px; text-transform: uppercase;">--</span>
+                        <h3 id="liveTopicName" style="font-weight: 900; color: var(--text-dark); font-size: 24px; letter-spacing: -1px; margin: 12px 0 5px;">Topic Name</h3>
+                        <p id="liveCourseName" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Course Title</p>
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 15px;">
+                            <span style="background: #000; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase;">SECURE BROADCAST</span>
+                            <span id="session-id-badge" style="background: var(--surface); color: var(--text-muted); padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1.5px solid var(--border);">NODE: --</span>
                         </div>
                     </div>
 
                     <!-- Responsive Shield -->
-                    <div id="pauseShield" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 100; flex-direction: column; justify-content: center; align-items: center;">
-                        <div style="width: 70px; height: 70px; background: #f59e0b; border-radius: 24px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; box-shadow: 0 15px 30px rgba(245, 158, 11, 0.25); animation: pulseShield 2s infinite;">
-                            <i data-lucide="pause" style="width: 35px; height: 35px; color: white;"></i>
+                    <div id="pauseShield" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 100; flex-direction: column; justify-content: center; align-items: center; border-radius: 40px;">
+                        <div style="width: 80px; height: 80px; background: var(--warning); border-radius: 28px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; box-shadow: 0 15px 35px var(--warning-glow); animation: pulseShield 2s infinite;">
+                            <i data-lucide="pause" style="width: 40px; height: 40px; color: white;"></i>
                         </div>
-                        <h2 style="font-weight: 900; color: #92400e; font-size: 18px;">PAUSED</h2>
-                        <button onclick="togglePause()" class="btn-primary" style="margin-top: 25px; background: #f59e0b; width: 160px; height: 50px; border-radius: 15px; font-weight: 800; font-size: 14px;">
-                            Resume
+                        <h2 style="font-weight: 900; color: #92400e; font-size: 22px; letter-spacing: -0.5px;">BROADCAST PAUSED</h2>
+                        <button onclick="togglePause()" class="btn-primary" style="margin-top: 25px; background: var(--warning); width: 180px; height: 55px; border-radius: 18px; font-weight: 900; font-size: 15px; box-shadow: 0 10px 25px var(--warning-glow);">
+                            Resume Feed
                         </button>
                     </div>
                 </div>
 
                 <!-- Control Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
-                    <button id="toggleBtn" onclick="togglePause()" class="btn-secondary" style="height: 65px; border-radius: 20px; border: 2px solid #f59e0b15; background: #fffbeb; color: #f59e0b; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;">
-                        <i data-lucide="pause-circle" style="width: 18px;"></i>
-                        <span style="font-size: 10px; text-transform: uppercase;">Pause</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <button id="toggleBtn" onclick="togglePause()" style="height: 75px; border-radius: 24px; border: 2px solid var(--warning-glow); background: #fffbeb; color: var(--warning); font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; cursor: pointer;">
+                        <i data-lucide="pause-circle" style="width: 20px;"></i>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Toggle Flow</span>
                     </button>
-                    <button onclick="handlePrint()" class="btn-secondary" style="height: 65px; border-radius: 20px; border: 2px solid #f1f5f9; background: #0f172a; color: white; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;">
-                        <i data-lucide="printer" style="width: 18px;"></i>
-                        <span style="font-size: 10px; text-transform: uppercase;">Print</span>
+                    <button onclick="handlePrint()" style="height: 75px; border-radius: 24px; border: none; background: var(--text-dark); color: white; font-weight: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                        <i data-lucide="printer" style="width: 20px;"></i>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Print Mode</span>
                     </button>
                 </div>
                 
-                <button onclick="closeSession()" style="width: 100%; height: 60px; border-radius: 20px; background: #fff1f2; color: #e11d48; border: 2px solid #ffe4e6; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-                    <i data-lucide="power" style="width: 16px;"></i> Terminate Hub
+                <button onclick="closeSession()" style="width: 100%; height: 65px; border-radius: 24px; background: #fee2e2; color: var(--danger); border: 2.5px dashed #fecaca; font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.3s; margin-bottom: 30px;">
+                    <i data-lucide="power" style="width: 18px;"></i> Kill Broadcast Node
                 </button>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <a href="javascript:location.reload()" style="font-size: 12px; color: #94a3b8; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <i data-lucide="layout-grid" style="width: 14px;"></i> Back to Setup
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -194,48 +202,80 @@ let currentStatus = 'active';
 let rotationInterval = null;
 let qrInstance = null;
 
-function generateSecureToken(sessionId) {
-    const block = Math.floor(Date.now() / 30000);
-    return btoa(sessionId + ":" + block);
-}
-
-function updateQR() {
-    const token = generateSecureToken(currentSessionId);
-    const qrEl = document.getElementById("qrcode");
-    
-    // Dynamic Resizing for Response
-    const parentContainer = document.getElementById('qr-main-container');
-    const parentWidth = parentContainer ? parentContainer.offsetWidth : 280;
-    const qrSize = Math.max(150, Math.min(280, parentWidth - 80));
-    
-    if (!qrInstance) {
-        qrInstance = new QRCode(qrEl, {
-            text: token,
-            width: qrSize,
-            height: qrSize,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    } else {
-        qrInstance.clear();
-        qrInstance.makeCode(token);
+async function updateQR() {
+    try {
+        const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
+        const result = await response.json();
+        
+        if (!result.success) return;
+        
+        const token = result.token;
+        const qrEl = document.getElementById("qrcode");
+        
+        const parentContainer = document.getElementById('qr-main-container');
+        const parentWidth = parentContainer ? parentContainer.offsetWidth : 280;
+        const qrSize = Math.max(150, Math.min(280, parentWidth - 80));
+        
+        if (!qrInstance) {
+            qrInstance = new QRCode(qrEl, {
+                text: token,
+                width: qrSize,
+                height: qrSize,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        } else {
+            qrInstance.clear();
+            qrInstance.makeCode(token);
+        }
+    } catch (err) {
+        console.error("QR Update failed", err);
     }
 }
 
-function manageSession(id, name, status) {
+function showSetup() {
+    document.getElementById('setup-view').style.display = 'block';
+    document.getElementById('hub-view').style.display = 'none';
+    
+    // Update nav styling
+    document.querySelectorAll('.session-nav-btn').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.borderColor = 'var(--border)';
+    });
+    document.getElementById('nav-new-sess').style.background = 'var(--primary)';
+    
+    if (rotationInterval) clearInterval(rotationInterval);
+}
+
+function manageSession(id, courseName, status, topic) {
     currentSessionId = id;
     currentStatus = status || 'active';
+    const finalTopic = topic || 'General Session';
     
     document.getElementById('setup-view').style.display = 'none';
     document.getElementById('hub-view').style.display = 'block';
-    document.getElementById('liveCourseName').innerText = name;
-    document.getElementById('session-id-badge').innerText = "NODE ID: " + id;
     
-    // Ensure icons are rendered in the hub view
+    // Update live labels
+    document.getElementById('liveTopicName').innerText = finalTopic;
+    document.getElementById('liveCourseName').innerText = courseName;
+    document.getElementById('liveCourseCode').innerText = "LIVE NODE"; // Could be refined to actual code
+    document.getElementById('session-id-badge').innerText = "NODE: " + id;
+    
+    // Update nav styling
+    document.querySelectorAll('.session-nav-btn').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.borderColor = 'var(--border)';
+    });
+    const activeBtn = document.getElementById('nav-sess-' + id);
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--bg-main)';
+        activeBtn.style.borderColor = 'var(--primary)';
+    }
+    document.getElementById('nav-new-sess').style.background = 'var(--text-dark)';
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
-    // Trigger QR with small delay to ensure container width is calculated
     setTimeout(updateQR, 100);
     updateUI();
     
@@ -275,10 +315,10 @@ function updateUI() {
     
     if (currentStatus === 'paused') {
         shield.style.display = 'flex';
-        toggleBtn.innerHTML = '<i data-lucide="play-circle" style="width: 18px;"></i><span style="font-size: 10px;">Resume</span>';
+        toggleBtn.innerHTML = '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Resume</span>';
     } else {
         shield.style.display = 'none';
-        toggleBtn.innerHTML = '<i data-lucide="pause-circle" style="width: 18px;"></i><span style="font-size: 10px;">Pause</span>';
+        toggleBtn.innerHTML = '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Pause</span>';
     }
     lucide.createIcons();
 }
@@ -292,7 +332,7 @@ function handlePrint() {
 }
 
 async function closeSession() {
-    if (!confirm("Terminate this session?")) return;
+    if (!confirm("Terminate this broadcast node?")) return;
     const response = await fetch('../includes/toggle_session.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -308,9 +348,10 @@ document.getElementById('qrGenForm').addEventListener('submit', async (e) => {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     const courseName = e.target.course_id.options[e.target.course_id.selectedIndex].text;
+    const topic = data.topic;
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span>';
+    btn.innerHTML = '<span class="loader"></span> Deploying...';
 
     try {
         const response = await fetch('../includes/create_session.php', {
@@ -320,28 +361,32 @@ document.getElementById('qrGenForm').addEventListener('submit', async (e) => {
         });
         const result = await response.json();
         if (result.success) {
-            manageSession(result.session_id, courseName, 'active');
+            // Fresh reload to update the multi-session header
+            location.reload();
         } else {
             alert(result.message);
             btn.disabled = false;
-            btn.innerText = 'Launch Secure Hub';
+            btn.innerText = 'Deploy Broadcast Node';
         }
     } catch (err) {
         btn.disabled = false;
     }
 });
 
+// Init
 lucide.createIcons();
 
 <?php if (!empty($existing_sessions)): ?>
     manageSession(
         <?php echo $existing_sessions[0]['id']; ?>, 
         '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', 
-        '<?php echo $existing_sessions[0]['status']; ?>'
+        '<?php echo $existing_sessions[0]['status']; ?>',
+        '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>'
     );
+<?php else: ?>
+    showSetup();
 <?php endif; ?>
 
-// Handle window resize to keep QR responsive
 window.addEventListener('resize', () => {
     if (currentSessionId) updateQR();
 });

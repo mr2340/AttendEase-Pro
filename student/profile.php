@@ -30,18 +30,20 @@ $display_avatar = $avatar_url ? BASE_URL . $avatar_url : "https://api.dicebear.c
 
 <section class="screen" data-state="active">
     <div class="scrollable-content">
-        <form id="profileForm" action="../includes/update_profile.php" method="POST" enctype="multipart/form-data">
+        <form id="profileForm" action="../includes/update_profile.php" method="POST">
             <div style="padding: 40px 24px 20px; text-align: center;">
-                <div class="profile-avatar" style="width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 40px; border: 4px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow); position: relative; cursor: pointer;" onclick="document.getElementById('avatarInput').click()">
+                <div class="profile-avatar" style="width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 40px; border: 4px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow); position: relative; cursor: pointer;" id="avatarUploadTrigger">
                     <img id="avatarPreview" src="<?php echo $display_avatar; ?>" width="100%" height="100%" alt="Profile" style="border-radius: 36px; object-fit: cover;">
                     <div style="position: absolute; bottom: -5px; right: -5px; background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 12px; display: flex; justify-content: center; align-items: center; border: 3px solid var(--surface);">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                     </div>
-                    <input type="file" id="avatarInput" name="avatar" style="display: none;" accept="image/*">
+                    <input type="hidden" id="avatar_url" name="avatar_url" value="<?php echo htmlspecialchars($avatar_url); ?>">
                 </div>
                 <h2 style="font-size: 26px; font-weight: 800; color: var(--text-dark);"><?php echo htmlspecialchars($username); ?></h2>
                 <p style="color: var(--text-muted); font-weight: 600; margin-top: 4px;"><?php echo ucfirst($role); ?> • Computer Science</p>
             </div>
+            
+            <!-- ... remaining form fields same ... -->
 
             <div style="padding: 0 24px;">
                 <!-- Personal Info -->
@@ -116,20 +118,72 @@ $display_avatar = $avatar_url ? BASE_URL . $avatar_url : "https://api.dicebear.c
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const profileForm = document.getElementById('profileForm');
-    const avatarInput = document.getElementById('avatarInput');
+    const avatarUploadTrigger = document.getElementById('avatarUploadTrigger');
     const avatarPreview = document.getElementById('avatarPreview');
+    const avatarUrlInput = document.getElementById('avatar_url');
 
-    // Avatar Preview
-    avatarInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarPreview.src = e.target.result;
+    // Cloudinary Widget Initialization (Secure Signed Upload)
+    const myWidget = cloudinary.createUploadWidget({
+        cloudName: window.AttendEaseConfig.cloudinary.cloudName || 'demo',
+        apiKey: window.AttendEaseConfig.cloudinary.apiKey,
+        uploadSignature: (callback, params_to_sign) => {
+            fetch('../includes/cloudinary_signature.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ params_to_sign: params_to_sign })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.signature) {
+                    callback(result.signature);
+                } else {
+                    console.error('Signature generation failed:', result.error);
+                }
+            })
+            .catch(error => console.error('Error fetching signature:', error));
+        },
+        sources: ['local', 'url', 'camera'],
+        multiple: false,
+        cropping: true,
+        croppingAspectRatio: 1,
+        showSkipCropButton: false,
+        clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+        maxFileSize: 2000000,
+        styles: {
+            palette: {
+                window: "#ffffff",
+                sourceBg: "#f4f4f5",
+                windowBorder: "#90a0b3",
+                tabIcon: "#0066ff",
+                inactiveTabIcon: "#6e7072",
+                menuIcons: "#555a5f",
+                link: "#0066ff",
+                action: "#3399ff",
+                inProgress: "#0078ff",
+                complete: "#20b832",
+                error: "#ea3535",
+                textDark: "#000000",
+                textLight: "#ffffff"
             }
-            reader.readAsDataURL(file);
+        }
+    }, (error, result) => { 
+        if (!error && result && result.event === "success") { 
+            console.log('Done! Here is the image info: ', result.info); 
+            const secureUrl = result.info.secure_url;
+            avatarPreview.src = secureUrl;
+            avatarUrlInput.value = secureUrl;
         }
     });
+
+    if (avatarUploadTrigger) {
+        avatarUploadTrigger.addEventListener('click', () => {
+            if (!window.AttendEaseConfig.cloudinary.cloudName) {
+                alert("Cloudinary not configured. Please add CLOUDINARY_CLOUD_NAME to .env");
+                return;
+            }
+            myWidget.open();
+        }, false);
+    }
     
     // Toggle UI Handling
     document.querySelectorAll('.toggle-switch input').forEach(input => {

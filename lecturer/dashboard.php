@@ -30,6 +30,9 @@ $stmt = $db->prepare("
 ");
 $stmt->execute([$user_id]);
 $active_sessions = $stmt->fetchAll();
+// Intelligence Engine - Dynamic Stats
+require_once '../includes/stat_engine.php';
+$stats = StatEngine::getLecturerStats($user_id);
 ?>
 
 <section id="lecturer-dashboard" class="screen" data-state="active">
@@ -50,13 +53,13 @@ $active_sessions = $stmt->fetchAll();
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 24px; margin-bottom: 30px;">
             <div style="background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M12 6v8"/><path d="M9 22h6"/></svg>
-                <h3 style="font-size: 24px; font-weight: 800;"><?php echo count($courses); ?></h3>
-                <p style="font-size: 12px; color: var(--text-muted);">Active Courses</p>
+                <h3 style="font-size: 24px; font-weight: 800;"><?php echo $stats['total_sessions']; ?></h3>
+                <p style="font-size: 12px; color: var(--text-muted);">Sessions Held</p>
             </div>
             <div style="background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <h3 style="font-size: 24px; font-weight: 800;">124</h3>
-                <p style="font-size: 12px; color: var(--text-muted);">Total Students</p>
+                <h3 style="font-size: 24px; font-weight: 800;"><?php echo $stats['total_students']; ?></h3>
+                <p style="font-size: 12px; color: var(--text-muted);">Total Reach</p>
             </div>
         </div>
 
@@ -135,10 +138,10 @@ $active_sessions = $stmt->fetchAll();
                         <p style="font-size: 11px; color: var(--text-muted);"><?php echo htmlspecialchars($course['course_code']); ?></p>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <a href="../includes/export_attendance.php?course_id=<?php echo $course['id']; ?>" style="width: 36px; height: 36px; background: #22c55e; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center;" title="Export CSV">
+                        <a href="export_attendance?course_id=<?php echo $course['id']; ?>" style="width: 36px; height: 36px; background: #22c55e; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center;" title="Export CSV">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         </a>
-                        <a href="course_details.php?id=<?php echo $course['id']; ?>" style="width: 36px; height: 36px; background: var(--bg-main); color: var(--text-muted); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <a href="course_details?id=<?php echo $course['id']; ?>" style="width: 36px; height: 36px; background: var(--bg-main); color: var(--text-muted); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                         </a>
                     </div>

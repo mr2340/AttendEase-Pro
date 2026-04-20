@@ -20,23 +20,32 @@ if (!$token) {
     exit;
 }
 
-// --- INTELLIGENT DECODING ---
+// --- SECURE DECODING & HMAC VERIFICATION ---
 try {
     $decoded = base64_decode($token);
-    if (!$decoded || strpos($decoded, ':') === false) {
-        throw new Exception("Malformed Token");
+    $parts = explode(':', $decoded);
+    
+    if (count($parts) !== 3) {
+        throw new Exception("Malformed Secure Token");
     }
     
-    list($session_id, $client_block) = explode(':', $decoded);
-    $current_block = floor(time() / 30); // 30s rotation
+    list($session_id, $client_block, $client_hmac) = $parts;
     
-    // Allow current block and 1 previous block (30s grace)
+    // 1. Verify Signature Integrity
+    $expected_hmac = hash_hmac('sha256', $session_id . ":" . $client_block, SECURE_KEY);
+    if (!hash_equals($expected_hmac, $client_hmac)) {
+        throw new Exception("Security Alert: QR Signature Mismatch");
+    }
+
+    // 2. Verify Time Window expiration
+    $current_block = floor(time() / 30);
+    // Allow ±1 block (30s window)
     if (abs($current_block - $client_block) > 1) {
         echo json_encode(['success' => false, 'message' => 'QR EXPIRED: This code is no longer valid. Please scan the current live QR.']);
         exit;
     }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Security Error: Invalid Integrity Token.']);
+    echo json_encode(['success' => false, 'message' => 'Security Error: ' . $e->getMessage()]);
     exit;
 }
 
@@ -87,6 +96,11 @@ try {
     // 5. Finalize Attendance
     $stmt = $db->prepare("INSERT INTO attendance (session_id, student_id, status) VALUES (?, ?, 'present')");
     $stmt->execute([$session_id, $user_id]);
+
+    // 5.1 Auto-Enrollment logic (New)
+    // Ensures students are tracked in courses they attend for accurate StatEngine reports
+    $stmt = $db->prepare("INSERT IGNORE INTO enrollments (student_id, course_id) VALUES (?, ?)");
+    $stmt->execute([$user_id, $session['course_id']]);
 
     // 6. Push Notification Integration (New)
     require_once __DIR__ . '/notifications.php';

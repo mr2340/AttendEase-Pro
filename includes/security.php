@@ -5,7 +5,7 @@
 
 class AttendEaseSecurity {
     
-    private static $limit = 60; // Requests per minute
+    private static $limit = 300; // Requests per minute
     private static $storage_dir = __DIR__ . '/../temp/rate_limit';
     
     public static function init() {
@@ -17,46 +17,54 @@ class AttendEaseSecurity {
      * Advanced Rate Limiting System
      */
     private static function checkRateLimit() {
-        if (!is_dir(self::$storage_dir)) {
-            mkdir(self::$storage_dir, 0777, true);
-        }
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        if ($ip === '::1') $ip = '127.0.0.1'; // Normalize localhost
         
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $file = self::$storage_dir . '/' . md5($ip) . '.json';
         $now = time();
+        $db = get_db_connection();
         
-        $data = ['requests' => [], 'blocked_until' => 0];
-        
-        if (file_exists($file)) {
-            $data = json_decode(file_get_contents($file), true);
-        }
-        
-        // Check if currently blocked
-        if ($data['blocked_until'] > $now) {
-            http_response_code(429);
-            include __DIR__ . '/../errors/429.php';
-            exit;
-        }
-        
-        // Filter requests in the last 60 seconds
-        $data['requests'] = array_filter($data['requests'], function($ts) use ($now) {
-            return $ts > ($now - 60);
-        });
-        
-        // Add current request
-        $data['requests'][] = $now;
-        
-        // Check threshold
-        if (count($data['requests']) > self::$limit) {
-            $data['blocked_until'] = $now + 60; // Block for 1 minute
-            file_put_contents($file, json_encode($data));
+        try {
+            $stmt = $db->prepare("SELECT * FROM rate_limits WHERE ip = ?");
+            $stmt->execute([$ip]);
+            $data = $stmt->fetch();
             
-            http_response_code(429);
-            include __DIR__ . '/../errors/429.php';
-            exit;
+            if ($data) {
+                // Check if currently blocked
+                if ($data['blocked_until'] > $now) {
+                    http_response_code(429);
+                    include __DIR__ . '/../errors/429.php';
+                    exit;
+                }
+                
+                // Reset window if last request was more than 60s ago
+                if ($data['last_request'] < ($now - 60)) {
+                    $count = 1;
+                } else {
+                    $count = $data['request_count'] + 1;
+                }
+                
+                $blocked_until = 0;
+                if ($count > self::$limit) {
+                    $blocked_until = $now + 60; // Block for 1 minute
+                }
+                
+                $stmt = $db->prepare("UPDATE rate_limits SET request_count = ?, last_request = ?, blocked_until = ? WHERE ip = ?");
+                $stmt->execute([$count, $now, $blocked_until, $ip]);
+                
+                if ($blocked_until > 0) {
+                    http_response_code(429);
+                    include __DIR__ . '/../errors/429.php';
+                    exit;
+                }
+            } else {
+                // First request from this IP
+                $stmt = $db->prepare("INSERT INTO rate_limits (ip, request_count, last_request, blocked_until) VALUES (?, 1, ?, 0)");
+                $stmt->execute([$ip, $now]);
+            }
+        } catch (PDOException $e) {
+            // Silently fail or log to error_log to prioritize availability of the app
+            error_log("Rate Limit DB Error: " . $e->getMessage());
         }
-        
-        file_put_contents($file, json_encode($data));
     }
     
     /**

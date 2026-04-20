@@ -8,31 +8,46 @@ class NotificationEngine {
      * Send a notification to a specific user or group
      * Uses Legacy FCM HTTP protocol (simplest for PHP without extra libs)
      */
+    /**
+     * Send a notification using modern FCM HTTP v1 API
+     */
     public static function send($to_token, $title, $body, $data = []) {
-        $server_key = FCM_SERVER_KEY;
-        
-        if (!$server_key || $server_key === 'YOUR_SERVER_KEY_LEGACY') {
-            return ['success' => false, 'message' => 'FCM Server Key not configured'];
+        $service_account_path = FCM_SERVICE_ACCOUNT;
+        $project_id = FCM_PROJECT_ID;
+
+        if (!file_exists($service_account_path)) {
+            error_log("FCM Error: service-account.json not found at $service_account_path. Notification not sent.");
+            return ['success' => false, 'message' => 'Service account missing'];
         }
 
-        $url = 'https://fcm.googleapis.com/fcm/send';
+        $access_token = self::getAccessToken($service_account_path);
+        if (!$access_token) {
+            return ['success' => false, 'message' => 'Failed to generate OAuth token'];
+        }
+
+        $url = "https://fcm.googleapis.com/v1/projects/{$project_id}/messages:send";
 
         $payload = [
-            'to' => $to_token,
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-                'sound' => 'default',
-                'badge' => '1',
-                'click_action' => 'FCM_PLUGIN_ACTIVITY',
-                'icon' => 'fcm_push_icon'
-            ],
-            'data' => $data,
-            'priority' => 'high'
+            'message' => [
+                'token' => $to_token,
+                'notification' => [
+                    'title' => $title,
+                    'body' => $body
+                ],
+                'data' => $data,
+                'android' => [
+                    'priority' => 'high',
+                    'notification' => [
+                        'sound' => 'default',
+                        'click_action' => 'FCM_PLUGIN_ACTIVITY',
+                        'icon' => 'fcm_push_icon'
+                    ]
+                ]
+            ]
         ];
 
         $headers = [
-            'Authorization: key=' . $server_key,
+            'Authorization: Bearer ' . $access_token,
             'Content-Type: application/json'
         ];
 
@@ -48,10 +63,55 @@ class NotificationEngine {
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($http_code === 200) {
-            return ['success' => true, 'response' => json_decode($result, true)];
-        } else {
-            return ['success' => false, 'code' => $http_code, 'response' => $result];
+        return ($http_code === 200) 
+            ? ['success' => true, 'response' => json_decode($result, true)]
+            : ['success' => false, 'code' => $http_code, 'response' => $result];
+    }
+
+    /**
+     * Helper: Generate OAuth2 Access Token using Service Account (JWT)
+     * Pure PHP implementation to avoid heavy dependencies
+     */
+    private static function getAccessToken($json_path) {
+        try {
+            $json = json_decode(file_get_contents($json_path), true);
+            $now = time();
+            
+            $header = json_encode(['alg' => 'RS256', 'typ' => 'JWT']);
+            $claim = json_encode([
+                'iss' => $json['client_email'],
+                'scope' => 'https://www.googleapis.com/auth/cloud-platform',
+                'aud' => 'https://oauth2.googleapis.com/token',
+                'exp' => $now + 3600,
+                'iat' => $now
+            ]);
+
+            $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+            $base64UrlClaim = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($claim));
+            
+            $signature = '';
+            openssl_sign($base64UrlHeader . "." . $base64UrlClaim, $signature, $json['private_key'], 'SHA256');
+            $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+            
+            $jwt = $base64UrlHeader . "." . $base64UrlClaim . "." . $base64UrlSignature;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://oauth2.googleapis.com/token');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion' => $jwt
+            ]));
+
+            $result = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+
+            return $result['access_token'] ?? null;
+        } catch (Exception $e) {
+            error_log("OAuth2 Token Error: " . $e->getMessage());
+            return null;
         }
     }
 

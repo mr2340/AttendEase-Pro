@@ -23,6 +23,9 @@ if (isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title><?php echo isset($page_title) ? $page_title . " | " . APP_NAME : APP_NAME; ?></title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="<?php echo BASE_URL; ?>favicon.ico">
+    
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
@@ -46,6 +49,9 @@ if (isset($_SESSION['user_id'])) {
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <!-- Cloudinary Widget SDK -->
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+
     <script>
         window.AttendEaseConfig = {
             baseUrl: '<?php echo BASE_URL; ?>',
@@ -58,6 +64,11 @@ if (isset($_SESSION['user_id'])) {
                 appId: '<?php echo FCM_APP_ID; ?>',
                 measurementId: '<?php echo FCM_MEASUREMENT_ID; ?>',
                 vapidKey: '<?php echo FCM_VAPID_KEY; ?>'
+            },
+            cloudinary: {
+                cloudName: '<?php echo CLOUDINARY_CLOUD_NAME; ?>',
+                uploadPreset: '<?php echo CLOUDINARY_UPLOAD_PRESET; ?>',
+                apiKey: '<?php echo CLOUDINARY_API_KEY; ?>'
             }
         };
     </script>

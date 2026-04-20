@@ -37,8 +37,10 @@ define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost/sodex/');
 
 // Security Settings
 define('HASH_ALGO', PASSWORD_ARGON2ID);
+define('SECURE_KEY', getenv('SECURE_KEY') ?: '8f9e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f');
 
 // FCM Configuration
+define('FCM_SERVICE_ACCOUNT', __DIR__ . '/../service-account.json');
 define('FCM_API_KEY', getenv('FCM_API_KEY'));
 define('FCM_AUTH_DOMAIN', getenv('FCM_AUTH_DOMAIN'));
 define('FCM_PROJECT_ID', getenv('FCM_PROJECT_ID'));
@@ -47,7 +49,11 @@ define('FCM_MESSAGING_SENDER_ID', getenv('FCM_MESSAGING_SENDER_ID'));
 define('FCM_APP_ID', getenv('FCM_APP_ID'));
 define('FCM_MEASUREMENT_ID', getenv('FCM_MEASUREMENT_ID'));
 define('FCM_VAPID_KEY', getenv('FCM_VAPID_KEY'));
-define('FCM_SERVER_KEY', getenv('FCM_SERVER_KEY'));
+// Cloudinary Configuration
+define('CLOUDINARY_CLOUD_NAME', getenv('CLOUDINARY_CLOUD_NAME'));
+define('CLOUDINARY_UPLOAD_PRESET', getenv('CLOUDINARY_UPLOAD_PRESET'));
+define('CLOUDINARY_API_KEY', getenv('CLOUDINARY_API_KEY'));
+define('CLOUDINARY_API_SECRET', getenv('CLOUDINARY_API_SECRET'));
 
 /**
  * Database Connection using PDO

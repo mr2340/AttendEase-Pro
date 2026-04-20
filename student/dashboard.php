@@ -31,6 +31,22 @@ $notif_stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER 
 $notif_stmt->execute([$user_id]);
 $notifications = $notif_stmt->fetchAll();
 
+// Intelligence Engine - Dynamic Attendance Scoring
+require_once '../includes/stat_engine.php';
+$attendance_score = StatEngine::getStudentAttendanceScore($user_id);
+
+// AI Risk Analysis
+$risk_level = 'LOW';
+$risk_color = 'var(--success)';
+if($attendance_score < 75) {
+    $risk_level = 'HIGH';
+    $risk_color = 'var(--danger)';
+} else if ($attendance_score < 80) {
+    $risk_level = 'MEDIUM';
+    $risk_color = 'var(--warning)';
+}
+
+// Fetch Today's Schedule
 // Fetch Today's Schedule
 $day_now = date('w');
 $sched_stmt = $db->prepare("
@@ -66,41 +82,33 @@ $schedules = $sched_stmt->fetchAll();
         </div>
 
         <!-- Attendance Overview -->
-        <?php
-        // AI Risk Analysis Simple Logic
-        $attendance_score = 85; // This should come from DB calculation
-        $risk_level = 'LOW';
-        $risk_color = 'var(--success)';
-        if($attendance_score < 75) {
-            $risk_level = 'HIGH';
-            $risk_color = 'var(--danger)';
-        } else if ($attendance_score < 80) {
-            $risk_level = 'MEDIUM';
-            $risk_color = 'var(--warning)';
-        }
-        ?>
-        <div class="stats-card" style="position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 20px; right: 24px; display: flex; flex-direction: column; align-items: flex-end;">
-                <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 4px;">AI RISK ANALYSIS</span>
-                <span style="background: <?php echo $risk_color; ?>; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    <?php echo $risk_level; ?> RISK
-                </span>
+        <div class="stats-card">
+            <div class="stat-header">
+                <div>
+                    <p style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Semester Attendance</p>
+                    <div class="stat-value">
+                        <h3 id="scoreText" style="font-size: 48px; font-weight: 900; line-height: 1;"><?php echo $attendance_score; ?>%</h3>
+                    </div>
+                </div>
+                <!-- AI RISK PILL -->
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 4px;">AI RISK ANALYSIS</span>
+                    <span style="background: <?php echo $risk_color; ?>; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        <?php echo $risk_level; ?> RISK
+                    </span>
+                </div>
             </div>
             
-            <div style="display: flex; align-items: flex-end; gap: 10px;">
-                <h3 style="font-size: 48px; font-weight: 900; line-height: 1;" id="scoreText"><?php echo $attendance_score; ?>%</h3>
-                <p style="font-size: 13px; opacity: 0.8; margin-bottom: 5px;">Semester Goal Met</p>
+            <div class="progress-container" style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 10px; margin: 15px 0; overflow: hidden;">
+                <div class="progress-bar" id="progressBar" style="width: <?php echo $attendance_score; ?>%; background: var(--secondary); height: 100%; border-radius: 10px; transition: 1s ease-out;"></div>
             </div>
             
-            <div class="progress-container" style="height: 12px; border-radius: 6px; margin: 20px 0;">
-                <div class="progress-bar" id="progressBar" style="width: <?php echo $attendance_score; ?>%; background: linear-gradient(90deg, var(--secondary), #fff);"></div>
-            </div>
-            <p style="font-size: 12px; opacity: 0.8; font-weight: 500;">
+            <p style="font-size: 12px; opacity: 0.8; font-weight: 500; margin-top: 10px;">
                 <?php if($risk_level == 'HIGH'): ?>
                     ⚠️ You are below the 75% threshold! Immediate action required.
                 <?php else: ?>
-                    You are currently safe. Keep maintain your attendance trend.
+                    Great job! You are currently safe. Keep maintain your attendance trend.
                 <?php endif; ?>
             </p>
         </div>
@@ -185,28 +193,111 @@ $schedules = $sched_stmt->fetchAll();
                     <p style="color: var(--text-muted); font-size: 14px; font-weight: 600;">No classes scheduled for today!</p>
                 </div>
             <?php else: ?>
-                <?php foreach($schedules as $item): ?>
-                <div class="timeline-item">
-                    <div class="time-box">
-                        <p style="color: var(--primary); font-weight: 800; font-size: 15px;"><?php echo date('H:i', strtotime($item['start_time'])); ?></p>
+                <?php 
+                $current_time = time();
+                foreach($schedules as $item): 
+                    $start_timestamp = strtotime(date('Y-m-d') . ' ' . $item['start_time']);
+                    $end_timestamp = strtotime(date('Y-m-d') . ' ' . $item['end_time']);
+                    
+                    $is_live = ($current_time >= $start_timestamp && $current_time <= $end_timestamp);
+                    $is_done = ($current_time > $end_timestamp);
+                    
+                    $status_text = 'Upcoming';
+                    $status_color = 'var(--text-muted)';
+                    $border_style = '1px solid var(--border)';
+                    
+                    if ($is_live) {
+                        $status_text = 'LIVE NOW';
+                        $status_color = 'var(--danger)';
+                        $border_style = '2px solid var(--primary)';
+                    } elseif ($is_done) {
+                        $status_text = 'FINISHED';
+                        $status_color = 'var(--success)';
+                        $border_style = '1px solid var(--border)';
+                    }
+                ?>
+                <div class="timeline-item" style="border: <?php echo $border_style; ?>; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;" onclick="this.style.transform='scale(0.98)'; setTimeout(() => this.style.transform='scale(1)', 100);">
+                    <?php if($is_live): ?>
+                        <div style="position: absolute; top: -10px; left: 24px; background: var(--danger); color: white; font-size: 9px; font-weight: 800; padding: 2px 10px; border-radius: 50px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); animation: pulse 2s infinite;">
+                            <?php echo $status_text; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="time-box" style="background: <?php echo $is_live ? 'var(--primary-glow)' : 'var(--bg-main)'; ?>;">
+                        <p style="color: <?php echo $is_live ? 'var(--primary)' : 'var(--text-dark)'; ?>; font-weight: 800; font-size: 15px;"><?php echo date('H:i', strtotime($item['start_time'])); ?></p>
                         <p style="font-size: 9px; opacity: 0.6; font-weight: 700;"><?php echo date('A', strtotime($item['start_time'])); ?></p>
                     </div>
+                    
                     <div class="class-info" style="margin-left: 15px; flex: 1;">
-                        <h4 style="font-size: 15px; font-weight: 700; color: var(--text-dark);"><?php echo htmlspecialchars($item['course_name']); ?></h4>
-                        <p style="font-size: 12px; color: var(--text-muted);"><?php echo htmlspecialchars($item['course_code']); ?> • <?php echo htmlspecialchars($item['location']); ?></p>
+                        <span style="font-size: 9px; font-weight: 800; color: <?php echo $status_color; ?>; text-transform: uppercase; letter-spacing: 0.5px;"><?php echo $status_text; ?></span>
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 2px;"><?php echo htmlspecialchars($item['course_name']); ?></h4>
+                        <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;"><?php echo htmlspecialchars($item['course_code']); ?> • <?php echo htmlspecialchars($item['location']); ?></p>
                     </div>
+
                     <div style="display: flex; gap: 8px;">
-                        <a href="../includes/sync_calendar.php?id=<?php echo $item['id']; ?>" style="width: 36px; height: 36px; background: var(--bg-main); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: var(--primary);" title="Sync to Calendar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
-                        </a>
-                        <div style="width: 36px; height: 36px; background: var(--bg-main); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: var(--success);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        <button class="sync-btn" style="width: 40px; height: 40px; background: var(--bg-main); border: none; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: var(--primary); cursor: pointer;" 
+                                onclick="openCalendarOptions('<?php echo addslashes($item['course_name']); ?>', '<?php echo date('Ymd\THis', $start_timestamp); ?>', '<?php echo date('Ymd\THis', $end_timestamp); ?>', '<?php echo addslashes($item['location']); ?>')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 3 3 3-3"/></svg>
+                        </button>
+                        <div style="width: 40px; height: 40px; background: <?php echo $is_done ? 'var(--success-glow)' : 'var(--bg-main)'; ?>; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: <?php echo $is_done ? 'var(--success)' : 'var(--border)'; ?>;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                         </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
+
+        <!-- Modern Calendar Action Sheet -->
+        <div id="calendar-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: flex-end;">
+            <div id="calendar-sheet" style="width: 100%; background: var(--surface); border-radius: 32px 32px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <div style="width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px;"></div>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Sync to Calendar</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Choose your preferred calendar service</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a id="google-cal-link" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #fef2f2; border-radius: 20px; text-decoration: none; border: 1.5px solid rgba(239, 68, 68, 0.1);">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" width="24" height="24">
+                        <span style="font-weight: 700; color: #b91c1c;">Google Calendar</span>
+                    </a>
+                    
+                    <a id="outlook-cal-link" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #eff6ff; border-radius: 20px; text-decoration: none; border: 1.5px solid rgba(59, 130, 246, 0.1);">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg" width="24" height="24">
+                        <span style="font-weight: 700; color: #1d4ed8;">Outlook / Office 365</span>
+                    </a>
+                </div>
+                
+                <button onclick="closeCalendarOptions()" style="width: 100%; margin-top: 20px; padding: 16px; background: var(--bg-main); border: none; border-radius: 20px; font-weight: 700; color: var(--text-muted); cursor: pointer;">Cancel</button>
+                <div style="height: 20px;"></div>
+            </div>
+        </div>
+
+        <script>
+        function openCalendarOptions(title, start, end, location) {
+            const modal = document.getElementById('calendar-modal');
+            const sheet = document.getElementById('calendar-sheet');
+            
+            // Build Google Link
+            const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&location=${encodeURIComponent(location)}&details=Lecture via AttendEase Pro`;
+            document.getElementById('google-cal-link').href = googleUrl;
+            
+            // Build Outlook Link
+            const outlookUrl = `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(title)}&startdt=${start}&enddt=${end}&location=${encodeURIComponent(location)}&body=Lecture via AttendEase Pro`;
+            document.getElementById('outlook-cal-link').href = outlookUrl;
+
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            sheet.style.transform = 'translateY(0)';
+        }
+
+        function closeCalendarOptions() {
+            const modal = document.getElementById('calendar-modal');
+            const sheet = document.getElementById('calendar-sheet');
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            sheet.style.transform = 'translateY(100%)';
+        }
+        </script>
 
         <div style="height: 120px;"></div>
 

@@ -15,6 +15,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSI
 
 $data = json_decode(file_get_contents('php://input'), true);
 $course_id = $data['course_id'] ?? null;
+$topic = $data['topic'] ?? 'General Session';
 $duration = isset($data['duration']) ? (int)$data['duration'] : 30; // Minutes
 $scan_limit = isset($data['scan_limit']) ? (int)$data['scan_limit'] : 0; // 0 = Unlimited
 
@@ -34,8 +35,8 @@ try {
     }
 
     // 2. Create New Session
-    $stmt = $db->prepare("INSERT INTO sessions (course_id, lecturer_id, status, scan_limit, expires_at, created_at) VALUES (?, ?, 'active', ?, ?, NOW())");
-    $stmt->execute([$course_id, $lecturer_id, $scan_limit, $expires_at]);
+    $stmt = $db->prepare("INSERT INTO sessions (course_id, topic, lecturer_id, status, scan_limit, expires_at, created_at) VALUES (?, ?, ?, 'active', ?, ?, NOW())");
+    $stmt->execute([$course_id, $topic, $lecturer_id, $scan_limit, $expires_at]);
     
     $session_id = $db->lastInsertId();
 
