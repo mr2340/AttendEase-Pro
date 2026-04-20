@@ -88,6 +88,10 @@ try {
     $stmt = $db->prepare("INSERT INTO attendance (session_id, student_id, status) VALUES (?, ?, 'present')");
     $stmt->execute([$session_id, $user_id]);
 
+    // 6. Push Notification Integration (New)
+    require_once __DIR__ . '/notifications.php';
+    NotificationEngine::notifyAttendanceMarked($user_id, $session['course_name'] ?? 'Class');
+
     echo json_encode(['success' => true, 'message' => 'Verified: Attendance marked successfully!']);
 
 } catch (PDOException $e) {

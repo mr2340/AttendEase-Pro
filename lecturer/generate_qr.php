@@ -1,30 +1,41 @@
 <?php
-$page_title = "Attendance Command Hub";
-include '../includes/header.php';
+require_once '../includes/config.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSION['role'] !== 'admin')) {
     header("Location: login");
     exit;
 }
 
+$page_title = "Attendance Command Hub";
+include '../includes/header.php';
+
 $db = get_db_connection();
 $user_id = $_SESSION['user_id'];
 
-// Fetch Courses
-$stmt = $db->prepare("SELECT * FROM courses WHERE lecturer_id = ?");
-$stmt->execute([$user_id]);
-$courses = $stmt->fetchAll();
+try {
+    // Fetch Courses
+    $stmt = $db->prepare("SELECT * FROM courses WHERE lecturer_id = ?");
+    $stmt->execute([$user_id]);
+    $courses = $stmt->fetchAll();
 
-// Fetch Active/Paused Sessions
-$stmt = $db->prepare("
-    SELECT s.*, c.course_name 
-    FROM sessions s 
-    JOIN courses c ON s.course_id = c.id 
-    WHERE s.lecturer_id = ? AND s.status IN ('active', 'paused')
-    ORDER BY s.created_at DESC
-");
-$stmt->execute([$user_id]);
-$existing_sessions = $stmt->fetchAll();
+    // Fetch Active/Paused Sessions
+    $stmt = $db->prepare("
+        SELECT s.*, c.course_name 
+        FROM sessions s 
+        JOIN courses c ON s.course_id = c.id 
+        WHERE s.lecturer_id = ? AND s.status IN ('active', 'paused')
+        ORDER BY s.created_at DESC
+    ");
+    $stmt->execute([$user_id]);
+    $existing_sessions = $stmt->fetchAll();
+} catch (PDOException $e) {
+    echo "<h1>Database Error</h1>";
+    echo "<p>" . htmlspecialchars($e->getMessage()) . "</p>";
+    exit;
+}
 ?>
 
 <section id="generate-qr" class="screen" data-state="active" style="background: #f8fafc; min-height: 100vh;">
@@ -193,8 +204,9 @@ function updateQR() {
     const qrEl = document.getElementById("qrcode");
     
     // Dynamic Resizing for Response
-    const parentWidth = document.getElementById('qr-main-container').offsetWidth;
-    const qrSize = Math.min(280, parentWidth - 80);
+    const parentContainer = document.getElementById('qr-main-container');
+    const parentWidth = parentContainer ? parentContainer.offsetWidth : 280;
+    const qrSize = Math.max(150, Math.min(280, parentWidth - 80));
     
     if (!qrInstance) {
         qrInstance = new QRCode(qrEl, {
@@ -219,6 +231,9 @@ function manageSession(id, name, status) {
     document.getElementById('hub-view').style.display = 'block';
     document.getElementById('liveCourseName').innerText = name;
     document.getElementById('session-id-badge').innerText = "NODE ID: " + id;
+    
+    // Ensure icons are rendered in the hub view
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     
     // Trigger QR with small delay to ensure container width is calculated
     setTimeout(updateQR, 100);
@@ -330,4 +345,11 @@ lucide.createIcons();
 window.addEventListener('resize', () => {
     if (currentSessionId) updateQR();
 });
+
+// Final check to ensure icons are rendered
+if (window.lucide) {
+    lucide.createIcons();
+}
 </script>
+
+<?php include '../includes/footer.php'; ?>

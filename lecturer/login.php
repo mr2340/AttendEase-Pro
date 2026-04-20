@@ -56,7 +56,9 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
 
     <script src="../assets/js/main.js"></script>
     <script>
-        lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
         document.getElementById('lecturerLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
@@ -71,6 +73,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
             try {
                 const response = await fetch(form.getAttribute('action'), {
                     method: 'POST',
+                    headers: { 'Accept': 'application/json' },
                     body: formData
                 });
                 const result = await response.json();

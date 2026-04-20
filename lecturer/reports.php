@@ -131,4 +131,12 @@ $avg_attendance = ($total_sessions > 0) ? round($total_attendance / $total_sessi
     </nav>
 </section>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
+</script>
+
 <?php include '../includes/footer.php'; ?>

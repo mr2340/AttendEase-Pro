@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/config.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $theme_class = "";
 if (isset($_SESSION['user_id'])) {
@@ -17,6 +19,7 @@ if (isset($_SESSION['user_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="manifest" href="<?php echo BASE_URL; ?>manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title><?php echo isset($page_title) ? $page_title . " | " . APP_NAME : APP_NAME; ?></title>
     
@@ -25,6 +28,15 @@ if (isset($_SESSION['user_id'])) {
     
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    </script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
     
     <!-- Styles -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/main.css">
@@ -36,7 +48,17 @@ if (isset($_SESSION['user_id'])) {
 
     <script>
         window.AttendEaseConfig = {
-            baseUrl: '<?php echo BASE_URL; ?>'
+            baseUrl: '<?php echo BASE_URL; ?>',
+            fcm: {
+                apiKey: '<?php echo FCM_API_KEY; ?>',
+                authDomain: '<?php echo FCM_AUTH_DOMAIN; ?>',
+                projectId: '<?php echo FCM_PROJECT_ID; ?>',
+                storageBucket: '<?php echo FCM_STORAGE_BUCKET; ?>',
+                messagingSenderId: '<?php echo FCM_MESSAGING_SENDER_ID; ?>',
+                appId: '<?php echo FCM_APP_ID; ?>',
+                measurementId: '<?php echo FCM_MEASUREMENT_ID; ?>',
+                vapidKey: '<?php echo FCM_VAPID_KEY; ?>'
+            }
         };
     </script>
 </head>

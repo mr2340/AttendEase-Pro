@@ -229,6 +229,44 @@ body {
     transform: scale(0.95);
 }
 
+#pwa-install-mini {
+    display: none;
+    position: fixed; /* Changed from absolute to fixed for better stability */
+    right: 20px;
+    bottom: 90px;
+    z-index: 1000;
+    width: 38px !important;
+    height: 38px !important;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50% !important;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 15px var(--primary-glow);
+    cursor: pointer;
+    animation: pulse-shake 3s ease-in-out infinite;
+    transition: var(--transition-bounce);
+}
+
+#pwa-install-mini i {
+    width: 18px;
+    height: 18px;
+}
+
+@keyframes pulse-shake {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    5%, 15%, 25% { transform: scale(1.1) rotate(-8deg); }
+    10%, 20% { transform: scale(1.1) rotate(8deg); }
+    30% { transform: scale(1) rotate(0deg); }
+}
+
+#pwa-install-mini:hover {
+    transform: scale(1.15) !important;
+    filter: brightness(1.1);
+    animation: none;
+}
+
 /* Onboarding Screens */
 .intro-bg {
     position: absolute;
@@ -284,6 +322,7 @@ body {
     color: var(--text-muted);
     line-height: 1.6;
 }
+
 
 .welcome-footer {
     padding: 30px;

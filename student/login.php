@@ -42,6 +42,54 @@ include '../includes/header.php';
             </div>
         </div>
     </div>
+    <div id="login-feedback" style="margin-top: 20px; text-align: center; display: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600;"></div>
+    
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const feedback = document.getElementById('login-feedback');
+            const submitBtn = form.querySelector('button');
+            const formData = new FormData(form);
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Verifying...';
+            feedback.style.display = 'none';
+
+            try {
+                const response = await fetch(form.getAttribute('action'), {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.role === 'student' || result.role === 'admin') {
+                        submitBtn.innerText = 'Access Granted...';
+                        feedback.innerText = 'Welcome back! Redirecting to student dashboard...';
+                        feedback.style.background = 'rgba(16, 185, 129, 0.1)';
+                        feedback.style.color = '#10b981';
+                        feedback.style.display = 'block';
+                        
+                        window.location.replace('dashboard');
+                    } else {
+                        alert('Unauthorized: This portal is for students only.');
+                        window.location.href = '../lecturer/dashboard';
+                    }
+                } else {
+                    alert(result.message || 'Invalid credentials.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Sign In';
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Authentication system error.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Sign In';
+            }
+        });
+    </script>
 </section>
 
 <?php include '../includes/footer.php'; ?>

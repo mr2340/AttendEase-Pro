@@ -32,11 +32,11 @@ if (!$session) {
 
 // Fetch Attended Students
 $stmt = $db->prepare("
-    SELECT u.full_name, u.username, a.created_at as marked_at 
+    SELECT u.fullname, u.username, a.timestamp as marked_at 
     FROM attendance a 
     JOIN users u ON a.student_id = u.id 
     WHERE a.session_id = ?
-    ORDER BY a.created_at ASC
+    ORDER BY a.timestamp ASC
 ");
 $stmt->execute([$session_id]);
 $attendees = $stmt->fetchAll();
@@ -99,7 +99,7 @@ $attendees = $stmt->fetchAll();
                                     <?php echo $index + 1; ?>
                                 </div>
                                 <div>
-                                    <h5 style="font-weight: 700; font-size: 14px; color: #1e293b;"><?php echo htmlspecialchars($stu['full_name']); ?></h5>
+                                    <h5 style="font-weight: 700; font-size: 14px; color: #1e293b;"><?php echo htmlspecialchars($stu['fullname']); ?></h5>
                                     <p style="font-size: 11px; color: #94a3b8; font-weight: 600;"><?php echo htmlspecialchars($stu['username']); ?></p>
                                 </div>
                             </div>

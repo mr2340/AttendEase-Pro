@@ -107,6 +107,62 @@ const AttendEase = {
         }
     },
 
+    // FCM Integration
+    initFCM: async () => {
+        if (!('serviceWorker' in navigator)) return;
+        if (!window.AttendEaseConfig || !window.AttendEaseConfig.fcm.apiKey) {
+            console.warn('FCM Config missing. Skipping initialization.');
+            return;
+        }
+
+        try {
+            // Register Service Worker
+            const registration = await navigator.serviceWorker.register(window.AttendEaseConfig.baseUrl + 'firebase-messaging-sw.js');
+            console.log('FCM Service Worker registered');
+
+            // Initialize Firebase in Frontend
+            if (!firebase.apps.length) {
+                firebase.initializeApp(window.AttendEaseConfig.fcm);
+            }
+            const messaging = firebase.messaging();
+
+            // Pass config to Service Worker
+            if (registration.active) {
+                registration.active.postMessage({
+                    type: 'INIT_FIREBASE',
+                    config: window.AttendEaseConfig.fcm
+                });
+            }
+
+            // Request Permission
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await messaging.getToken({
+                    vapidKey: window.AttendEaseConfig.fcm.vapidKey,
+                    serviceWorkerRegistration: registration
+                });
+
+                if (token) {
+                    await AttendEase.saveFCMToken(token);
+                }
+            }
+        } catch (error) {
+            console.error('FCM Initialization Error:', error);
+        }
+    },
+
+    saveFCMToken: async (token) => {
+        try {
+            await fetch(window.AttendEaseConfig.baseUrl + 'includes/save_token.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            });
+        } catch (err) {
+            console.error('Token Save Error:', err);
+        }
+    },
+
     onScanSuccess: async (decodedText, decodedResult) => {
         console.log(`Scan Result: ${decodedText}`);
         
@@ -142,10 +198,64 @@ const AttendEase = {
 window.AttendEase = AttendEase;
 console.log('AttendEase Core Initialized');
 
-// Auto-init for forms
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', AttendEase.handleLogin);
+// PWA Installation Handling
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+    // Update UI to notify the user they can add to home screen
+    const installBtn = document.getElementById('pwa-install-mini');
+    if (installBtn) {
+        installBtn.style.display = 'flex';
     }
+});
+
+// Auto-init for forms and PWA
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', AttendEase.handleLogin);
+        }
+
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
+        }
+
+        // Register SW
+        if ('serviceWorker' in navigator) {
+            const swPath = (window.AttendEaseConfig ? window.AttendEaseConfig.baseUrl : '/sodex/') + 'firebase-messaging-sw.js';
+            navigator.serviceWorker.register(swPath);
+        }
+
+        // Initialize FCM features if logged in
+        const isLoginPage = window.location.pathname.includes('login');
+        const isIndexPage = window.location.pathname.endsWith('/sodex/') || window.location.pathname.endsWith('index.php');
+        if (!isLoginPage && !isIndexPage) {
+            AttendEase.initFCM();
+        }
+    } catch (e) {
+        console.warn("Main.js init error suppressed:", e);
+    }
+
+    // Ultra-Resilient Lucide Initialization
+    function renderIcons() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    
+    renderIcons();
+    setTimeout(renderIcons, 500);
+    setTimeout(renderIcons, 2000);
+    setInterval(renderIcons, 5000); // Heartbeat scan
 });

@@ -1,0 +1,23 @@
+{
+  "name": "AttendEase Pro",
+  "short_name": "AttendEase",
+  "description": "High Integrity QR Attendance System",
+  "start_url": "/sodex/index.php",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0066ff",
+  "icons": [
+    {
+      "src": "/sodex/assets/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/sodex/assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

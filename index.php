@@ -76,11 +76,49 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
     <div class="welcome-footer">
-        <div class="pagination">
+            <div class="pagination">
             <div class="dot"></div><div class="dot"></div><div class="dot active"></div>
         </div>
-        <a href="student/login.php" class="btn-primary" style="text-align: center; text-decoration: none;">Get Started</a>
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
+            <a href="student/login.php" class="btn-primary" style="text-align: center; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i data-lucide="graduation-cap" style="width: 20px;"></i> Continue as Student
+            </a>
+            <a href="lecturer/login.php" class="btn-role-secondary" style="text-align: center; text-decoration: none; background: white; color: var(--text-dark); border: 2px solid var(--border); padding: 18px; border-radius: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <i data-lucide="briefcase" style="width: 20px;"></i> Continue as Lecturer
+            </a>
+        </div>
     </div>
 </section>
+
+<style>
+.btn-role-secondary:hover {
+    background: #f8fafc !important;
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 102, 255, 0.05);
+}
+.btn-role-secondary:active {
+    transform: translateY(0);
+}
+</style>
+
+<script>
+function navTo(targetId) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        if (screen.id === targetId) {
+            screen.setAttribute('data-state', 'active');
+        } else if (screen.getAttribute('data-state') === 'active') {
+            screen.setAttribute('data-state', 'prev');
+        } else {
+            screen.setAttribute('data-state', 'next');
+        }
+    });
+}
+// Double check icons are created
+if (window.lucide) {
+    lucide.createIcons();
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

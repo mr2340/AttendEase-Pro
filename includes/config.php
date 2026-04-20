@@ -38,6 +38,17 @@ define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost/sodex/');
 // Security Settings
 define('HASH_ALGO', PASSWORD_ARGON2ID);
 
+// FCM Configuration
+define('FCM_API_KEY', getenv('FCM_API_KEY'));
+define('FCM_AUTH_DOMAIN', getenv('FCM_AUTH_DOMAIN'));
+define('FCM_PROJECT_ID', getenv('FCM_PROJECT_ID'));
+define('FCM_STORAGE_BUCKET', getenv('FCM_STORAGE_BUCKET'));
+define('FCM_MESSAGING_SENDER_ID', getenv('FCM_MESSAGING_SENDER_ID'));
+define('FCM_APP_ID', getenv('FCM_APP_ID'));
+define('FCM_MEASUREMENT_ID', getenv('FCM_MEASUREMENT_ID'));
+define('FCM_VAPID_KEY', getenv('FCM_VAPID_KEY'));
+define('FCM_SERVER_KEY', getenv('FCM_SERVER_KEY'));
+
 /**
  * Database Connection using PDO
  */
@@ -49,10 +60,13 @@ function get_db_connection() {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
+// Connect
         return new PDO($dsn, DB_USER, DB_PASS, $options);
     } catch (PDOException $e) {
-        // In production, log this and show a friendly error
         die("Database connection failed: " . $e->getMessage());
     }
 }
+
+// Initialize Security & Rate Limiting
+require_once __DIR__ . '/security.php';
 ?>
