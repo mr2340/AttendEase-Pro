@@ -81,36 +81,38 @@ $schedules = $sched_stmt->fetchAll();
             </div>
         </div>
 
-        <!-- Attendance Overview -->
-        <div class="stats-card">
-            <div class="stat-header">
-                <div>
-                    <p style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Semester Attendance</p>
-                    <div class="stat-value">
-                        <h3 id="scoreText" style="font-size: 48px; font-weight: 900; line-height: 1;"><?php echo $attendance_score; ?>%</h3>
+        <!-- Full-Width Modernized Attendance Card -->
+        <div style="padding: 0 24px; margin-bottom: 24px;">
+            <div class="stats-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px; border-radius: 35px; color: white; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2); position: relative; overflow: hidden; margin: 0; width: 100%;">
+                <!-- Decorative Glow -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--primary); filter: blur(70px); opacity: 0.3;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                    <div>
+                        <p style="font-size: 13px; font-weight: 700; opacity: 0.7; margin-bottom: 8px; letter-spacing: 0.5px;">Semester Attendance</p>
+                        <h3 style="font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -2px;"><?php echo $attendance_score; ?>%</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6; display: block; margin-bottom: 6px;">AI RISK ANALYSIS</span>
+                        <div style="background: <?php echo $risk_color; ?>; color: white; padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <?php echo $risk_level; ?> RISK
+                        </div>
                     </div>
                 </div>
-                <!-- AI RISK PILL -->
-                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                    <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 4px;">AI RISK ANALYSIS</span>
-                    <span style="background: <?php echo $risk_color; ?>; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                        <?php echo $risk_level; ?> RISK
-                    </span>
+                
+                <div style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 10px; margin: 25px 0 15px; overflow: hidden; position: relative; z-index: 2;">
+                    <div style="width: <?php echo $attendance_score; ?>%; background: var(--secondary); height: 100%; border-radius: 10px; box-shadow: 0 0 15px var(--secondary);"></div>
                 </div>
+                
+                <p style="font-size: 12px; opacity: 0.9; font-weight: 600; line-height: 1.5; position: relative; z-index: 2;">
+                    <?php if($risk_level == 'HIGH'): ?>
+                        ⚠️ Threshold alert! You need more sessions to stay safe.
+                    <?php else: ?>
+                        Great job! You are currently safe. Keep maintain your attendance trend.
+                    <?php endif; ?>
+                </p>
             </div>
-            
-            <div class="progress-container" style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 10px; margin: 15px 0; overflow: hidden;">
-                <div class="progress-bar" id="progressBar" style="width: <?php echo $attendance_score; ?>%; background: var(--secondary); height: 100%; border-radius: 10px; transition: 1s ease-out;"></div>
-            </div>
-            
-            <p style="font-size: 12px; opacity: 0.8; font-weight: 500; margin-top: 10px;">
-                <?php if($risk_level == 'HIGH'): ?>
-                    ⚠️ You are below the 75% threshold! Immediate action required.
-                <?php else: ?>
-                    Great job! You are currently safe. Keep maintain your attendance trend.
-                <?php endif; ?>
-            </p>
         </div>
 
         <!-- NEW: Lecturer Announcements Hub -->
