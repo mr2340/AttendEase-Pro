@@ -128,6 +128,33 @@ class StatEngine {
     }
 
     /**
+     * Get attendance score for a specific student in a specific course
+     */
+    public static function getAttendanceByCourse($student_id, $course_id) {
+        $db = get_db_connection();
+        try {
+            $stmt = $db->prepare("SELECT COUNT(*) FROM sessions WHERE course_id = ? AND status = 'closed'");
+            $stmt->execute([$course_id]);
+            $total_sessions = (int)$stmt->fetchColumn();
+
+            if ($total_sessions === 0) return 100;
+
+            $stmt = $db->prepare("
+                SELECT COUNT(*) 
+                FROM attendance 
+                WHERE student_id = ? AND status = 'present' 
+                AND session_id IN (SELECT id FROM sessions WHERE course_id = ?)
+            ");
+            $stmt->execute([$student_id, $course_id]);
+            $present = (int)$stmt->fetchColumn();
+
+            return round(($present / $total_sessions) * 100);
+        } catch (PDOException $e) {
+            return 0;
+        }
+    }
+
+    /**
      * Get overall lecturer statistics
      */
     public static function getLecturerStats($lecturer_id) {
