@@ -36,7 +36,7 @@ include '../includes/header.php';
             </div>
 
             <div style="margin-top: 40px; text-align: center;">
-                 <button class="btn-primary" style="background: var(--surface); color: var(--text-dark); border: 1px solid var(--border); box-shadow: none;" onclick="alert('Biometric Login Coming Soon!')">
+                 <button class="btn-primary" style="background: var(--surface); color: var(--text-dark); border: 1px solid var(--border); box-shadow: none;" onclick="AttendEase.notify('info', 'Secure Auth', 'Biometric Login Coming Soon!')">
                     Use Fingerprint
                  </button>
             </div>
@@ -74,17 +74,17 @@ include '../includes/header.php';
                         
                         window.location.replace('dashboard');
                     } else {
-                        alert('Unauthorized: This portal is for students only.');
+                        AttendEase.notify('warning', 'Access Denied', 'Unauthorized: This portal is for students only.');
                         window.location.href = '../lecturer/dashboard';
                     }
                 } else {
-                    alert(result.message || 'Invalid credentials.');
+                    AttendEase.notify('error', 'Login Failed', result.message || 'Invalid credentials.');
                     submitBtn.disabled = false;
                     submitBtn.innerText = 'Sign In';
                 }
             } catch (err) {
                 console.error(err);
-                alert('Authentication system error.');
+                AttendEase.notify('error', 'Fault', 'Authentication system error.');
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Sign In';
             }

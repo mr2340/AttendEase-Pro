@@ -4,6 +4,60 @@
 const AttendEase = {
     scanner: null,
 
+    // Celebration Engine: Creates floating bubbles
+    fireConfetti: () => {
+        const container = document.getElementById('confetti-container');
+        if (!container) return;
+
+        const colors = ['#0066ff', '#00d2ff', '#10b981', '#f59e0b', '#ef4444'];
+        
+        for (let i = 0; i < 40; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Randomize appearance
+                const size = Math.random() * 20 + 10;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.bottom = '-20px';
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                
+                // Randomize animation duration
+                particle.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                
+                container.appendChild(particle);
+                
+                // Cleanup
+                setTimeout(() => particle.remove(), 4000);
+            }, i * 50);
+        }
+    },
+
+    // Premium Notifications
+    notify: (type, title, text) => {
+        return Swal.fire({
+            icon: type,
+            title: title,
+            text: text,
+            confirmButtonText: 'Got it',
+            buttonsStyling: false,
+            customClass: {
+                confirmButton: 'btn-primary swal2-confirm'
+            },
+            showClass: {
+                popup: 'animate__animated animate__fadeInUp animate__faster'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutDown animate__faster'
+            }
+        });
+    },
+
     // Auth Handling
     handleLogin: async (event) => {
         event.preventDefault();
@@ -31,13 +85,13 @@ const AttendEase = {
                     window.location.href = redirectPath;
                 }, 800);
             } else {
-                alert(result.message || 'Login failed');
+                AttendEase.notify('error', 'Login Failed', result.message || 'Check your credentials and try again.');
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
             }
         } catch (error) {
             console.error('Login Error:', error);
-            alert('An error occurred during login.');
+            AttendEase.notify('error', 'Connection Error', 'We couldn\'t reach the server. Please check your internet.');
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         }
@@ -90,7 +144,7 @@ const AttendEase = {
             }
         } catch (err) {
             console.error("Camera access failed", err);
-            alert("Could not access camera. Please ensure you have granted permission.");
+            AttendEase.notify('error', 'Camera Error', 'Could not access camera. Please ensure you have granted permission.');
             AttendEase.closeScanner();
         }
     },
@@ -179,13 +233,26 @@ const AttendEase = {
             const result = await response.json();
 
             if (result.success) {
-                alert("Success! Your attendance has been marked.");
+                // SUCCESS CELEBRATION
+                AttendEase.fireConfetti();
+                
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Attendance Marked!',
+                    text: 'Your attendance has been recorded successfully.',
+                    confirmButtonText: 'Great!',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'btn-primary swal2-confirm'
+                    }
+                });
+                
                 location.reload(); // Refresh to see updated stats
             } else {
-                alert(result.message || "Failed to mark attendance.");
+                AttendEase.notify('warning', 'Almost There', result.message || "Failed to mark attendance.");
             }
         } catch (err) {
-            alert("Server connection error. Please try again.");
+            AttendEase.notify('error', 'Server Error', "Server connection error. Please try again.");
         }
     },
 

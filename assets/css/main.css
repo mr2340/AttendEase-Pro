@@ -681,3 +681,99 @@ body {
         top: 100%;
     }
 }
+
+/* ================= CELEBRATION & ALERTS ================= */
+
+/* Confetti/Bubble Styles */
+#confetti-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1001;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    animation: bubble-float 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes bubble-float {
+    0% {
+        transform: translateY(0) scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(-20px) scale(1.2);
+    }
+    100% {
+        transform: translateY(-600px) scale(0.5) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* SweetAlert2 Premium Overrides */
+.swal2-popup {
+    border-radius: 32px !important;
+    padding: 2.5em 1.5em !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    background: var(--surface) !important;
+    color: var(--text-dark) !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.1) !important;
+    border: 1.5px solid var(--border) !important;
+}
+
+.swal2-title {
+    font-size: 1.6rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+    color: var(--text-dark) !important;
+}
+
+.swal2-html-container {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+}
+
+.swal2-confirm {
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+    border-radius: 20px !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    box-shadow: 0 10px 20px var(--primary-glow) !important;
+}
+
+.swal2-cancel {
+    border-radius: 20px !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+}
+
+.swal2-icon {
+    border-width: 3px !important;
+}
+
+.swal2-success-circular-line, .swal2-success-fix {
+    background: transparent !important;
+}
+
+.swal2-icon.swal2-success [class^=swal2-success-line] {
+    background-color: var(--success) !important;
+}
+
+.swal2-icon.swal2-success {
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+}

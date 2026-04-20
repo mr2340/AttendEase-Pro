@@ -17,6 +17,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
     <title>Lecturer Access | AttendEase Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/css/main.css">
 </head>
 <body class="dark-mode">
@@ -90,17 +91,17 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
                         window.location.replace('dashboard');
                     } else {
                         // Student trying to login here
-                        alert('Unauthorized: This portal is for Faculty members only.');
+                        AttendEase.notify('warning', 'Access Denied', 'Unauthorized: This portal is for Faculty members only.');
                         window.location.href = '../student/dashboard';
                     }
                 } else {
-                    alert(result.message || 'Invalid credentials.');
+                    AttendEase.notify('error', 'Login Failed', result.message || 'Invalid credentials.');
                     submitBtn.disabled = false;
                     submitBtn.innerText = 'Authorize Access';
                 }
             } catch (err) {
                 console.error(err);
-                alert('Authentication system error. Check console.');
+                AttendEase.notify('error', 'Fault', 'Authentication system error. Check console.');
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Authorize Access';
             }

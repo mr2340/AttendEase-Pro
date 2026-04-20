@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (avatarUploadTrigger) {
         avatarUploadTrigger.addEventListener('click', () => {
             if (!window.AttendEaseConfig.cloudinary.cloudName) {
-                alert("Cloudinary not configured. Please add CLOUDINARY_CLOUD_NAME to .env");
+                AttendEase.notify('warning', 'Configuration Required', 'Cloudinary not configured. Please add CLOUDINARY_CLOUD_NAME to .env');
                 return;
             }
             myWidget.open();
@@ -221,15 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.success) {
-                alert(result.message);
+                await AttendEase.notify('success', 'Profile Updated', result.message);
                 location.reload();
             } else {
-                alert(result.message);
+                AttendEase.notify('error', 'Update Failed', result.message);
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
             }
         } catch (error) {
-            alert("Connection error");
+            AttendEase.notify('error', 'Network Error', 'Could not connect to the server.');
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         }

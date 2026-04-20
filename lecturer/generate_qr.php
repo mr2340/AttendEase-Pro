@@ -136,6 +136,10 @@ try {
                         
                         <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 15px;">
                             <span style="background: #000; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase;">SECURE BROADCAST</span>
+                            <span id="live-count-badge" style="background: var(--success); color: white; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; border: none; display: flex; align-items: center; gap: 4px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                                <i data-lucide="users" style="width: 12px;"></i>
+                                <span id="attendee-count">0</span> PRESENT
+                            </span>
                             <span id="session-id-badge" style="background: var(--surface); color: var(--text-muted); padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1.5px solid var(--border);">NODE: --</span>
                         </div>
                     </div>
@@ -200,7 +204,38 @@ try {
 let currentSessionId = null;
 let currentStatus = 'active';
 let rotationInterval = null;
+let statsInterval = null;
+let lastAttendeeCount = 0;
 let qrInstance = null;
+
+async function updateLiveCount() {
+    if (!currentSessionId || currentStatus !== 'active') return;
+
+    try {
+        const response = await fetch(`../includes/get_session_stats.php?session_id=${currentSessionId}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const countEl = document.getElementById('attendee-count');
+            const badge = document.getElementById('live-count-badge');
+            const newCount = result.count;
+
+            if (newCount !== lastAttendeeCount) {
+                countEl.innerText = newCount;
+                
+                // Visual Pulse Effect
+                badge.style.transform = 'scale(1.15)';
+                setTimeout(() => {
+                    badge.style.transform = 'scale(1)';
+                }, 400);
+
+                lastAttendeeCount = newCount;
+            }
+        }
+    } catch (err) {
+        console.error("Stats update failed", err);
+    }
+}
 
 async function updateQR() {
     try {
@@ -277,12 +312,24 @@ function manageSession(id, courseName, status, topic) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
     setTimeout(updateQR, 100);
+    setTimeout(updateLiveCount, 200);
     updateUI();
     
+    // Clear existing intervals
     if (rotationInterval) clearInterval(rotationInterval);
+    if (statsInterval) clearInterval(statsInterval);
+
+    lastAttendeeCount = 0;
+    document.getElementById('attendee-count').innerText = "0";
+
+    // Start New Intervals
     rotationInterval = setInterval(() => {
         if (currentStatus === 'active') updateQR();
     }, 15000);
+
+    statsInterval = setInterval(() => {
+        if (currentStatus === 'active') updateLiveCount();
+    }, 5000);
 }
 
 async function togglePause() {
@@ -301,7 +348,7 @@ async function togglePause() {
         if (!result.success) {
             currentStatus = originalStatus;
             updateUI();
-            alert(result.message);
+            AttendEase.notify('error', 'Sync Failed', result.message);
         }
     } catch (err) {
         currentStatus = originalStatus;
@@ -332,7 +379,21 @@ function handlePrint() {
 }
 
 async function closeSession() {
-    if (!confirm("Terminate this broadcast node?")) return;
+    const confirmClose = await Swal.fire({
+        title: 'Terminate Node?',
+        text: 'This will stop all attendance broadcasts for this session immediately.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Kill Node',
+        cancelButtonText: 'Cancel',
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'btn-primary swal2-confirm',
+            cancelButton: 'swal2-cancel'
+        }
+    });
+
+    if (!confirmClose.isConfirmed) return;
     const response = await fetch('../includes/toggle_session.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -364,7 +425,7 @@ document.getElementById('qrGenForm').addEventListener('submit', async (e) => {
             // Fresh reload to update the multi-session header
             location.reload();
         } else {
-            alert(result.message);
+            AttendEase.notify('error', 'Deployment Failed', result.message);
             btn.disabled = false;
             btn.innerText = 'Deploy Broadcast Node';
         }
