@@ -95,6 +95,8 @@ $display_avatar = $avatar_url ? BASE_URL . $avatar_url : "https://api.dicebear.c
         </div>
 
         <form id="profileForm" action="../includes/update_profile.php" method="POST" style="padding: 0 24px;">
+            <input type="hidden" name="csrf_token" value="<?php echo AttendEaseSecurity::getCsrfToken(); ?>">
+            
             <div class="section-title">
                 <span>Personal Identity</span>
             </div>

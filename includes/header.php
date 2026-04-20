@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// session_start handled by AttendEaseSecurity::init() in config.php
 
 $theme_class = "";
 if (isset($_SESSION['user_id'])) {
@@ -58,6 +56,7 @@ if (isset($_SESSION['user_id'])) {
     <script>
         window.AttendEaseConfig = {
             baseUrl: '<?php echo BASE_URL; ?>',
+            csrfToken: '<?php echo AttendEaseSecurity::getCsrfToken(); ?>',
             fcm: {
                 apiKey: '<?php echo FCM_API_KEY; ?>',
                 authDomain: '<?php echo FCM_AUTH_DOMAIN; ?>',

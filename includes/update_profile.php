@@ -3,7 +3,7 @@
  * AttendEase Pro - Profile Update Processor (v2 with File Upload)
  */
 require_once __DIR__ . '/config.php';
-session_start();
+// AttendEaseSecurity handles session_start safely
 
 header('Content-Type: application/json');
 
@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
+
+// CSRF Validation for Production
+$csrf_token = $_POST['csrf_token'] ?? '';
+AttendEaseSecurity::validateCsrf($csrf_token);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];

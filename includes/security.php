@@ -9,8 +9,49 @@ class AttendEaseSecurity {
     private static $storage_dir = __DIR__ . '/../temp/rate_limit';
     
     public static function init() {
+        self::secureSession();
         self::checkRateLimit();
         self::setSecurityHeaders();
+        self::initCsrf();
+    }
+
+    /**
+     * Session Security Hardening
+     */
+    private static function secureSession() {
+        if (session_status() === PHP_SESSION_NONE) {
+            // Set secure session cookie parameters
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+            session_start();
+        }
+    }
+
+    /**
+     * CSRF Protection Engine
+     */
+    public static function initCsrf() {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+    }
+
+    public static function validateCsrf($token) {
+        if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
+            http_response_code(403);
+            die(json_encode(['success' => false, 'message' => 'Security Error: Invalid CRSF Token.']));
+        }
+        return true;
+    }
+
+    public static function getCsrfToken() {
+        return $_SESSION['csrf_token'] ?? '';
     }
     
     /**

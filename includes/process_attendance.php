@@ -3,7 +3,7 @@
  * AttendEase Pro - High Integrity Attendance Processor
  */
 require_once __DIR__ . '/config.php';
-session_start();
+// AttendEaseSecurity handles session_start safely
 
 header('Content-Type: application/json');
 
@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Session expired. Please login.']);
     exit;
 }
+
+// 0. CSRF Validation
+$csrf_header = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+AttendEaseSecurity::validateCsrf($csrf_header);
 
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['session_id'] ?? null;
