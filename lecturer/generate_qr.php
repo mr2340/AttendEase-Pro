@@ -153,122 +153,97 @@ try {
 </section>
 </div>
 
-<!-- Desktop: Faculty QR Hub (Projector Mode) -->
-<div class="desktop-only-layout" style="background: #020617; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative;">
-    <div style="position: absolute; top: -10%; right: -10%; width: 60%; height: 60%; background: radial-gradient(circle, rgba(0, 102, 255, 0.1) 0%, transparent 70%); filter: blur(100px); pointer-events: none;"></div>
-    <div style="position: absolute; bottom: -10%; left: -10%; width: 50%; height: 50%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); filter: blur(100px); pointer-events: none;"></div>
+<!-- Desktop: Master Projection Hub -->
+<div class="desktop-only-layout" style="padding: 0; position: relative; overflow: hidden;">
+    <!-- Minimal Backdrop Glow -->
+    <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); filter: blur(80px); opacity: 0.5; z-index: 0; pointer-events: none;"></div>
 
-    <header style="padding: 35px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(30px); border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 100;">
-        <div style="display: flex; align-items: center; gap: 25px;">
-            <div style="background: var(--primary); padding: 15px; border-radius: 18px; box-shadow: 0 0 30px var(--primary-glow);">
-                <i data-lucide="shield-check" style="color: white; width: 28px; height: 28px;"></i>
+    <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 10px; height: 10px; background: var(--primary); border-radius: 3px;"></div>
+                <span id="dt-session-id" style="color: var(--text-muted); font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: 1.5px;">Node: #--</span>
             </div>
-            <div>
-                <h2 style="color: white; font-size: 26px; font-weight: 950; letter-spacing: -1.5px;">Instructional <span style="font-weight: 400; font-family: 'Inter', sans-serif; opacity: 0.8;">Pulse</span></h2>
-                <div style="display: flex; gap: 20px; margin-top: 5px;">
-                    <span style="color: #64748b; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
-                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></span>
-                        Operational Integrity
-                    </span>
-                    <span id="dt-session-id" style="color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 800; text-transform: uppercase;">Node: #--</span>
-                </div>
-            </div>
+            <h1 style="font-size: 42px; font-weight: 950; color: var(--text-dark); letter-spacing: -2px; line-height: 1;">Instructional <span style="color: var(--primary);">Pulse</span></h1>
         </div>
-        <div id="desktop-actions-hub" style="display: flex; gap: 15px; display: none;">
-            <button onclick="handlePrint()" style="background: rgba(255,255,255,0.03); color: white; border: 1.5px solid rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.3s; height: 55px;">
+        <div id="desktop-actions-hub" style="display: none; gap: 12px;">
+            <button onclick="handlePrint()" style="background: white; border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="printer" style="width: 18px;"></i> Print Key
             </button>
-            <button onclick="closeSession()" style="background: #ef4444; color: white; border: none; padding: 15px 35px; border-radius: 18px; font-weight: 950; cursor: pointer; box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3); height: 55px;">
+            <button onclick="closeSession()" style="background: #ef4444; color: white; border: none; padding: 12px 28px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);">
                 Terminate Node
             </button>
         </div>
-        <div id="desktop-setup-actions" style="display: flex; gap: 15px;">
-             <?php if (!empty($existing_sessions)): ?>
-                <button onclick="manageSession(<?php echo $existing_sessions[0]['id']; ?>, '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', '<?php echo $existing_sessions[0]['status']; ?>', '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>', <?php echo $existing_sessions[0]['course_id']; ?>)" style="background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 18px; font-weight: 800; cursor: pointer;">
-                    Join Active Node
-                </button>
-            <?php endif; ?>
+        <div id="desktop-setup-actions" style="display: flex;">
+             <button onclick="showSetup()" class="btn-primary" style="padding: 12px 28px; border-radius: 14px; font-weight: 850;">
+                <i data-lucide="plus-circle" style="width: 18px; margin-right: 8px; vertical-align: middle;"></i> New Node
+            </button>
         </div>
     </header>
 
-    <div style="flex: 1; display: flex; padding: 50px 60px;">
-        <!-- Desktop Setup Launchpad -->
-        <div id="dt-setup-view" style="width: 100%; display: flex; justify-content: center; align-items: center; display: none;">
-            <div style="background: white; border-radius: 50px; padding: 60px; width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; box-shadow: 0 50px 100px rgba(0,0,0,0.3);">
-                <div>
-                    <h2 style="font-size: 42px; font-weight: 950; color: #0f172a; letter-spacing: -2px; line-height: 1.1; margin-bottom: 20px;">Deploy Your <span style="color: var(--primary);">Attendance Node</span></h2>
-                    <p style="color: #64748b; font-size: 18px; line-height: 1.6; font-weight: 500;">Configure the classroom broadcast. Students will sync with this terminal in real-time.</p>
-                    
-                    <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 20px;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 45px; height: 45px; background: #eff6ff; color: var(--primary); border-radius: 14px; display: flex; justify-content: center; align-items: center;"><i data-lucide="shield" style="width: 20px;"></i></div>
-                            <p style="font-weight: 700; color: #0f172a;">Anti-Proxy Protection Active</p>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 45px; height: 45px; background: #ecfdf5; color: #10b981; border-radius: 14px; display: flex; justify-content: center; align-items: center;"><i data-lucide="zap" style="width: 20px;"></i></div>
-                            <p style="font-weight: 700; color: #0f172a;">Instant Sync Broadcast</p>
-                        </div>
-                    </div>
-                </div>
-
-                <form onsubmit="handleDeployment(event)" style="display: flex; flex-direction: column; gap: 25px;">
+    <div style="display: flex; gap: 30px; align-items: flex-start; position: relative; z-index: 5;">
+        <!-- Setup Projection (Left) -->
+        <div id="dt-setup-view" style="flex: 1; display: none; background: white; border-radius: 40px; padding: 50px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.03);">
+            <div style="max-width: 500px;">
+                <h2 style="font-size: 32px; font-weight: 950; color: var(--text-dark); margin-bottom: 20px; letter-spacing: -1px;">Launch Attendance Node</h2>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 35px;">Students will scan the terminal to verify their presence in real-time.</p>
+                
+                <form onsubmit="handleDeployment(event)" style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="form-group">
-                        <label style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 12px;">Session Objective</label>
-                        <input type="text" name="topic" placeholder="e.g. Lab 4: Circuit Analysis" style="width: 100%; height: 65px; border-radius: 18px; border: 2.5px solid #f1f5f9; background: #f8fafc; padding: 0 25px; font-weight: 700; font-size: 16px;" required>
+                        <label style="font-size: 11px; font-weight: 850; color: var(--text-muted); text-transform: uppercase;">Session Topic</label>
+                        <input type="text" name="topic" placeholder="e.g. Artificial Intelligence Basics" style="width: 100%; height: 55px; border-radius: 16px; border: 1.5px solid var(--border); padding: 0 20px; font-weight: 700; margin-top: 8px;">
                     </div>
-
                     <div class="form-group">
-                        <label style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 12px;">Academic Course</label>
-                        <select name="course_id" style="width: 100%; height: 65px; border-radius: 18px; border: 2.5px solid #f1f5f9; background: #f8fafc; padding: 0 25px; font-weight: 700; font-size: 16px;">
+                        <label style="font-size: 11px; font-weight: 850; color: var(--text-muted); text-transform: uppercase;">Course</label>
+                        <select name="course_id" style="width: 100%; height: 55px; border-radius: 16px; border: 1.5px solid var(--border); padding: 0 20px; font-weight: 700; margin-top: 8px;">
                             <?php foreach($courses as $c): ?><option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['course_name']); ?></option><?php endforeach; ?>
                         </select>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                         <div class="form-group">
-                            <label style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Window</label>
-                            <select name="duration" style="width: 100%; height: 60px; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; padding: 0 15px; font-weight: 700;">
-                                <option value="15">15 Min</option><option value="30" selected>30 Min</option><option value="60">1 Hour</option><option value="0">Open</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Headcount</label>
-                            <input type="number" name="scan_limit" value="0" style="width: 100%; height: 60px; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; padding: 0 15px; font-weight: 700; text-align: center;">
-                        </div>
-                    </div>
-
-                    <button type="submit" style="background: var(--primary); color: white; border: none; height: 75px; border-radius: 24px; font-weight: 950; font-size: 18px; cursor: pointer; box-shadow: 0 20px 40px var(--primary-glow); margin-top: 15px;">Deploy Node</button>
+                    <button type="submit" class="btn-primary" style="height: 60px; border-radius: 18px; font-weight: 950; font-size: 16px; margin-top: 10px;">Initialize Gateway</button>
                 </form>
             </div>
         </div>
 
-        <!-- Desktop Real-time Hub -->
-        <div id="dt-hub-view" style="width: 100%; display: grid; grid-template-columns: 7.5fr 4.5fr; gap: 50px; display: none;">
-            <div style="background: rgba(255,255,255,0.015); border-radius: 60px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px; position: relative;">
-                <div id="dt-rotation-ring" style="position: absolute; width: 620px; height: 620px; border: 1px solid rgba(0, 102, 255, 0.1); border-radius: 50%; pointer-events: none; animation: spin 60s linear infinite;"></div>
-                <div style="position: relative; padding: 50px; background: white; border-radius: 50px; box-shadow: 0 70px 140px rgba(0,0,0,0.6); z-index: 2;">
-                    <div id="dt-qrcode" style="width: 480px; height: 480px; display: flex; justify-content: center; align-items: center;"></div>
+        <!-- Live Hub (Projection Mode) -->
+        <div id="dt-hub-view" style="flex: 1; display: none; grid-template-columns: 8fr 4fr; gap: 30px;">
+            <div style="background: white; border-radius: 50px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.04);">
+                <div style="position: relative; padding: 35px; background: white; border-radius: 35px; border: 2.5px solid var(--bg-main); box-shadow: 0 40px 100px rgba(0,0,0,0.08);">
+                    <div id="dt-qrcode" style="width: 320px; height: 320px; display: flex; justify-content: center; align-items: center;"></div>
                 </div>
-                <div style="margin-top: 60px; text-align: center; z-index: 2;">
-                    <h1 id="dt-topic-name" style="color: white; font-size: 52px; font-weight: 950; letter-spacing: -3px; line-height: 1; margin-bottom: 15px;">--</h1>
-                    <p id="dt-course-name" style="color: var(--primary); font-size: 20px; font-weight: 700; opacity: 0.8;">--</p>
+                <div style="margin-top: 40px; text-align: center;">
+                    <h2 id="dt-topic-name" style="font-size: 38px; font-weight: 950; letter-spacing: -2px; color: var(--text-dark); margin-bottom: 5px;">--</h2>
+                    <p id="dt-course-name" style="color: var(--primary); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">--</p>
                 </div>
-                <!-- Pause Shield -->
-                 <div id="dt-pauseShield" style="display: none; position: absolute; inset: 0; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(25px); z-index: 100; border-radius: 60px; flex-direction: column; justify-content: center; align-items: center; color: white;">
-                    <button onclick="togglePause()" style="background: var(--warning); border: none; width: 120px; height: 120px; border-radius: 40px; cursor: pointer; margin-bottom: 30px; box-shadow: 0 20px 50px var(--warning-glow);"><i data-lucide="play" style="width: 60px; height: 60px; color: white;"></i></button>
-                    <h2 style="font-size: 42px; font-weight: 950; letter-spacing: -2px;">NODE_BROADCAST_PAUSED</h2>
+                <!-- Pause Overlay -->
+                <div id="dt-pauseShield" style="display: none; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-radius: 50px; z-index: 100; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--warning); border-radius: 24px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; box-shadow: 0 15px 35px var(--warning-glow);">
+                        <i data-lucide="pause" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h2 style="font-size: 28px; font-weight: 950; color: #92400e;">BROADCAST PAUSED</h2>
+                    <button onclick="togglePause()" class="btn-primary" style="margin-top: 25px; background: var(--warning); border: none; padding: 12px 30px; border-radius: 12px;">Resume Session</button>
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 35px;">
-                <div style="background: white; border-radius: 50px; padding: 50px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
-                    <div style="width: 100px; height: 100px; background: var(--primary-glow); color: var(--primary); border-radius: 35px; display: flex; justify-content: center; align-items: center; margin-bottom: 30px;"><i data-lucide="users" style="width: 45px; height: 45px;"></i></div>
-                    <div style="display: flex; align-items: baseline; gap: 10px;"><h3 style="font-size: 92px; font-weight: 950; color: #0f172a; line-height: 1; letter-spacing: -5px;" id="dt-attendee-count">0</h3><span style="font-size: 24px; font-weight: 800; color: #94a3b8;">Present</span></div>
-                    <div style="width: 100%; height: 1px; background: #f1f5f9; margin: 40px 0;"></div>
-                    <button onclick="openBroadcastModal()" style="background: #0f172a; color: white; border: none; height: 75px; width: 100%; border-radius: 24px; font-weight: 900; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <i data-lucide="send" style="width: 22px;"></i> Broadcast Alert
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                <!-- Telemetry Card -->
+                <div style="background: white; border-radius: 40px; border: 1px solid var(--border); padding: 40px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
+                    <div style="width: 70px; height: 70px; background: var(--primary-glow); color: var(--primary); border-radius: 24px; display: flex; justify-content: center; align-items: center; margin: 0 auto 25px;">
+                        <i data-lucide="users" style="width: 32px;"></i>
+                    </div>
+                    <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px;">
+                        <h3 id="dt-attendee-count" style="font-size: 72px; font-weight: 950; color: var(--text-dark); line-height: 1; letter-spacing: -4px;">0</h3>
+                        <span style="font-weight: 800; color: var(--text-muted); font-size: 18px;">Present</span>
+                    </div>
+                </div>
+
+                <div style="flex: 1; background: var(--text-dark); border-radius: 40px; padding: 40px; color: white;">
+                    <h3 style="font-size: 18px; font-weight: 900; margin-bottom: 25px; letter-spacing: -0.5px;">Node Control</h3>
+                    <button onclick="openBroadcastModal()" style="width: 100%; height: 60px; border-radius: 18px; background: var(--primary); color: white; border: none; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;">
+                        <i data-lucide="send" style="width: 20px;"></i> Broadcast Pulse
                     </button>
-                    <button id="dt-side-toggle" onclick="togglePause()" style="width: 100%; height: 65px; margin-top: 15px; border-radius: 20px; border: 2.5px solid #f1f5f9; background: white; color: var(--warning); font-weight: 850;">Pause Broadcast</button>
+                    <button id="dt-side-toggle" onclick="togglePause()" style="width: 100%; height: 60px; border-radius: 18px; background: rgba(255,255,255,0.05); color: var(--warning); border: 1px solid rgba(255,255,255,0.1); font-weight: 850;">
+                        Pause Feed
+                    </button>
                 </div>
             </div>
         </div>
@@ -328,23 +303,47 @@ async function updateLiveCount() {
 }
 
 async function updateQR() {
-    if (typeof QRCode === 'undefined' || !currentSessionId || currentStatus !== 'active') return;
+    if (typeof QRCode === 'undefined') return;
+    if (!currentSessionId || currentStatus !== 'active') return;
+
     try {
         const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
         const result = await response.json();
         if (!result.success) return;
+        
         const token = result.token;
+        
+        // Update Mobile QR
         const qrEl = document.getElementById("qrcode");
         if (qrEl) {
             qrEl.innerHTML = "";
-            new QRCode(qrEl, { text: token, width: 220, height: 220, colorDark : "#0f172a", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M });
+            new QRCode(qrEl, {
+                text: token,
+                width: 220,
+                height: 220,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
         }
+
+        // Update Desktop QR
         const dtQrEl = document.getElementById("dt-qrcode");
         if (dtQrEl) {
             dtQrEl.innerHTML = "";
-            new QRCode(dtQrEl, { text: token, width: 480, height: 480, colorDark : "#020617", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+            new QRCode(dtQrEl, {
+                text: token,
+                width: 320,
+                height: 320,
+                colorDark : "#020617",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
         }
-    } catch (err) { console.error("QR Fetch Failure:", err); }
+
+    } catch (err) {
+        console.error("QR Fetch Failure:", err);
+    }
 }
 
 function startMonitoring() {
