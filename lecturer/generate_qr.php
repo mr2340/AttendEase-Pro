@@ -199,81 +199,121 @@ try {
 </div>
 
 <!-- Desktop: Faculty QR Hub (Projector Mode) -->
-<div class="desktop-only-layout" style="background: #0f172a; min-height: 100vh; display: flex; flex-direction: column;">
-    <header style="padding: 40px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100;">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <div style="background: var(--primary); padding: 12px; border-radius: 14px;">
-                <i data-lucide="qr-code" style="color: white; width: 24px;"></i>
+<div class="desktop-only-layout" style="background: #020617; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+    <!-- Abstract Ambient Background -->
+    <div style="position: absolute; top: -10%; right: -10%; width: 60%; height: 60%; background: radial-gradient(circle, rgba(0, 102, 255, 0.1) 0%, transparent 70%); filter: blur(100px); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -10%; left: -10%; width: 50%; height: 50%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); filter: blur(100px); pointer-events: none;"></div>
+
+    <header style="padding: 35px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(30px); border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 100;">
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div style="background: var(--primary); padding: 15px; border-radius: 18px; box-shadow: 0 0 30px var(--primary-glow);">
+                <i data-lucide="shield-check" style="color: white; width: 28px; height: 28px;"></i>
             </div>
             <div>
-                <h2 style="color: white; font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">Faculty <span style="color: var(--primary);">QR Node</span></h2>
-                <div style="display: flex; gap: 15px; margin-top: 4px;">
-                    <span style="color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Status: <span style="color: #10b981;">ENCRYPTED</span></span>
-                    <span id="dt-session-id" style="color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase;">ID: --</span>
+                <h2 style="color: white; font-size: 26px; font-weight: 950; letter-spacing: -1.5px;">Instructional <span style="font-weight: 400; font-family: 'Inter', sans-serif; opacity: 0.8;">Pulse</span></h2>
+                <div style="display: flex; gap: 20px; margin-top: 5px;">
+                    <span style="color: #64748b; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></span>
+                        Operational Integrity
+                    </span>
+                    <span id="dt-session-id" style="color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 800; text-transform: uppercase;">Node: #--</span>
                 </div>
             </div>
         </div>
         <div style="display: flex; gap: 15px;">
-            <button onclick="handlePrint()" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px 25px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="printer" style="width: 18px;"></i> Print Key
+            <button onclick="handlePrint()" style="background: rgba(255,255,255,0.03); color: white; border: 1.5px solid rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.3s; height: 55px;">
+                <i data-lucide="printer" style="width: 18px;"></i> Print Credentials
             </button>
-            <button onclick="closeSession()" style="background: #ef4444; color: white; border: none; padding: 12px 25px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);">
-                Destroy Node
+            <button onclick="closeSession()" style="background: #ef4444; color: white; border: none; padding: 15px 35px; border-radius: 18px; font-weight: 950; cursor: pointer; box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3); height: 55px; letter-spacing: -0.5px;">
+                Terminate Node
             </button>
         </div>
     </header>
 
-    <div style="flex: 1; display: grid; grid-template-columns: 8fr 4fr; gap: 40px; padding: 40px 60px;">
-        <!-- Left: Large QR for Projection -->
-        <div style="background: rgba(255,255,255,0.02); border-radius: 50px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; position: relative; overflow: hidden;">
-            <div id="dt-rotation-ring" style="position: absolute; width: 600px; height: 600px; border: 30px solid rgba(0, 102, 255, 0.05); border-radius: 50%; pointer-events: none;"></div>
+    <div style="flex: 1; display: grid; grid-template-columns: 7.5fr 4.5fr; gap: 50px; padding: 50px 60px;">
+        <!-- Left: Cinematic QR Projection -->
+        <div style="background: rgba(255,255,255,0.015); border-radius: 60px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px; position: relative; box-shadow: inset 0 0 100px rgba(0,0,0,0.2);">
             
-            <div style="background: white; padding: 40px; border-radius: 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.5); position: relative; z-index: 2;">
-                <div id="dt-qrcode" style="width: 450px; height: 450px; display: flex; justify-content: center; align-items: center;">
-                    <!-- QR Content -->
+            <!-- Animated HUD elements -->
+            <div style="position: absolute; top: 40px; left: 40px; color: rgba(255,255,255,0.1); font-size: 10px; font-weight: 900; letter-spacing: 2px;">SECURE_BROADCAST_SYSTEM_V.2</div>
+            <div style="position: absolute; bottom: 40px; right: 40px; color: rgba(255,255,255,0.1); font-size: 10px; font-weight: 900; letter-spacing: 2px;">REAL_TIME_NODE_STABILITY [MAX]</div>
+
+            <div id="dt-rotation-ring" style="position: absolute; width: 620px; height: 620px; border: 1px solid rgba(0, 102, 255, 0.1); border-radius: 50%; pointer-events: none; animation: spin 60s linear infinite;"></div>
+            <div style="position: absolute; width: 500px; height: 500px; border: 1px dashed rgba(255,255,255,0.05); border-radius: 50%; pointer-events: none; animation: spin 40s linear infinite reverse;"></div>
+            
+            <div style="position: relative; padding: 50px; background: white; border-radius: 50px; box-shadow: 0 70px 140px rgba(0,0,0,0.6); z-index: 2; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <div id="dt-qrcode" style="width: 480px; height: 480px; display: flex; justify-content: center; align-items: center;">
+                    <div class="loader" style="width: 60px; height: 60px; border-width: 6px; border-color: var(--primary); border-bottom-color: transparent;"></div>
                 </div>
+                <!-- Interactive Glow -->
+                <div style="position: absolute; -inset: 2px; border-radius: 50px; box-shadow: 0 0 50px var(--primary-glow); opacity: 0.3; pointer-events: none;"></div>
             </div>
 
-            <div style="margin-top: 50px; text-align: center; z-index: 2;">
-                <h1 id="dt-topic-name" style="color: white; font-size: 42px; font-weight: 950; letter-spacing: -2px; margin-bottom: 10px;">Waiting...</h1>
-                <p id="dt-course-name" style="color: #64748b; font-size: 18px; font-weight: 600;">Initialize session to begin pulse.</p>
+            <div style="margin-top: 60px; text-align: center; z-index: 2;">
+                <h1 id="dt-topic-name" style="color: white; font-size: 52px; font-weight: 950; letter-spacing: -3px; line-height: 1; margin-bottom: 15px;">Initializing Terminal</h1>
+                <p id="dt-course-name" style="color: var(--primary); font-size: 20px; font-weight: 700; opacity: 0.8; letter-spacing: -0.5px;">Establishing secure telemetry feed...</p>
             </div>
         </div>
 
-        <!-- Right: Admin Panel -->
-        <div style="display: flex; flex-direction: column; gap: 30px;">
-            <!-- Real-time Stat Hub -->
-            <div style="background: white; border-radius: 40px; padding: 40px; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <div style="width: 80px; height: 80px; background: #eff6ff; color: var(--primary); border-radius: 24px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
-                    <i data-lucide="users" style="width: 40px; height: 40px;"></i>
+        <!-- Right: Telemetry Hub -->
+        <div style="display: flex; flex-direction: column; gap: 35px;">
+            <!-- Real-time Presence Monitor -->
+            <div style="background: white; border-radius: 50px; padding: 50px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
+                <div style="position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: linear-gradient(135deg, transparent 80%, rgba(0,102,255,0.03) 100%);"></div>
+                
+                <div style="width: 100px; height: 100px; background: var(--primary-glow); color: var(--primary); border-radius: 35px; display: flex; justify-content: center; align-items: center; margin-bottom: 30px;">
+                    <i data-lucide="users" style="width: 45px; height: 45px;"></i>
                 </div>
-                <h3 style="font-size: 64px; font-weight: 950; color: #0f172a; line-height: 1; margin-bottom: 10px;" id="dt-attendee-count">0</h3>
-                <p style="color: #64748b; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Students Present</p>
                 
-                <div style="width: 100%; height: 1px; background: #f1f5f9; margin: 35px 0;"></div>
+                <div style="display: flex; align-items: baseline; gap: 10px;">
+                    <h3 style="font-size: 92px; font-weight: 950; color: #0f172a; line-height: 1; letter-spacing: -5px;" id="dt-attendee-count">0</h3>
+                    <span style="font-size: 24px; font-weight: 800; color: #94a3b8;">/ OK</span>
+                </div>
+                <p style="color: #64748b; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 2.5px; margin-top: 10px;">Verified Synchronizations</p>
                 
-                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="text-align: left;">
-                        <p style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Session ID</p>
-                        <p style="font-size: 15px; font-weight: 900; color: #0f172a;" id="dt-id-label">#--</p>
+                <div style="width: 100%; height: 1px; background: #f1f5f9; margin: 40px 0;"></div>
+                
+                <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 20px;">
+                        <p style="font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">Node Descriptor</p>
+                        <p style="font-size: 16px; font-weight: 950; color: #0f172a;" id="dt-id-label">#--</p>
                     </div>
-                    <div style="text-align: right;">
-                        <p style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Node Stability</p>
-                        <p style="font-size: 15px; font-weight: 900; color: #10b981;">SECURE</p>
+                    <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 20px;">
+                        <p style="font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">Feed Integrity</p>
+                        <p style="font-size: 16px; font-weight: 950; color: #10b981; display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> HIGH
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Integrated Broadcast Controls -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 40px; padding: 40px;">
-                <h3 style="color: white; font-size: 18px; font-weight: 900; margin-bottom: 25px;">Emergency Dispatch</h3>
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <button onclick="openBroadcastModal()" style="background: var(--primary); color: white; border: none; height: 60px; border-radius: 18px; font-weight: 850; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <i data-lucide="megaphone" style="width: 20px;"></i> Broadcast Alert
+            <!-- Integrated Control Matrix -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 50px; padding: 50px; display: flex; flex-direction: column; gap: 30px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: white; font-size: 20px; font-weight: 900; letter-spacing: -0.5px;">Command Matrix</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.5);">ADMIN_CONTROL</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                    <button onclick="openBroadcastModal()" style="background: var(--primary); color: white; border: none; height: 75px; border-radius: 24px; font-weight: 900; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 15px 35px var(--primary-glow); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                        <i data-lucide="send" style="width: 22px;"></i> Broadcast Pulse Alert
                     </button>
-                    <button id="dt-togglePause" onclick="togglePause()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; height: 60px; border-radius: 18px; font-weight: 800; cursor: pointer;">
-                        Pause Feed
-                    </button>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <button id="dt-togglePause" onclick="togglePause()" style="background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); color: white; height: 70px; border-radius: 22px; font-weight: 850; cursor: pointer; font-size: 14px; transition: all 0.3s;">
+                            Pause Telemetry
+                        </button>
+                        <button onclick="window.location.reload()" style="background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); color: white; height: 70px; border-radius: 22px; font-weight: 850; cursor: pointer; font-size: 14px;">
+                            Refresh Sync
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.04);">
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.6; font-weight: 500;">
+                        <i data-lucide="info" style="width: 14px; display: inline; vertical-align: middle; margin-right: 5px;"></i>
+                        Projector Mode: Maximize your browser (F11) for optimal classroom visibility. QR node rotates every 15 seconds for enhanced session security.
+                    </p>
                 </div>
             </div>
         </div>
