@@ -133,4 +133,41 @@ class NotificationEngine {
         }
         return ['success' => false, 'message' => 'No token found for user'];
     }
+
+    /**
+     * Broadcast a notification to all students enrolled in a course
+     */
+    public static function broadcastToCourse($course_id, $title, $body) {
+        $db = get_db_connection();
+        
+        // Fetch all tokens for students enrolled in the course
+        $stmt = $db->prepare("
+            SELECT u.fcm_token 
+            FROM users u
+            JOIN enrollments e ON u.id = e.student_id
+            WHERE e.course_id = ? AND u.fcm_token IS NOT NULL
+        ");
+        $stmt->execute([$course_id]);
+        $tokens = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($tokens)) {
+            return ['success' => true, 'total' => 0, 'sent' => 0, 'message' => 'No students enrolled with active tokens.'];
+        }
+
+        $sent_count = 0;
+        foreach ($tokens as $token) {
+            $res = self::send($token, $title, $body, [
+                'type' => 'broadcast', 
+                'course_id' => (string)$course_id,
+                'urgent' => 'true'
+            ]);
+            if ($res['success']) $sent_count++;
+        }
+
+        return [
+            'success' => true, 
+            'total' => count($tokens), 
+            'sent' => $sent_count
+        ];
+    }
 }

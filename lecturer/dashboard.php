@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSI
     exit;
 }
 
-$page_title = "Lecturer Dashboard";
+$page_title = "Home";
 include '../includes/header.php';
 
 $db = get_db_connection();
@@ -152,31 +152,72 @@ $stats = StatEngine::getLecturerStats($user_id);
         <div style="height: 100px;"></div>
     </div>
 
-    <!-- Specialized Lecturer Nav -->
-    <nav class="bottom-nav">
-        <a href="dashboard" class="nav-item active">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-            <span>Dashboard</span>
-        </a>
-        <a href="generate_qr" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-            <span>New Class</span>
-        </a>
-        <a href="reports" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-            <span>Reports</span>
-        </a>
-        <a href="profile" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-cog"><circle cx="18" cy="15" r="3"/><circle cx="9" cy="7" r="4"/><path d="M10 15H6a4 4 0 0 0-4 4v2"/><path d="m21.7 16.4-.9-.3"/><path d="m15.2 13.9-.9-.3"/><path d="m16.6 18.7.3-.9"/><path d="m19.1 12.2.3-.9"/><path d="m19.6 18.7-.4-1"/><path d="m16.8 12.3-.4-1"/><path d="m14.3 16.6 1-.4"/><path d="m20.7 13.8 1-.4"/></svg>
-            <span>Settings</span>
-        </a>
-    </nav>
+    <!-- Navigation -->
+    <?php include '../includes/navbar.php'; ?>
 </section>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+
+    // Broadcast Intelligence - Pulse Engine
+    const announceForm = document.getElementById('announcementForm');
+    if (announceForm) {
+        announceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Show Loading
+            const originalBtnText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader" style="width:16px; height:16px; border-width:2px;"></div> &nbsp; Deploying Pulse...';
+
+            try {
+                const response = await fetch('../includes/process_broadcast.php', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        title: 'Broadcast Deployed!',
+                        text: result.message + " (Sent to " + result.stats.sent + " students)",
+                        icon: 'success',
+                        confirmButtonText: 'Acknowledged',
+                        buttonsStyling: false,
+                        customClass: { confirmButton: 'btn-primary swal2-confirm' }
+                    });
+                    form.reset();
+                } else {
+                    Swal.fire({
+                        title: 'Deployment Failed',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonText: 'Try Again',
+                        buttonsStyling: false,
+                        customClass: { confirmButton: 'btn-primary swal2-confirm' }
+                    });
+                }
+            } catch (err) {
+                console.error("Pulse error:", err);
+                Swal.fire('Error', 'Connection to broadcast node failed.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnText;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
     }
 });
 </script>

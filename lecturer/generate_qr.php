@@ -57,7 +57,7 @@ try {
                 </button>
                 <?php if (!empty($existing_sessions)): ?>
                     <?php foreach($existing_sessions as $sess): ?>
-                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>')" 
+                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>', <?php echo $sess['course_id']; ?>)" 
                                 class="session-nav-btn" 
                                 id="nav-sess-<?php echo $sess['id']; ?>"
                                 style="background: white; color: var(--text-dark); border: 1.5px solid var(--border); padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
@@ -135,7 +135,9 @@ try {
                         <p id="liveCourseName" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Course Title</p>
                         
                         <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 15px;">
-                            <span style="background: #000; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase;">SECURE BROADCAST</span>
+                            <button onclick="openBroadcastModal()" style="background: #000; color: #fff; padding: 6px 14px; border: none; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <i data-lucide="megaphone" style="width: 12px;"></i> SECURE BROADCAST
+                            </button>
                             <span id="live-count-badge" style="background: var(--success); color: white; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; border: none; display: flex; align-items: center; gap: 4px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                                 <i data-lucide="users" style="width: 12px;"></i>
                                 <span id="attendee-count">0</span> PRESENT
@@ -202,6 +204,7 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 let currentSessionId = null;
+let currentCourseId = null;
 let currentStatus = 'active';
 let rotationInterval = null;
 let statsInterval = null;
@@ -238,6 +241,11 @@ async function updateLiveCount() {
 }
 
 async function updateQR() {
+    if (typeof QRCode === 'undefined') {
+        console.warn("QRCode library not ready yet...");
+        return;
+    }
+
     try {
         const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
         const result = await response.json();
@@ -246,26 +254,42 @@ async function updateQR() {
         
         const token = result.token;
         const qrEl = document.getElementById("qrcode");
-        
-        const parentContainer = document.getElementById('qr-main-container');
-        const parentWidth = parentContainer ? parentContainer.offsetWidth : 280;
-        const qrSize = Math.max(150, Math.min(280, parentWidth - 80));
-        
-        if (!qrInstance) {
-            qrInstance = new QRCode(qrEl, {
-                text: token,
-                width: qrSize,
-                height: qrSize,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        } else {
-            qrInstance.clear();
-            qrInstance.makeCode(token);
-        }
+        if (!qrEl) return;
+
+        // Force browser layout sync to get accurate dimensions
+        requestAnimationFrame(() => {
+            const parentContainer = document.getElementById('qr-main-container');
+            const parentWidth = parentContainer ? parentContainer.offsetWidth : 300;
+            const qrSize = Math.max(220, Math.min(280, parentWidth - 60));
+
+            // Set explicit container size before library initialization
+            qrEl.style.width = qrSize + 'px';
+            qrEl.style.height = qrSize + 'px';
+            qrEl.innerHTML = ""; 
+
+            try {
+                new QRCode(qrEl, {
+                    text: token,
+                    width: qrSize,
+                    height: qrSize,
+                    colorDark : "#0f172a",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+                
+                // Final check to fix any common library positioning glitches
+                const canvas = qrEl.querySelector('canvas');
+                const img = qrEl.querySelector('img');
+                if (canvas) { canvas.style.display = 'block'; canvas.style.margin = '0 auto'; }
+                if (img) { img.style.display = 'block'; img.style.margin = '0 auto'; img.style.borderRadius = '12px'; }
+            } catch (qrErr) {
+                console.error("QRCode library internal error:", qrErr);
+                qrEl.innerHTML = "<p style='color:red; font-size:12px;'>Rendering Error. Refreshing...</p>";
+            }
+        });
+
     } catch (err) {
-        console.error("QR Update failed", err);
+        console.error("QR Fetch Failure:", err);
     }
 }
 
@@ -283,8 +307,9 @@ function showSetup() {
     if (rotationInterval) clearInterval(rotationInterval);
 }
 
-function manageSession(id, courseName, status, topic) {
+function manageSession(id, courseName, status, topic, courseId) {
     currentSessionId = id;
+    currentCourseId = courseId;
     currentStatus = status || 'active';
     const finalTopic = topic || 'General Session';
     
@@ -442,7 +467,8 @@ lucide.createIcons();
         <?php echo $existing_sessions[0]['id']; ?>, 
         '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', 
         '<?php echo $existing_sessions[0]['status']; ?>',
-        '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>'
+        '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>',
+        <?php echo $existing_sessions[0]['course_id']; ?>
     );
 <?php else: ?>
     showSetup();
@@ -451,6 +477,68 @@ lucide.createIcons();
 window.addEventListener('resize', () => {
     if (currentSessionId) updateQR();
 });
+
+// Broadcast Intelligence
+function openBroadcastModal() {
+    Swal.fire({
+        title: 'Secure Broadcast',
+        html: `
+            <div style="text-align: left;">
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Sending instant push notification to all students enrolled in this course.</p>
+                <input id="swal-title" class="swal2-input" placeholder="Pulse Title (e.g. Class Update)" style="margin: 0 0 15px; width: 100%; border-radius: 12px;">
+                <textarea id="swal-message" class="swal2-textarea" placeholder="Message content..." style="margin: 0; width: 100%; border-radius: 12px; height: 100px;"></textarea>
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: '🚀 Send Pulse',
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'btn-primary swal2-confirm',
+            cancelButton: 'swal2-cancel'
+        },
+        preConfirm: () => {
+            return {
+                title: document.getElementById('swal-title').value,
+                message: document.getElementById('swal-message').value
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deployPulse(result.value.title, result.value.message);
+        }
+    });
+}
+
+async function deployPulse(title, message) {
+    if (!title || !message) return;
+    
+    // Use the tracked currentCourseId or fallback to form selection
+    const courseId = currentCourseId || document.getElementsByName('course_id')[0].value;
+
+    try {
+        const response = await fetch('../includes/process_broadcast.php', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
+            },
+            body: JSON.stringify({ 
+                course_id: courseId,
+                title: title,
+                message: message
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            AttendEase.notify('success', 'Broadcast Deployed', result.message);
+        } else {
+            AttendEase.notify('error', 'Pulse Failed', result.message);
+        }
+    } catch (err) {
+        AttendEase.notify('error', 'Network Error', 'Could not reach broadcast node.');
+    }
+}
 
 // Final check to ensure icons are rendered
 if (window.lucide) {

@@ -200,6 +200,21 @@ const AttendEase = {
                     await AttendEase.saveFCMToken(token);
                 }
             }
+
+            // Foreground Pulse Listener
+            messaging.onMessage((payload) => {
+                console.log('Pulse received:', payload);
+                const title = payload.notification ? payload.notification.title : (payload.data ? payload.data.title : 'New Pulse');
+                const body = payload.notification ? payload.notification.body : (payload.data ? payload.data.message : '');
+
+                // Trigger High-Fidelity Alert
+                AttendEase.notify('info', title, body).then(() => {
+                    // If we are on the student dashboard, it might be good to reload to show the new card
+                    if (window.location.pathname.includes('student/dashboard')) {
+                        location.reload();
+                    }
+                });
+            });
         } catch (error) {
             console.error('FCM Initialization Error:', error);
         }
@@ -265,22 +280,55 @@ const AttendEase = {
 window.AttendEase = AttendEase;
 console.log('AttendEase Core Initialized');
 
+// Global check to hide if already installed/standalone
+const checkStandalone = () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        window.navigator.standalone === true ||
+                        document.referrer.includes('android-app://');
+                        
+    if (isStandalone) {
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) {
+            installBtn.remove(); // Absolute removal from DOM
+        }
+    }
+    return isStandalone;
+};
+
 // PWA Installation Handling
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    // Prevent default browser prompt
     e.preventDefault();
-    // Stash the event so it can be triggered later.
+    
+    // Final check: if installed or standalone, kill the button and exit
+    if (checkStandalone()) {
+        deferredPrompt = null;
+        return;
+    }
+
+    // Stash the event
     deferredPrompt = e;
-    // Update UI to notify the user they can add to home screen
+    
+    // Force show the button with high priority
     const installBtn = document.getElementById('pwa-install-mini');
     if (installBtn) {
-        installBtn.style.display = 'flex';
+        installBtn.style.setProperty('display', 'flex', 'important');
     }
+});
+
+window.addEventListener('appinstalled', (e) => {
+    console.log('Pulse PWA installed successfully');
+    const installBtn = document.getElementById('pwa-install-mini');
+    if (installBtn) {
+        installBtn.remove(); // Kill on success
+    }
+    deferredPrompt = null;
 });
 
 // Auto-init for forms and PWA
 document.addEventListener('DOMContentLoaded', () => {
+    checkStandalone();
     try {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {

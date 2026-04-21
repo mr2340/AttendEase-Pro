@@ -3,6 +3,10 @@
         <i data-lucide="download"></i>
     </button>
 
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <?php include 'navbar.php'; ?>
+        </main>
+    <?php endif; ?>
 </div> <!-- End #app-container -->
 
 <!-- Global Confetti Container -->

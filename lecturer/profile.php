@@ -1,5 +1,5 @@
 <?php
-$page_title = "Lecturer Profile";
+$page_title = "Account";
 include '../includes/header.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSION['role'] !== 'admin')) {
@@ -74,25 +74,8 @@ $user = $stmt->fetch();
         <div style="height: 100px;"></div>
     </div>
 
-    <!-- Specialized Lecturer Nav -->
-    <nav class="bottom-nav">
-        <a href="dashboard.php" class="nav-item">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="generate_qr.php" class="nav-item">
-            <i data-lucide="plus-circle"></i>
-            <span>New Class</span>
-        </a>
-        <a href="reports.php" class="nav-item">
-            <i data-lucide="file-text"></i>
-            <span>Reports</span>
-        </a>
-        <a href="profile.php" class="nav-item active">
-            <i data-lucide="user-cog"></i>
-            <span>Settings</span>
-        </a>
-    </nav>
+    <!-- Navigation -->
+    <?php include '../includes/navbar.php'; ?>
 </section>
 
 <style>

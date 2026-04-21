@@ -1,5 +1,5 @@
 <?php
-$page_title = "Attendance Reports";
+$page_title = "Analytics";
 include '../includes/header.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSION['role'] !== 'admin')) {
@@ -111,24 +111,7 @@ $avg_attendance = ($total_sessions > 0) ? round($total_attendance / $total_sessi
     </div>
 
     <!-- Navigation -->
-    <nav class="bottom-nav">
-        <a href="dashboard" class="nav-item">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="generate_qr" class="nav-item">
-            <i data-lucide="plus-circle"></i>
-            <span>New Class</span>
-        </a>
-        <a href="reports" class="nav-item active">
-            <i data-lucide="file-text"></i>
-            <span>Reports</span>
-        </a>
-        <a href="profile" class="nav-item">
-            <i data-lucide="user-cog"></i>
-            <span>Settings</span>
-        </a>
-    </nav>
+    <?php include '../includes/navbar.php'; ?>
 </section>
 
 <script>

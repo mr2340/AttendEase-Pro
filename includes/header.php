@@ -40,7 +40,7 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
     
     <!-- Styles -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/main.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/main.css?v=<?php echo time(); ?>">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0066ff">
@@ -77,3 +77,7 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body class="<?php echo $theme_class; ?>">
     <div id="app-container">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <?php include __DIR__ . '/sidebar.php'; ?>
+            <main class="main-wrapper">
+        <?php endif; ?>
