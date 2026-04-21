@@ -298,155 +298,38 @@ try {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-let currentSessionId = null;
-let currentCourseId = null;
-let currentStatus = 'active';
-let rotationInterval = null;
-let statsInterval = null;
-let lastAttendeeCount = 0;
-let qrInstance = null;
+// Hub Telemetry Engine
+function startMonitoring() {
+    if (rotationInterval) clearInterval(rotationInterval);
+    if (statsInterval) clearInterval(statsInterval);
 
-async function updateLiveCount() {
-    if (!currentSessionId || currentStatus !== 'active') return;
+    lastAttendeeCount = 0;
+    const countEl = document.getElementById('attendee-count');
+    if (countEl) countEl.innerText = "0";
+    const dtCountEl = document.getElementById('dt-attendee-count');
+    if (dtCountEl) dtCountEl.innerText = "0";
 
-    try {
-        const response = await fetch(`../includes/get_session_stats.php?session_id=${currentSessionId}`);
-        const result = await response.json();
+    // Initialize UI
+    updateUI();
+    updateQR();
+    updateLiveCount();
 
-        if (result.success) {
-            const countEl = document.getElementById('attendee-count');
-            const dtCountEl = document.getElementById('dt-attendee-count');
-            const badge = document.getElementById('live-count-badge');
-            const newCount = result.count;
+    // Set Refresh Intervals
+    rotationInterval = setInterval(() => {
+        if (currentStatus === 'active') updateQR();
+    }, 15000);
 
-            if (newCount !== lastAttendeeCount) {
-                if (countEl) countEl.innerText = newCount;
-                if (dtCountEl) dtCountEl.innerText = newCount;
-                
-                // Visual Pulse Effect
-                if (badge) {
-                    badge.style.transform = 'scale(1.15)';
-                    setTimeout(() => {
-                        badge.style.transform = 'scale(1)';
-                    }, 400);
-                }
+    statsInterval = setInterval(() => {
+        if (currentStatus === 'active') updateLiveCount();
+    }, 5000);
 
-                lastAttendeeCount = newCount;
-            }
-        }
-    } catch (err) {
-        console.error("Stats update failed", err);
-    }
-}
-
-async function updateQR() {
-    if (typeof QRCode === 'undefined') {
-        const qrEl = document.getElementById("qrcode");
-        if (qrEl) qrEl.innerHTML = "<p style='font-size:10px; color:red;'>Library missing</p>";
-        return;
-    }
-
-    try {
-        const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        
-        const result = await response.json();
-        if (!result.success) {
-            console.error("Token error:", result.message);
-            return;
-        }
-        
-        const token = result.token;
-        const qrEl = document.getElementById("qrcode");
-        if (!qrEl) return;
-
-        // Ensure container is ready
-        requestAnimationFrame(() => {
-            const parentContainer = document.getElementById('qr-main-container');
-            const parentWidth = parentContainer ? parentContainer.offsetWidth : 300;
-            // Adaptive sizing but never too small for scans
-            const qrSize = Math.max(200, Math.min(260, parentWidth - 70));
-
-            qrEl.style.width = qrSize + 'px';
-            qrEl.style.height = qrSize + 'px';
-            qrEl.innerHTML = ""; 
-
-            // Sync Desktop QR
-            const dtQrEl = document.getElementById("dt-qrcode");
-            if (dtQrEl) {
-                dtQrEl.innerHTML = "";
-                new QRCode(dtQrEl, {
-                    text: token,
-                    width: 450,
-                    height: 450,
-                    colorDark : "#0f172a",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
-            }
-
-            try {
-                new QRCode(qrEl, {
-                    text: token,
-                    width: qrSize,
-                    height: qrSize,
-                    colorDark : "#0f172a",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.M
-                });
-                
-                // Polish the result
-                const img = qrEl.querySelector('img');
-                const canvas = qrEl.querySelector('canvas');
-                if (img) { img.style.borderRadius = "12px"; img.style.display = "block"; }
-                if (canvas) { canvas.style.borderRadius = "12px"; canvas.style.display = "block"; }
-            } catch (qrErr) {
-                console.error("QRCode Render Error:", qrErr);
-                qrEl.innerHTML = "<p style='font-size:10px;'>Render Error</p>";
-            }
-        });
-
-    } catch (err) {
-        console.error("QR Fetch Failure:", err);
-        const qrEl = document.getElementById("qrcode");
-        if (qrEl) qrEl.innerHTML = "<p style='font-size:10px; color:var(--danger);'>Sync Failure</p>";
-    }
-}
-
-function showSetup() {
-    isSessionActive = false;
-    currentSessionId = null;
-    
-    // UI Transitions
-    const mobileSetup = document.getElementById('setup-view');
-    const mobileHub = document.getElementById('hub-view');
-    const desktopSetup = document.getElementById('dt-setup-view');
-    const desktopHub = document.getElementById('dt-hub-view');
-    const dtActions = document.getElementById('desktop-actions-hub');
-    const dtSetupActions = document.getElementById('desktop-setup-actions');
-
-    if (mobileSetup) mobileSetup.style.display = 'block';
-    if (mobileHub) mobileHub.style.display = 'none';
-    if (desktopSetup) desktopSetup.style.display = 'flex';
-    if (desktopHub) desktopHub.style.display = 'none';
-    if (dtActions) dtActions.style.display = 'none';
-    if (dtSetupActions) dtSetupActions.style.display = 'flex';
-
-    document.getElementById('nav-new-sess').style.background = 'var(--primary)';
-    document.getElementById('nav-new-sess').style.color = 'white';
-    document.querySelectorAll('.session-nav-btn').forEach(b => {
-        b.style.background = 'white';
-        b.style.color = 'var(--text-dark)';
-    });
-
-    if (refreshInterval) clearInterval(refreshInterval);
-    if (qrRotationInterval) clearInterval(qrRotationInterval);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function manageSession(id, courseName, status, topic, courseId) {
     currentSessionId = id;
-    isSessionActive = true;
-    isPaused = (status === 'paused');
+    currentCourseId = courseId;
+    currentStatus = status;
 
     // UI Transitions
     const mobileSetup = document.getElementById('setup-view');
@@ -464,29 +347,39 @@ function manageSession(id, courseName, status, topic, courseId) {
     if (dtSetupActions) dtSetupActions.style.display = 'none';
 
     // Populate Hub Data
-    document.getElementById('liveTopicName').innerText = topic;
-    document.getElementById('liveCourseName').innerText = courseName;
-    document.getElementById('dt-topic-name').innerText = topic;
-    document.getElementById('dt-course-name').innerText = courseName;
-    document.getElementById('dt-session-id').innerText = 'Node: #' + id;
-    document.getElementById('dt-id-label').innerText = '#' + id;
+    const lTopic = document.getElementById('liveTopicName');
+    const lCourse = document.getElementById('liveCourseName');
+    const dtTopic = document.getElementById('dt-topic-name');
+    const dtCourse = document.getElementById('dt-course-name');
+    const dtSessId = document.getElementById('dt-session-id');
+
+    if (lTopic) lTopic.innerText = topic;
+    if (lCourse) lCourse.innerText = courseName;
+    if (dtTopic) dtTopic.innerText = topic;
+    if (dtCourse) dtCourse.innerText = courseName;
+    if (dtSessId) dtSessId.innerText = 'Node: #' + id;
 
     // Reset Tabs
-    document.getElementById('nav-new-sess').style.background = 'white';
-    document.getElementById('nav-new-sess').style.color = 'var(--text-dark)';
+    const newSessBtn = document.getElementById('nav-new-sess');
+    if (newSessBtn) {
+        newSessBtn.style.background = 'white';
+        newSessBtn.style.color = 'var(--text-dark)';
+    }
+    
     document.querySelectorAll('.session-nav-btn').forEach(b => {
         b.style.background = 'white';
         b.style.color = 'var(--text-dark)';
+        b.style.borderColor = 'var(--border)';
     });
+
     const activeBtn = document.getElementById('nav-sess-' + id);
     if (activeBtn) {
         activeBtn.style.background = 'var(--primary-glow)';
         activeBtn.style.color = 'var(--primary)';
+        activeBtn.style.borderColor = 'var(--primary)';
     }
 
-    updateQR();
     startMonitoring();
-    updateUI();
 }
 
 async function handleDeployment(e) {
@@ -498,7 +391,7 @@ async function handleDeployment(e) {
     
     const originalText = submitBtn.innerText;
     submitBtn.disabled = true;
-    submitBtn.innerText = 'Initializing...';
+    submitBtn.innerHTML = '<div class="loader" style="width:16px; height:16px; border-width:2px;"></div> &nbsp; Initializing...';
 
     try {
         const response = await fetch('../includes/create_session.php', {
@@ -514,7 +407,8 @@ async function handleDeployment(e) {
                 text: 'Sync broadcast initialized successfully.',
                 icon: 'success',
                 timer: 1500,
-                showConfirmButton: false
+                showConfirmButton: false,
+                customClass: { popup: 'premium-swal' }
             }).then(() => {
                 location.reload();
             });
@@ -526,35 +420,12 @@ async function handleDeployment(e) {
         Swal.fire('Network Integrity', 'Could not establish connection to gateway.', 'error');
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = originalText;
+        submitBtn.innerHTML = originalText;
     }
-}
-    document.getElementById('nav-new-sess').style.background = 'var(--text-dark)';
-
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-    
-    setTimeout(updateQR, 100);
-    setTimeout(updateLiveCount, 200);
-    updateUI();
-    
-    // Clear existing intervals
-    if (rotationInterval) clearInterval(rotationInterval);
-    if (statsInterval) clearInterval(statsInterval);
-
-    lastAttendeeCount = 0;
-    document.getElementById('attendee-count').innerText = "0";
-
-    // Start New Intervals
-    rotationInterval = setInterval(() => {
-        if (currentStatus === 'active') updateQR();
-    }, 15000);
-
-    statsInterval = setInterval(() => {
-        if (currentStatus === 'active') updateLiveCount();
-    }, 5000);
 }
 
 async function togglePause() {
+    if (!currentSessionId) return;
     const action = currentStatus === 'active' ? 'pause' : 'resume';
     const originalStatus = currentStatus;
     currentStatus = (action === 'pause') ? 'paused' : 'active';
@@ -570,7 +441,7 @@ async function togglePause() {
         if (!result.success) {
             currentStatus = originalStatus;
             updateUI();
-            AttendEase.notify('error', 'Sync Failed', result.message);
+            Swal.fire('Sync Failed', result.message, 'error');
         }
     } catch (err) {
         currentStatus = originalStatus;
@@ -579,31 +450,46 @@ async function togglePause() {
 }
 
 function updateUI() {
-    const shield = document.getElementById('pauseShield');
+    const mobileShield = document.getElementById('pauseShield');
+    const desktopShield = document.getElementById('dt-pauseShield');
     const toggleBtn = document.getElementById('toggleBtn');
-    const dtToggleBtn = document.getElementById('dt-togglePause');
+    const dtToggleBtn = document.getElementById('dt-side-toggle');
     
-    if (currentStatus === 'paused') {
-        if (shield) shield.style.display = 'flex';
-        if (toggleBtn) toggleBtn.innerHTML = '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Resume</span>';
-        if (dtToggleBtn) dtToggleBtn.innerText = 'Resume Feed';
-    } else {
-        if (shield) shield.style.display = 'none';
-        if (toggleBtn) toggleBtn.innerHTML = '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Pause</span>';
-        if (dtToggleBtn) dtToggleBtn.innerText = 'Pause Feed';
+    const isPaused = currentStatus === 'paused';
+    
+    if (mobileShield) mobileShield.style.display = isPaused ? 'flex' : 'none';
+    if (desktopShield) desktopShield.style.display = isPaused ? 'flex' : 'none';
+    
+    if (toggleBtn) {
+        toggleBtn.innerHTML = isPaused ? 
+            '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 10px;">Resume</span>' : 
+            '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 10px;">Pause</span>';
     }
-    lucide.createIcons();
+    
+    if (dtToggleBtn) {
+        dtToggleBtn.innerText = isPaused ? 'Resume Broadcast' : 'Pause Broadcast';
+        dtToggleBtn.style.background = isPaused ? 'var(--success)' : 'white';
+        dtToggleBtn.style.color = isPaused ? 'white' : 'var(--warning)';
+    }
+
+    if (window.lucide) lucide.createIcons();
 }
 
 function handlePrint() {
     const originalStatus = currentStatus;
-    const shield = document.getElementById('pauseShield');
-    shield.style.display = 'none';
+    const mShield = document.getElementById('pauseShield');
+    const dShield = document.getElementById('dt-pauseShield');
+    if (mShield) mShield.style.display = 'none';
+    if (dShield) dShield.style.display = 'none';
     window.print();
-    if (originalStatus === 'paused') shield.style.display = 'flex';
+    if (originalStatus === 'paused') {
+        if (mShield) mShield.style.display = 'flex';
+        if (dShield) dShield.style.display = 'flex';
+    }
 }
 
 async function closeSession() {
+    if (!currentSessionId) return;
     const confirmClose = await Swal.fire({
         title: 'Terminate Node?',
         text: 'This will stop all attendance broadcasts for this session immediately.',
@@ -619,90 +505,18 @@ async function closeSession() {
     });
 
     if (!confirmClose.isConfirmed) return;
-    const response = await fetch('../includes/toggle_session.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: currentSessionId, action: 'close' })
-    });
-    const result = await response.json();
-    if (result.success) location.reload();
-}
-
-document.getElementById('qrGenForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('genBtn');
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    const courseName = e.target.course_id.options[e.target.course_id.selectedIndex].text;
-    const topic = data.topic;
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> Validating...';
-
-    // 📍 FETCH LOCATION FOR GEO-FENCING
-    if (data.use_geo) {
-        try {
-            console.log("Requesting location for session lock...");
-            const pos = await AttendEase.getLocation();
-            data.lat = pos.lat;
-            data.lng = pos.lng;
-        } catch (err) {
-            console.warn("Location fetch failing for lecturer:", err);
-            const proceedWithoutGeo = await Swal.fire({
-                title: 'Location Failed',
-                text: 'We couldn\'t get your current location. Create session without geo-fencing?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Deploy Anyway',
-                cancelButtonText: 'Cancel'
-            });
-            if (!proceedWithoutGeo.isConfirmed) {
-                btn.disabled = false;
-                btn.innerText = 'Deploy Broadcast Node';
-                return;
-            }
-        }
-    }
-
     try {
-        btn.innerHTML = '<span class="loader"></span> Deploying Node...';
-        const response = await fetch('../includes/create_session.php', {
+        const response = await fetch('../includes/toggle_session.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ session_id: currentSessionId, action: 'close' })
         });
         const result = await response.json();
-        if (result.success) {
-            // Fresh reload to update the multi-session header
-            location.reload();
-        } else {
-            AttendEase.notify('error', 'Deployment Failed', result.message);
-            btn.disabled = false;
-            btn.innerText = 'Deploy Broadcast Node';
-        }
+        if (result.success) location.reload();
     } catch (err) {
-        btn.disabled = false;
+        Swal.fire('Error', 'Failed to close session', 'error');
     }
-});
-
-// Init
-lucide.createIcons();
-
-<?php if (!empty($existing_sessions)): ?>
-    manageSession(
-        <?php echo $existing_sessions[0]['id']; ?>, 
-        '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', 
-        '<?php echo $existing_sessions[0]['status']; ?>',
-        '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>',
-        <?php echo $existing_sessions[0]['course_id']; ?>
-    );
-<?php else: ?>
-    showSetup();
-<?php endif; ?>
-
-window.addEventListener('resize', () => {
-    if (currentSessionId) updateQR();
-});
+}
 
 // Broadcast Intelligence
 function openBroadcastModal() {
@@ -737,11 +551,8 @@ function openBroadcastModal() {
 }
 
 async function deployPulse(title, message) {
-    if (!title || !message) return;
+    if (!title || !message || !currentCourseId) return;
     
-    // Use the tracked currentCourseId or fallback to form selection
-    const courseId = currentCourseId || document.getElementsByName('course_id')[0].value;
-
     try {
         const response = await fetch('../includes/process_broadcast.php', {
             method: 'POST',
@@ -750,26 +561,43 @@ async function deployPulse(title, message) {
                 'X-CSRF-TOKEN': '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
             },
             body: JSON.stringify({ 
-                course_id: courseId,
+                course_id: currentCourseId,
                 title: title,
                 message: message
             })
         });
         const result = await response.json();
         if (result.success) {
-            AttendEase.notify('success', 'Broadcast Deployed', result.message);
+            Swal.fire('Broadcast Deployed', result.message, 'success');
         } else {
-            AttendEase.notify('error', 'Pulse Failed', result.message);
+            Swal.fire('Pulse Failed', result.message, 'error');
         }
     } catch (err) {
-        AttendEase.notify('error', 'Network Error', 'Could not reach broadcast node.');
+        Swal.fire('Network Error', 'Could not reach broadcast node.', 'error');
     }
 }
 
-// Final check to ensure icons are rendered
-if (window.lucide) {
+// Initial State Logic
+document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
-}
+    
+    <?php if (!empty($existing_sessions)): ?>
+        manageSession(
+            <?php echo $existing_sessions[0]['id']; ?>, 
+            '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', 
+            '<?php echo $existing_sessions[0]['status']; ?>',
+            '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>',
+            <?php echo $existing_sessions[0]['course_id']; ?>
+        );
+    <?php else: ?>
+        showSetup();
+    <?php endif; ?>
+});
+
+window.addEventListener('resize', () => {
+    if (currentSessionId && currentStatus === 'active') updateQR();
+});
+</script>
 </script>
 
 <?php include '../includes/footer.php'; ?>
