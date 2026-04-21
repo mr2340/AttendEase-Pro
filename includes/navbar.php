@@ -9,13 +9,13 @@ if ($role === 'lecturer' || $role === 'admin') {
         ['label' => 'Analytics', 'icon' => 'bar-chart-2', 'url' => $base . 'lecturer/reports.php'],
         ['label' => 'FAB', 'icon' => 'plus', 'url' => $base . 'lecturer/generate_qr.php'],
         ['label' => 'Courses', 'icon' => 'book-open', 'url' => $base . 'lecturer/courses.php'],
-        ['label' => 'Account', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
+        ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
     ];
 } else if ($role === 'parent') {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'parent/index.php'],
         ['label' => 'Alerts', 'icon' => 'bell', 'url' => '#'],
-        ['label' => 'FAB', 'icon' => 'shield-check', 'url' => '#'], // Branding placeholder
+        ['label' => 'FAB', 'icon' => 'shield-check', 'url' => '#'],
         ['label' => 'History', 'icon' => 'clock', 'url' => '#'],
         ['label' => 'Logout', 'icon' => 'log-out', 'url' => $base . 'student/logout.php']
     ];
@@ -23,8 +23,8 @@ if ($role === 'lecturer' || $role === 'admin') {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'student/dashboard.php'],
         ['label' => 'Schedule', 'icon' => 'calendar', 'url' => $base . 'student/schedule.php'],
-        ['label' => 'FAB', 'icon' => 'qr-code', 'url' => '#'], // Trigger scanner
-        ['label' => 'Reports', 'icon' => 'bar-chart-3', 'url' => $base . 'student/reports.php'],
+        ['label' => 'FAB', 'icon' => 'qr-code', 'url' => '#'],
+        ['label' => 'History', 'icon' => 'bar-chart-3', 'url' => $base . 'student/reports.php'],
         ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'student/profile.php']
     ];
 }

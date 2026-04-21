@@ -13,7 +13,7 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
     </div>
 
     <nav class="sidebar-nav">
-        <a href="<?php echo BASE_URL . ($_SESSION['role'] ?? 'student'); ?>/dashboard" class="sidebar-item <?php echo ($page_title == 'Dashboard') ? 'active' : ''; ?>">
+        <a href="<?php echo BASE_URL . ($_SESSION['role'] ?? 'student'); ?>/dashboard" class="sidebar-item <?php echo ($page_title == 'Home' || $page_title == 'Dashboard') ? 'active' : ''; ?>">
             <i data-lucide="home"></i>
             <span>Home</span>
         </a>
@@ -23,7 +23,7 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="book-open"></i>
                 <span>My Portfolio</span>
             </a>
-            <a href="<?php echo BASE_URL; ?>lecturer/reports" class="sidebar-item <?php echo ($page_title == 'Reports' || $page_title == 'Intelligence Reports') ? 'active' : ''; ?>">
+            <a href="<?php echo BASE_URL; ?>lecturer/reports" class="sidebar-item <?php echo ($page_title == 'Analytics' || $page_title == 'Intelligence' || $page_title == 'Reports') ? 'active' : ''; ?>">
                 <i data-lucide="bar-chart-3"></i>
                 <span>Intelligence</span>
             </a>
@@ -32,13 +32,13 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="calendar"></i>
                 <span>Schedule</span>
             </a>
-            <a href="<?php echo BASE_URL; ?>student/reports" class="sidebar-item <?php echo ($page_title == 'Reports') ? 'active' : ''; ?>">
+            <a href="<?php echo BASE_URL; ?>student/reports" class="sidebar-item <?php echo ($page_title == 'Reports' || $page_title == 'History') ? 'active' : ''; ?>">
                 <i data-lucide="bar-chart-3"></i>
                 <span>History</span>
             </a>
         <?php endif; ?>
 
-        <a href="<?php echo BASE_URL . ($_SESSION['role'] ?? 'student'); ?>/profile" class="sidebar-item <?php echo ($page_title == 'Profile') ? 'active' : ''; ?>">
+        <a href="<?php echo BASE_URL . ($_SESSION['role'] ?? 'student'); ?>/profile" class="sidebar-item <?php echo ($page_title == 'Profile' || $page_title == 'Settings') ? 'active' : ''; ?>">
             <i data-lucide="user"></i>
             <span>Profile</span>
         </a>
