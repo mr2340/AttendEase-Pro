@@ -18,6 +18,8 @@ $course_id = $data['course_id'] ?? null;
 $topic = $data['topic'] ?? 'General Session';
 $duration = isset($data['duration']) ? (int)$data['duration'] : 30; // Minutes
 $scan_limit = isset($data['scan_limit']) ? (int)$data['scan_limit'] : 0; // 0 = Unlimited
+$lat = $data['lat'] ?? null;
+$lng = $data['lng'] ?? null;
 
 if (!$course_id) {
     echo json_encode(['success' => false, 'message' => 'Course ID is required']);
@@ -35,8 +37,8 @@ try {
     }
 
     // 2. Create New Session
-    $stmt = $db->prepare("INSERT INTO sessions (course_id, topic, lecturer_id, status, scan_limit, expires_at, created_at) VALUES (?, ?, ?, 'active', ?, ?, NOW())");
-    $stmt->execute([$course_id, $topic, $lecturer_id, $scan_limit, $expires_at]);
+    $stmt = $db->prepare("INSERT INTO sessions (course_id, topic, lecturer_id, status, scan_limit, expires_at, created_at, latitude, longitude) VALUES (?, ?, ?, 'active', ?, ?, NOW(), ?, ?)");
+    $stmt->execute([$course_id, $topic, $lecturer_id, $scan_limit, $expires_at, $lat, $lng]);
     
     $session_id = $db->lastInsertId();
 

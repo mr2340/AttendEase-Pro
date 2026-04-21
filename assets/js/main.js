@@ -38,6 +38,21 @@ const AttendEase = {
         }
     },
 
+    // Helper to get GPS Location for Geo-Fencing
+    getLocation: () => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error("Geolocation not supported"));
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => reject(err),
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        });
+    },
+
     // Premium Notifications
     notify: (type, title, text) => {
         return Swal.fire({
@@ -238,12 +253,39 @@ const AttendEase = {
         // Stop scanner to prevent multiple scans
         await AttendEase.closeScanner();
 
+        // 📍 GEO-FENCING INTEGRATION
+        let lat = null, lng = null;
+        try {
+            // Show scanning location state
+            const locationMsg = Swal.fire({
+                title: 'Verifying Location...',
+                html: 'Ensuring you are within classroom bounds.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const pos = await AttendEase.getLocation();
+            lat = pos.lat;
+            lng = pos.lng;
+            Swal.close();
+        } catch (err) {
+            console.warn("Location check failed:", err.message);
+            // We still proceed, but the server will strictly enforce if required
+        }
+
         // Process Attendance
         try {
             const response = await fetch('../includes/process_attendance', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session_id: decodedText })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': window.AttendEaseConfig ? window.AttendEaseConfig.csrfToken : ''
+                },
+                body: JSON.stringify({ 
+                    session_id: decodedText,
+                    lat: lat,
+                    lng: lng
+                })
             });
             const result = await response.json();
 

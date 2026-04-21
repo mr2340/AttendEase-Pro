@@ -38,6 +38,7 @@ try {
 }
 ?>
 
+<div class="mobile-only-layout">
 <section id="generate-qr" class="screen" data-state="active" style="background: #f8fafc; min-height: 100vh;">
     <div class="scrollable-content" style="padding: 0;">
         <!-- Sticky Header -->
@@ -107,6 +108,20 @@ try {
                             </div>
                         </div>
 
+                        <!-- Geo-Fencing Toggle (Visual) -->
+                        <div style="background: var(--bg-main); padding: 15px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 36px; height: 36px; background: white; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: var(--primary);">
+                                    <i data-lucide="map-pin" style="width: 18px;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 13px; font-weight: 800; color: var(--text-dark);">Geo-Fencing</h4>
+                                    <p style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Lock scan to this classroom</p>
+                                </div>
+                            </div>
+                            <input type="checkbox" name="use_geo" checked style="width: 20px; height: 20px; accent-color: var(--primary);">
+                        </div>
+
                         <button type="submit" class="btn-primary" id="genBtn" style="height: 65px; border-radius: 20px; font-weight: 900; font-size: 16px; background: var(--primary); box-shadow: 0 15px 30px var(--primary-glow); width: 100%;">
                             Deploy Broadcast Node
                         </button>
@@ -122,8 +137,10 @@ try {
                     <div style="position: absolute; top: -100px; left: -100px; width: 250px; height: 250px; background: var(--primary-glow); filter: blur(80px); opacity: 0.5; z-index: 0; border-radius: 50%;"></div>
 
                     <!-- Dynamic Integrity Hub -->
-                    <div id="qrcode-wrapper" style="position: relative; display: inline-block; padding: 20px; background: white; border-radius: 35px; border: 3px solid var(--bg-main); max-width: 100%; box-sizing: border-box; z-index: 1;">
-                        <div id="qrcode" style="display: flex; justify-content: center; overflow: hidden; border-radius: 18px;"></div>
+                    <div id="qrcode-wrapper" style="position: relative; display: inline-block; padding: 25px; background: white; border-radius: 40px; border: 3px solid var(--bg-main); min-width: 240px; min-height: 240px; box-sizing: border-box; z-index: 1;">
+                        <div id="qrcode" style="display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 18px; background: #f8fafc; width: 220px; height: 220px;">
+                            <div class="loader" style="border-color: var(--primary); border-bottom-color: transparent;"></div>
+                        </div>
                         
                         <!-- Anti-Photo Rotation Ring -->
                         <div id="rotation-ring" style="position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border: 4px solid var(--primary); border-radius: 42px; border-top-color: transparent; border-left-color: transparent; animation: spin 30s linear infinite;"></div>
@@ -179,6 +196,89 @@ try {
         <div style="height: 80px;"></div>
     </div>
 </section>
+</div>
+
+<!-- Desktop: Faculty QR Hub (Projector Mode) -->
+<div class="desktop-only-layout" style="background: #0f172a; min-height: 100vh; display: flex; flex-direction: column;">
+    <header style="padding: 40px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="background: var(--primary); padding: 12px; border-radius: 14px;">
+                <i data-lucide="qr-code" style="color: white; width: 24px;"></i>
+            </div>
+            <div>
+                <h2 style="color: white; font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">Faculty <span style="color: var(--primary);">QR Node</span></h2>
+                <div style="display: flex; gap: 15px; margin-top: 4px;">
+                    <span style="color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Status: <span style="color: #10b981;">ENCRYPTED</span></span>
+                    <span id="dt-session-id" style="color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase;">ID: --</span>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px;">
+            <button onclick="handlePrint()" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px 25px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="printer" style="width: 18px;"></i> Print Key
+            </button>
+            <button onclick="closeSession()" style="background: #ef4444; color: white; border: none; padding: 12px 25px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);">
+                Destroy Node
+            </button>
+        </div>
+    </header>
+
+    <div style="flex: 1; display: grid; grid-template-columns: 8fr 4fr; gap: 40px; padding: 40px 60px;">
+        <!-- Left: Large QR for Projection -->
+        <div style="background: rgba(255,255,255,0.02); border-radius: 50px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; position: relative; overflow: hidden;">
+            <div id="dt-rotation-ring" style="position: absolute; width: 600px; height: 600px; border: 30px solid rgba(0, 102, 255, 0.05); border-radius: 50%; pointer-events: none;"></div>
+            
+            <div style="background: white; padding: 40px; border-radius: 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.5); position: relative; z-index: 2;">
+                <div id="dt-qrcode" style="width: 450px; height: 450px; display: flex; justify-content: center; align-items: center;">
+                    <!-- QR Content -->
+                </div>
+            </div>
+
+            <div style="margin-top: 50px; text-align: center; z-index: 2;">
+                <h1 id="dt-topic-name" style="color: white; font-size: 42px; font-weight: 950; letter-spacing: -2px; margin-bottom: 10px;">Waiting...</h1>
+                <p id="dt-course-name" style="color: #64748b; font-size: 18px; font-weight: 600;">Initialize session to begin pulse.</p>
+            </div>
+        </div>
+
+        <!-- Right: Admin Panel -->
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+            <!-- Real-time Stat Hub -->
+            <div style="background: white; border-radius: 40px; padding: 40px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 80px; height: 80px; background: #eff6ff; color: var(--primary); border-radius: 24px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
+                    <i data-lucide="users" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 style="font-size: 64px; font-weight: 950; color: #0f172a; line-height: 1; margin-bottom: 10px;" id="dt-attendee-count">0</h3>
+                <p style="color: #64748b; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Students Present</p>
+                
+                <div style="width: 100%; height: 1px; background: #f1f5f9; margin: 35px 0;"></div>
+                
+                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="text-align: left;">
+                        <p style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Session ID</p>
+                        <p style="font-size: 15px; font-weight: 900; color: #0f172a;" id="dt-id-label">#--</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Node Stability</p>
+                        <p style="font-size: 15px; font-weight: 900; color: #10b981;">SECURE</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrated Broadcast Controls -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 40px; padding: 40px;">
+                <h3 style="color: white; font-size: 18px; font-weight: 900; margin-bottom: 25px;">Emergency Dispatch</h3>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <button onclick="openBroadcastModal()" style="background: var(--primary); color: white; border: none; height: 60px; border-radius: 18px; font-weight: 850; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <i data-lucide="megaphone" style="width: 20px;"></i> Broadcast Alert
+                    </button>
+                    <button id="dt-togglePause" onclick="togglePause()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; height: 60px; border-radius: 18px; font-weight: 800; cursor: pointer;">
+                        Pause Feed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
 #qrcode canvas, #qrcode img { max-width: 100% !important; height: auto !important; }
@@ -220,17 +320,21 @@ async function updateLiveCount() {
 
         if (result.success) {
             const countEl = document.getElementById('attendee-count');
+            const dtCountEl = document.getElementById('dt-attendee-count');
             const badge = document.getElementById('live-count-badge');
             const newCount = result.count;
 
             if (newCount !== lastAttendeeCount) {
-                countEl.innerText = newCount;
+                if (countEl) countEl.innerText = newCount;
+                if (dtCountEl) dtCountEl.innerText = newCount;
                 
                 // Visual Pulse Effect
-                badge.style.transform = 'scale(1.15)';
-                setTimeout(() => {
-                    badge.style.transform = 'scale(1)';
-                }, 400);
+                if (badge) {
+                    badge.style.transform = 'scale(1.15)';
+                    setTimeout(() => {
+                        badge.style.transform = 'scale(1)';
+                    }, 400);
+                }
 
                 lastAttendeeCount = newCount;
             }
@@ -242,30 +346,49 @@ async function updateLiveCount() {
 
 async function updateQR() {
     if (typeof QRCode === 'undefined') {
-        console.warn("QRCode library not ready yet...");
+        const qrEl = document.getElementById("qrcode");
+        if (qrEl) qrEl.innerHTML = "<p style='font-size:10px; color:red;'>Library missing</p>";
         return;
     }
 
     try {
         const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
-        const result = await response.json();
+        if (!response.ok) throw new Error("HTTP " + response.status);
         
-        if (!result.success) return;
+        const result = await response.json();
+        if (!result.success) {
+            console.error("Token error:", result.message);
+            return;
+        }
         
         const token = result.token;
         const qrEl = document.getElementById("qrcode");
         if (!qrEl) return;
 
-        // Force browser layout sync to get accurate dimensions
+        // Ensure container is ready
         requestAnimationFrame(() => {
             const parentContainer = document.getElementById('qr-main-container');
             const parentWidth = parentContainer ? parentContainer.offsetWidth : 300;
-            const qrSize = Math.max(220, Math.min(280, parentWidth - 60));
+            // Adaptive sizing but never too small for scans
+            const qrSize = Math.max(200, Math.min(260, parentWidth - 70));
 
-            // Set explicit container size before library initialization
             qrEl.style.width = qrSize + 'px';
             qrEl.style.height = qrSize + 'px';
             qrEl.innerHTML = ""; 
+
+            // Sync Desktop QR
+            const dtQrEl = document.getElementById("dt-qrcode");
+            if (dtQrEl) {
+                dtQrEl.innerHTML = "";
+                new QRCode(dtQrEl, {
+                    text: token,
+                    width: 450,
+                    height: 450,
+                    colorDark : "#0f172a",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
 
             try {
                 new QRCode(qrEl, {
@@ -277,19 +400,21 @@ async function updateQR() {
                     correctLevel : QRCode.CorrectLevel.M
                 });
                 
-                // Final check to fix any common library positioning glitches
-                const canvas = qrEl.querySelector('canvas');
+                // Polish the result
                 const img = qrEl.querySelector('img');
-                if (canvas) { canvas.style.display = 'block'; canvas.style.margin = '0 auto'; }
-                if (img) { img.style.display = 'block'; img.style.margin = '0 auto'; img.style.borderRadius = '12px'; }
+                const canvas = qrEl.querySelector('canvas');
+                if (img) { img.style.borderRadius = "12px"; img.style.display = "block"; }
+                if (canvas) { canvas.style.borderRadius = "12px"; canvas.style.display = "block"; }
             } catch (qrErr) {
-                console.error("QRCode library internal error:", qrErr);
-                qrEl.innerHTML = "<p style='color:red; font-size:12px;'>Rendering Error. Refreshing...</p>";
+                console.error("QRCode Render Error:", qrErr);
+                qrEl.innerHTML = "<p style='font-size:10px;'>Render Error</p>";
             }
         });
 
     } catch (err) {
         console.error("QR Fetch Failure:", err);
+        const qrEl = document.getElementById("qrcode");
+        if (qrEl) qrEl.innerHTML = "<p style='font-size:10px; color:var(--danger);'>Sync Failure</p>";
     }
 }
 
@@ -319,8 +444,14 @@ function manageSession(id, courseName, status, topic, courseId) {
     // Update live labels
     document.getElementById('liveTopicName').innerText = finalTopic;
     document.getElementById('liveCourseName').innerText = courseName;
-    document.getElementById('liveCourseCode').innerText = "LIVE NODE"; // Could be refined to actual code
+    document.getElementById('liveCourseCode').innerText = "LIVE NODE"; 
     document.getElementById('session-id-badge').innerText = "NODE: " + id;
+
+    // Update Desktop labels
+    if (document.getElementById('dt-topic-name')) document.getElementById('dt-topic-name').innerText = finalTopic;
+    if (document.getElementById('dt-course-name')) document.getElementById('dt-course-name').innerText = courseName;
+    if (document.getElementById('dt-id-label')) document.getElementById('dt-id-label').innerText = "#" + id;
+    if (document.getElementById('dt-session-id')) document.getElementById('dt-session-id').innerText = "ID: " + id;
     
     // Update nav styling
     document.querySelectorAll('.session-nav-btn').forEach(btn => {
@@ -384,13 +515,16 @@ async function togglePause() {
 function updateUI() {
     const shield = document.getElementById('pauseShield');
     const toggleBtn = document.getElementById('toggleBtn');
+    const dtToggleBtn = document.getElementById('dt-togglePause');
     
     if (currentStatus === 'paused') {
-        shield.style.display = 'flex';
-        toggleBtn.innerHTML = '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Resume</span>';
+        if (shield) shield.style.display = 'flex';
+        if (toggleBtn) toggleBtn.innerHTML = '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Resume</span>';
+        if (dtToggleBtn) dtToggleBtn.innerText = 'Resume Feed';
     } else {
-        shield.style.display = 'none';
-        toggleBtn.innerHTML = '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Pause</span>';
+        if (shield) shield.style.display = 'none';
+        if (toggleBtn) toggleBtn.innerHTML = '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 11px; text-transform: uppercase;">Pause</span>';
+        if (dtToggleBtn) dtToggleBtn.innerText = 'Pause Feed';
     }
     lucide.createIcons();
 }
@@ -437,9 +571,35 @@ document.getElementById('qrGenForm').addEventListener('submit', async (e) => {
     const topic = data.topic;
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> Deploying...';
+    btn.innerHTML = '<span class="loader"></span> Validating...';
+
+    // 📍 FETCH LOCATION FOR GEO-FENCING
+    if (data.use_geo) {
+        try {
+            console.log("Requesting location for session lock...");
+            const pos = await AttendEase.getLocation();
+            data.lat = pos.lat;
+            data.lng = pos.lng;
+        } catch (err) {
+            console.warn("Location fetch failing for lecturer:", err);
+            const proceedWithoutGeo = await Swal.fire({
+                title: 'Location Failed',
+                text: 'We couldn\'t get your current location. Create session without geo-fencing?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Deploy Anyway',
+                cancelButtonText: 'Cancel'
+            });
+            if (!proceedWithoutGeo.isConfirmed) {
+                btn.disabled = false;
+                btn.innerText = 'Deploy Broadcast Node';
+                return;
+            }
+        }
+    }
 
     try {
+        btn.innerHTML = '<span class="loader"></span> Deploying Node...';
         const response = await fetch('../includes/create_session.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

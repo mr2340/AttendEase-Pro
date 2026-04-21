@@ -4,7 +4,7 @@
     </button>
 
     <?php if (isset($_SESSION['user_id'])): ?>
-        <?php include 'navbar.php'; ?>
+        <?php include __DIR__ . '/navbar.php'; ?>
         </main>
     <?php endif; ?>
 </div> <!-- End #app-container -->

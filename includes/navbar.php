@@ -11,6 +11,14 @@ if ($role === 'lecturer' || $role === 'admin') {
         ['label' => 'Courses', 'icon' => 'book-open', 'url' => $base . 'lecturer/courses.php'],
         ['label' => 'Account', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
     ];
+} else if ($role === 'parent') {
+    $nav_items = [
+        ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'parent/index.php'],
+        ['label' => 'Alerts', 'icon' => 'bell', 'url' => '#'],
+        ['label' => 'FAB', 'icon' => 'shield-check', 'url' => '#'], // Branding placeholder
+        ['label' => 'History', 'icon' => 'clock', 'url' => '#'],
+        ['label' => 'Logout', 'icon' => 'log-out', 'url' => $base . 'student/logout.php']
+    ];
 } else {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'student/dashboard.php'],

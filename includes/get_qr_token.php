@@ -3,7 +3,8 @@
  * AttendEase Pro - Secure QR Token Generator
  */
 require_once __DIR__ . '/config.php';
-session_start();
+// session_start() is already called in config.php -> security.php
+
 
 header('Content-Type: application/json');
 

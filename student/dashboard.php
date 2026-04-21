@@ -93,10 +93,35 @@ $schedules = $sched_stmt->fetchAll();
                 </p>
             </div>
 
-            <div style="padding: 30px 20px;">
+            <!-- Recent Scan Pulse (Mobile Detail Restoration) -->
+            <div style="padding: 0 20px 20px;">
+                <h3 style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Recent Vital Signs</h3>
+                <?php 
+                $last_scan_stmt = $db->prepare("SELECT a.*, c.course_code FROM attendance a JOIN sessions s ON a.session_id = s.id JOIN courses c ON s.course_id = c.id WHERE a.student_id = ? ORDER BY a.timestamp DESC LIMIT 1");
+                $last_scan_stmt->execute([$user_id]);
+                $last_scan = $last_scan_stmt->fetch();
+                ?>
+                <div style="background: white; border-radius: 30px; padding: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
+                    <div style="width: 48px; height: 48px; background: #ecfdf5; color: #10b981; border-radius: 16px; display: flex; justify-content: center; align-items: center;">
+                        <i data-lucide="check-circle-2" style="width: 24px;"></i>
+                    </div>
+                    <div>
+                        <?php if($last_scan): ?>
+                            <h4 style="font-size: 15px; font-weight: 900; color: #0f172a;"><?php echo $last_scan['course_code']; ?> Validated</h4>
+                            <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px;">Sync: <?php echo date('M d, h:i A', strtotime($last_scan['timestamp'])); ?></p>
+                        <?php else: ?>
+                            <h4 style="font-size: 15px; font-weight: 900; color: #0f172a;">No Active Pulse</h4>
+                            <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px;">Start scanning to build history.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div style="padding: 10px 20px 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-                    <h2 style="font-size: 19px; font-weight: 800; color: #1e293b; margin: 0;">Today's Classes</h2>
-                    <a href="schedule" style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-decoration: none;">See All</a>
+                    <h2 style="font-size: 19px; font-weight: 900; color: #1e293b; margin: 0; letter-spacing: -0.5px;">Today's Classes</h2>
+                    <a href="schedule" style="font-size: 13px; font-weight: 800; color: var(--primary); text-decoration: none;">View Timeline</a>
                 </div>
 
                 <?php if(empty($schedules)): ?>

@@ -3,6 +3,7 @@
  * AttendEase Pro - High Integrity Attendance Processor
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/GeoEngine.php';
 // AttendEaseSecurity handles session_start safely
 
 header('Content-Type: application/json');
@@ -18,6 +19,8 @@ AttendEaseSecurity::validateCsrf($csrf_header);
 
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['session_id'] ?? null;
+$student_lat = $data['lat'] ?? null;
+$student_lng = $data['lng'] ?? null;
 
 if (!$token) {
     echo json_encode(['success' => false, 'message' => 'Integrity Check Failed: Missing Token.']);
@@ -79,6 +82,19 @@ try {
         exit;
     }
 
+    // 2.1 GEO-FENCING SECURITY CHECK (NEW)
+    if (!empty($session['latitude']) && !empty($session['longitude'])) {
+        if (empty($student_lat) || empty($student_lng)) {
+            echo json_encode(['success' => false, 'message' => 'LOCATION REQUIRED: Please enable GPS and try again to verify you are in the classroom.']);
+            exit;
+        }
+
+        if (!GeoEngine::isWithinRange($student_lat, $student_lng, $session['latitude'], $session['longitude'], 50)) {
+            echo json_encode(['success' => false, 'message' => 'OUT OF BOUNDS: You must be physically present in the classroom to mark attendance.']);
+            exit;
+        }
+    }
+
     // 3. Check Scan Limit
     if ($session['scan_limit'] > 0) {
         $stmt = $db->prepare("SELECT COUNT(*) FROM attendance WHERE session_id = ?");
@@ -98,8 +114,8 @@ try {
     }
 
     // 5. Finalize Attendance
-    $stmt = $db->prepare("INSERT INTO attendance (session_id, student_id, status) VALUES (?, ?, 'present')");
-    $stmt->execute([$session_id, $user_id]);
+    $stmt = $db->prepare("INSERT INTO attendance (session_id, student_id, status, latitude, longitude) VALUES (?, ?, 'present', ?, ?)");
+    $stmt->execute([$session_id, $user_id, $student_lat, $student_lng]);
 
     // 5.1 Auto-Enrollment logic (New)
     // Ensures students are tracked in courses they attend for accurate StatEngine reports

@@ -35,6 +35,7 @@ require_once '../includes/stat_engine.php';
 $stats = StatEngine::getLecturerStats($user_id);
 ?>
 
+<div class="mobile-only-layout">
 <section id="lecturer-dashboard" class="screen" data-state="active">
     <div class="scrollable-content">
         <div class="dash-header" style="margin-bottom: 30px;">
@@ -153,8 +154,158 @@ $stats = StatEngine::getLecturerStats($user_id);
     </div>
 
     <!-- Navigation -->
-    <?php include '../includes/navbar.php'; ?>
+        <!-- Navigation is handled by footer.php -->
 </section>
+</div>
+
+<!-- Desktop Content: Master Command Dashboard -->
+<div class="desktop-only-layout" style="background: #f8fafc; min-height: 100vh;">
+    <header style="padding: 50px 60px 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                <div style="background: var(--primary); width: 12px; height: 12px; border-radius: 4px;"></div>
+                <span style="color: #64748b; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">Faculty Terminal</span>
+            </div>
+            <h1 style="font-size: 52px; font-weight: 950; color: #0f172a; letter-spacing: -2.5px;">Welcome Back, <span style="color: var(--primary);">Dr. <?php echo explode('_', $_SESSION['username'])[1] ?? 'Faculty'; ?></span></h1>
+            <p style="color: #94a3b8; font-size: 18px; font-weight: 500; margin-top: 10px;">System synchronized. Intelligence nodes active.</p>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div style="text-align: right;">
+                <p style="font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Session Uptime</p>
+                <p style="font-size: 18px; font-weight: 900; color: var(--primary);">100% ONLINE</p>
+            </div>
+            <div style="width: 70px; height: 70px; border-radius: 24px; border: 3px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: hidden;">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lecturer" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </div>
+    </header>
+
+    <!-- Stat Tier (Bento) -->
+    <div style="padding: 0 60px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+        <div style="background: white; padding: 35px; border-radius: 40px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                <div style="width: 55px; height: 55px; background: #eff6ff; color: var(--primary); border-radius: 18px; display: flex; justify-content: center; align-items: center;">
+                    <i data-lucide="book-open" style="width: 26px;"></i>
+                </div>
+                <h4 style="font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Total Courses</h4>
+            </div>
+            <h2 style="font-size: 44px; font-weight: 950; color: #0f172a;"><?php echo count($courses); ?></h2>
+        </div>
+        
+        <div style="background: white; padding: 35px; border-radius: 40px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                <div style="width: 55px; height: 55px; background: #ecfdf5; color: #10b981; border-radius: 18px; display: flex; justify-content: center; align-items: center;">
+                    <i data-lucide="users" style="width: 26px;"></i>
+                </div>
+                <h4 style="font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Total Students</h4>
+            </div>
+            <h2 style="font-size: 44px; font-weight: 950; color: #0f172a;"><?php echo $stats['total_students']; ?></h2>
+        </div>
+
+        <div style="background: var(--primary); padding: 35px; border-radius: 40px; color: white; box-shadow: 0 20px 40px var(--primary-glow); position: relative; overflow: hidden;">
+            <div style="position: absolute; right: -20px; top: -20px; opacity: 0.1;">
+                <i data-lucide="zap" style="width: 150px; height: 150px;"></i>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; position: relative;">
+                <div style="width: 55px; height: 55px; background: rgba(255,255,255,0.2); border-radius: 18px; display: flex; justify-content: center; align-items: center;">
+                    <i data-lucide="calendar" style="width: 26px;"></i>
+                </div>
+                <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Active Hubs</h4>
+            </div>
+            <h2 style="font-size: 44px; font-weight: 950; position: relative;"><?php echo count($active_sessions); ?></h2>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div style="padding: 0 60px 60px; display: grid; grid-template-columns: 8fr 4fr; gap: 40px; align-items: start;">
+        
+        <!-- Left: Management Console -->
+        <div style="display: flex; flex-direction: column; gap: 40px;">
+            <div style="background: white; border-radius: 50px; padding: 50px; border: 1.5px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                    <h3 style="font-size: 26px; font-weight: 950; color: #0f172a; letter-spacing: -1px;">Broadcast Performance</h3>
+                    <button onclick="window.location.href='generate_qr'" class="btn-primary" style="height: 50px; padding: 0 25px; border-radius: 16px; font-weight: 800;">
+                        Initialize QR Node
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <?php if (empty($active_sessions)): ?>
+                        <div style="grid-column: 1 / -1; background: #f8fafc; border: 2px dashed #e2e8f0; padding: 60px; border-radius: 35px; text-align: center;">
+                            <i data-lucide="monitor-off" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 20px;"></i>
+                            <p style="color: #64748b; font-weight: 700; font-size: 18px;">No active attendance nodes detected.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach($active_sessions as $sess): ?>
+                            <div style="background: #fdfdfd; padding: 30px; border-radius: 35px; border: 2px solid var(--primary); position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                                    <div>
+                                        <h4 style="font-size: 18px; font-weight: 900; color: #0f172a;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
+                                        <p style="font-size: 12px; color: var(--primary); font-weight: 800; margin-top: 5px;">LIVE NODE: #<?php echo $sess['id']; ?></p>
+                                    </div>
+                                    <div style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%; animation: pulseShield 2s infinite;"></div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <a href="view_qr?id=<?php echo $sess['id']; ?>" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: white; height: 48px; border-radius: 14px; font-weight: 800; font-size: 13px; text-decoration: none;">
+                                        <i data-lucide="maximize" style="width: 16px;"></i> HUB VIEW
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Courses Grid -->
+            <div style="background: #0f172a; border-radius: 50px; padding: 50px; color: white;">
+                <h3 style="font-size: 26px; font-weight: 950; margin-bottom: 35px; letter-spacing: -1px;">Managed Portfolio</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                    <?php foreach($courses as $c): ?>
+                        <div style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; cursor: pointer;">
+                            <h4 style="font-size: 17px; font-weight: 850; margin-bottom: 10px;"><?php echo htmlspecialchars($c['course_name']); ?></h4>
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 700;"><?php echo $c['course_code']; ?></p>
+                            <div style="margin-top: 25px; display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 13px; font-weight: 800;">
+                                View Analytics <i data-lucide="arrow-right" style="width: 16px;"></i>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Broadcast Node Control -->
+        <div style="background: white; border-radius: 50px; padding: 45px; border: 1.5px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.03); position: sticky; top: 40px;">
+            <h3 style="font-size: 24px; font-weight: 950; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 35px;">Security Dispatch</h3>
+            
+            <form id="desktopBroadcastForm" style="display: flex; flex-direction: column; gap: 25px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Target Course</label>
+                    <select name="course_id" style="width: 100%; height: 55px; background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 18px; padding: 0 20px; font-weight: 700; font-family: inherit; font-size: 15px; color: #0f172a;">
+                        <?php foreach($courses as $c): ?>
+                            <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['course_name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Dispatch Message</label>
+                    <textarea name="message" placeholder="Initialize emergency broadcast or pulse..." style="width: 100%; height: 160px; background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 24px; padding: 25px; font-weight: 700; font-family: inherit; font-size: 15px; color: #0f172a; resize: none;"></textarea>
+                </div>
+
+                <div style="background: #eff6ff; padding: 25px; border-radius: 28px; border: 1.5px solid #dbeafe;">
+                    <p style="font-size: 13px; font-weight: 700; color: #1e40af; line-height: 1.6;">
+                        <i data-lucide="info" style="width: 16px; margin-right: 5px; vertical-align: middle;"></i>
+                        Pulse will be deployed to all mapped student devices via Firebase cloud nodes.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-primary" style="height: 65px; border-radius: 20px; font-size: 16px; font-weight: 900; box-shadow: 0 15px 35px var(--primary-glow);">
+                    Deploy Pulse Wave
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
