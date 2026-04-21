@@ -314,62 +314,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Broadcast Intelligence - Pulse Engine
-    const announceForm = document.getElementById('announcementForm');
-    if (announceForm) {
-        announceForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const btn = form.querySelector('button');
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+    const handleBroadcast = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const btn = form.querySelector('button');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
 
-            // Show Loading
-            const originalBtnText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loader" style="width:16px; height:16px; border-width:2px;"></div> &nbsp; Deploying Pulse...';
+        // Default title if missing (desktop form might not have it)
+        if (!data.title) data.title = "Instructional Pulse";
 
-            try {
-                const response = await fetch('../includes/process_broadcast.php', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
-                    },
-                    body: JSON.stringify(data)
+        // Show Loading
+        const originalBtnText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loader" style="width:16px; height:16px; border-width:2px;"></div> &nbsp; Deploying Pulse...';
+
+        try {
+            const response = await fetch('../includes/process_broadcast.php', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    title: 'Pulse Deployed!',
+                    text: result.message + (result.stats ? " (Sent to " + result.stats.sent + " students)" : ""),
+                    icon: 'success',
+                    confirmButtonText: 'Acknowledged',
+                    buttonsStyling: false,
+                    customClass: { confirmButton: 'btn-primary swal2-confirm' }
                 });
-                
-                const result = await response.json();
-
-                if (result.success) {
-                    Swal.fire({
-                        title: 'Broadcast Deployed!',
-                        text: result.message + " (Sent to " + result.stats.sent + " students)",
-                        icon: 'success',
-                        confirmButtonText: 'Acknowledged',
-                        buttonsStyling: false,
-                        customClass: { confirmButton: 'btn-primary swal2-confirm' }
-                    });
-                    form.reset();
-                } else {
-                    Swal.fire({
-                        title: 'Deployment Failed',
-                        text: result.message,
-                        icon: 'error',
-                        confirmButtonText: 'Try Again',
-                        buttonsStyling: false,
-                        customClass: { confirmButton: 'btn-primary swal2-confirm' }
-                    });
-                }
-            } catch (err) {
-                console.error("Pulse error:", err);
-                Swal.fire('Error', 'Connection to broadcast node failed.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalBtnText;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                form.reset();
+            } else {
+                Swal.fire({
+                    title: 'Deployment Failed',
+                    text: result.message,
+                    icon: 'error',
+                    confirmButtonText: 'Try Again',
+                    buttonsStyling: false,
+                    customClass: { confirmButton: 'btn-primary swal2-confirm' }
+                });
             }
-        });
-    }
+        } catch (err) {
+            console.error("Pulse error:", err);
+            Swal.fire('Network Integrity Error', 'Connection to broadcast node failed.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    };
+
+    const mobileForm = document.getElementById('announcementForm');
+    const desktopForm = document.getElementById('desktopBroadcastForm');
+    if (mobileForm) mobileForm.addEventListener('submit', handleBroadcast);
+    if (desktopForm) desktopForm.addEventListener('submit', handleBroadcast);
 });
 </script>
 

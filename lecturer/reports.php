@@ -65,6 +65,9 @@ $stmt->execute([$user_id]);
 $top_performers = $stmt->fetchAll();
 ?>
 
+<<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Mobile: Portal -->
 <div class="mobile-only-layout">
 <section id="reports-portal" class="screen" data-state="active" style="background: #f8fafc;">
     <div class="scrollable-content">
@@ -94,17 +97,7 @@ $top_performers = $stmt->fetchAll();
             </div>
         </div>
 
-        <!-- Course Filters (Horizontal Scroll) -->
-        <div style="overflow-x: auto; padding: 0 24px; margin-bottom: 30px; display: flex; gap: 10px; scrollbar-width: none;">
-            <div style="background: #0f172a; color: white; padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap;">All Courses</div>
-            <?php foreach($courses as $c): ?>
-                <div style="background: white; color: #64748b; padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap; border: 1px solid #e2e8f0;">
-                    <?php echo htmlspecialchars($c['course_code']); ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Intelligence Section (Mobile) -->
+        <!-- Risk Radar (Mobile) -->
         <div style="padding: 0 24px 30px;">
             <h3 style="font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">Risk Radar</h3>
             <div style="background: white; border-radius: 35px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
@@ -128,52 +121,34 @@ $top_performers = $stmt->fetchAll();
             </div>
         </div>
 
-        <!-- Recent Log -->
+        <!-- Recent Log (Mobile) -->
         <div class="section-title" style="padding: 0 24px; margin-bottom: 15px;">
             <span style="font-weight: 900; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 1px;">Live Log History</span>
         </div>
 
         <div style="padding: 0 24px;">
-            <?php if (empty($recent_sessions)): ?>
-                <div style="background: white; padding: 50px 20px; border-radius: 40px; text-align: center; border: 2px dashed #cbd5e1;">
-                    <i data-lucide="database-zap" style="width: 40px; height: 40px; color: #cbd5e1; margin-bottom: 15px;"></i>
-                    <p style="color: #64748b; font-weight: 600;">System synchronized. No logs yet.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach($recent_sessions as $sess): ?>
-                    <div style="background: white; padding: 20px; border-radius: 28px; border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 50px; height: 50px; background: #f8fafc; color: #475569; border-radius: 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1;">
-                                <span style="font-size: 14px; font-weight: 900;"><?php echo date('d', strtotime($sess['created_at'])); ?></span>
-                                <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 2px;"><?php echo date('M', strtotime($sess['created_at'])); ?></span>
-                            </div>
-                            <div>
-                                <h4 style="font-weight: 800; font-size: 15px; color: #0f172a;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
-                                <p style="font-size: 11px; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                                    <i data-lucide="clock" style="width: 10px;"></i> <?php echo date('h:i A', strtotime($sess['created_at'])); ?> • <span style="color: var(--primary);"><?php echo $sess['student_count']; ?> Present</span>
-                                </p>
-                            </div>
+            <?php foreach(array_slice($recent_sessions, 0, 5) as $sess): ?>
+                <div style="background: white; padding: 20px; border-radius: 28px; border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: #f8fafc; color: #475569; border-radius: 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1;">
+                            <span style="font-size: 14px; font-weight: 900;"><?php echo date('d', strtotime($sess['created_at'])); ?></span>
+                            <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 2px;"><?php echo date('M', strtotime($sess['created_at'])); ?></span>
                         </div>
-                        <a href="session_details?id=<?php echo $sess['id']; ?>" style="width: 40px; height: 40px; background: #f1f5f9; color: #0f172a; border-radius: 14px; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: transform 0.2s ease;">
-                            <i data-lucide="arrow-right" style="width: 18px;"></i>
-                        </a>
+                        <div>
+                            <h4 style="font-weight: 800; font-size: 14px; color: #0f172a;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
+                            <p style="font-size: 11px; color: #64748b; font-weight: 700;"><?php echo $sess['student_count']; ?> Present</p>
+                        </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
         </div>
-
-        <div style="height: 120px;"></div>
-    </div>
-</div>
-
         <div style="height: 120px;"></div>
     </div>
 </section>
 </div>
 
-<!-- Desktop: Intelligence Matrix (Bento Refactor) -->
+<!-- Desktop: Intelligence Matrix -->
 <div class="desktop-only-layout" style="background: #fbfcfd; min-height: 100vh;">
-    <!-- Enriched Desktop Header -->
     <header style="padding: 50px 60px 30px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -181,168 +156,162 @@ $top_performers = $stmt->fetchAll();
                 <span style="color: #64748b; font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Command Reports</span>
             </div>
             <h1 style="font-size: 48px; font-weight: 950; color: #0f172a; letter-spacing: -2.5px;">Analytics <span style="color: var(--primary);">Intelligence</span></h1>
-            <p style="color: #94a3b8; font-size: 16px; font-weight: 500; margin-top: 8px;">Real-time synoptic overview of faculty academic engagement.</p>
+            <p style="color: #94a3b8; font-size: 16px; font-weight: 500; margin-top: 8px;">Real-time synoptic overview of faculty engagement patterns.</p>
         </div>
-        <div style="display: flex; gap: 20px; align-items: center;">
-            <div style="text-align: right;">
-                <p style="font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">System Health</p>
-                <p style="font-size: 18px; font-weight: 900; color: #10b981;">OPTIMAL</p>
-            </div>
-            <button class="btn-primary" style="height: 55px; padding: 0 30px; border-radius: 18px; font-weight: 800; box-shadow: 0 10px 25px var(--primary-glow);">
-                <i data-lucide="download-cloud" style="width: 18px; margin-right: 10px;"></i> Master Export
+        <div style="display: flex; gap: 15px;">
+            <button class="btn-primary" style="height: 55px; padding: 0 30px; border-radius: 18px; font-weight: 800;">
+                <i data-lucide="download-cloud" style="width: 18px; margin-right: 10px;"></i> Export Data
             </button>
         </div>
     </header>
 
-    <!-- Top Statistical Tier -->
     <div style="padding: 0 60px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px;">
         <div style="background: white; padding: 30px; border-radius: 35px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                <div style="width: 50px; height: 50px; background: #eff6ff; color: var(--primary); border-radius: 16px; display: flex; justify-content: center; align-items: center;">
-                    <i data-lucide="calendar" style="width: 24px;"></i>
-                </div>
-                <h4 style="font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase;">Managed Sessions</h4>
-            </div>
+            <p style="font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Session Integrity</p>
             <h2 style="font-size: 40px; font-weight: 950; color: #0f172a;"><?php echo $total_sessions; ?></h2>
-            <p style="font-size: 13px; color: #10b981; font-weight: 700; margin-top: 5px;">+12% from last cycle</p>
-        </div>
-        
-        <div style="background: white; padding: 30px; border-radius: 35px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                <div style="width: 50px; height: 50px; background: #ecfdf5; color: #10b981; border-radius: 16px; display: flex; justify-content: center; align-items: center;">
-                    <i data-lucide="trending-up" style="width: 24px;"></i>
-                </div>
-                <h4 style="font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase;">Average Turnout</h4>
+            <div style="width: 100%; height: 6px; background: #eff6ff; border-radius: 10px; margin-top: 20px; overflow: hidden;">
+                <div style="width: 85%; height: 100%; background: var(--primary); border-radius: 10px;"></div>
             </div>
-            <h2 style="font-size: 40px; font-weight: 950; color: #0f172a;"><?php echo $avg_attendance; ?></h2>
-            <p style="font-size: 13px; color: #94a3b8; font-weight: 700; margin-top: 5px;">Students per session</p>
         </div>
-
         <div style="background: white; padding: 30px; border-radius: 35px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                <div style="width: 50px; height: 50px; background: #fff7ed; color: #f97316; border-radius: 16px; display: flex; justify-content: center; align-items: center;">
-                    <i data-lucide="shield-alert" style="width: 24px;"></i>
-                </div>
-                <h4 style="font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase;">Students At Risk</h4>
-            </div>
+            <p style="font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Presence Core</p>
+            <h2 style="font-size: 40px; font-weight: 950; color: #10b981;"><?php echo $avg_attendance; ?></h2>
+            <p style="font-size: 13px; color: #64748b; font-weight: 600; margin-top: 5px;">Avg participants / session</p>
+        </div>
+        <div style="background: white; padding: 30px; border-radius: 35px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 35px rgba(0,0,0,0.02);">
+            <p style="font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Risk Anomalies</p>
             <h2 style="font-size: 40px; font-weight: 950; color: #ef4444;"><?php echo count($at_risk); ?></h2>
-            <p style="font-size: 13px; color: #ef4444; font-weight: 700; margin-top: 5px;">Requires intervention</p>
+            <p style="font-size: 13px; color: #ef4444; font-weight: 700; margin-top: 5px;">Below 75% threshold</p>
         </div>
     </div>
 
-    <!-- Main Content Hub -->
-    <div style="padding: 0 60px 60px; display: grid; grid-template-columns: 7fr 3fr; gap: 35px; align-items: start;">
-        
-        <!-- Left: Course Matrix -->
-        <div style="background: white; border-radius: 45px; padding: 45px; border: 1.5px solid #f1f5f9; box-shadow: 0 20px 60px rgba(0,0,0,0.03);">
+    <!-- Analytics Matrix -->
+    <div style="padding: 0 60px 60px; display: grid; grid-template-columns: 7.5fr 4.5fr; gap: 35px; min-height: 500px;">
+        <!-- Distribution Area -->
+        <div style="background: white; border-radius: 45px; padding: 45px; border: 1.5px solid #f1f5f9; box-shadow: 0 20px 60px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-                <h3 style="font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Live Academic Matrix</h3>
-                <div style="display: flex; gap: 12px;">
-                    <span style="background: #f8fafc; color: #64748b; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; border: 1px solid #e2e8f0;">Sorted by: Latest</span>
-                </div>
+                <h3 style="font-size: 22px; font-weight: 950; color: #0f172a; letter-spacing: -1px;">Attendance Trendline</h3>
+                <span style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Last 15 Sessions</span>
             </div>
-
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0 15px;">
-                <thead>
-                    <tr style="text-align: left;">
-                        <th style="padding: 0 15px 15px; font-size: 11px; color: #94a3b8; font-weight: 850; text-transform: uppercase; letter-spacing: 1px;">Course Identity</th>
-                        <th style="padding: 0 15px 15px; font-size: 11px; color: #94a3b8; font-weight: 850; text-transform: uppercase; letter-spacing: 1px; text-align: center;">Pulse Events</th>
-                        <th style="padding: 0 15px 15px; font-size: 11px; color: #94a3b8; font-weight: 850; text-transform: uppercase; letter-spacing: 1px; text-align: center;">Avg Presence</th>
-                        <th style="padding: 0 15px 15px; font-size: 11px; color: #94a3b8; font-weight: 850; text-transform: uppercase; letter-spacing: 1px; text-align: center;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($courses)): ?>
-                        <tr><td colspan="4" style="text-align: center; padding: 50px; color: #94a3b8;">No courses mapped to your profile.</td></tr>
-                    <?php endif; ?>
-                    <?php foreach($courses as $c): 
-                        $cs_stmt = $db->prepare("SELECT COUNT(*) as s_count, (SELECT COUNT(*) FROM attendance WHERE session_id IN (SELECT id FROM sessions WHERE course_id = ?)) as a_count FROM sessions WHERE course_id = ?");
-                        $cs_stmt->execute([$c['id'], $c['id']]);
-                        $cs_data = $cs_stmt->fetch();
-                        $c_avg = ($cs_data['s_count'] > 0) ? round($cs_data['a_count'] / $cs_data['s_count'], 1) : 0;
-                    ?>
-                        <tr style="background: #fcfdfe; transition: transform 0.2s; cursor: pointer;">
-                            <td style="padding: 22px 20px; border-radius: 20px 0 0 20px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; border-left: 1px solid #f1f5f9;">
-                                <div style="font-weight: 900; color: #0f172a; font-size: 16px;"><?php echo htmlspecialchars($c['course_name']); ?></div>
-                                <div style="font-size: 12px; color: var(--primary); font-weight: 800; margin-top: 2px;"># <?php echo $c['course_code']; ?></div>
-                            </td>
-                            <td style="text-align: center; font-weight: 850; color: #475569; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;"><?php echo $cs_data['s_count']; ?></td>
-                            <td style="text-align: center; font-weight: 900; color: var(--text-dark); border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
-                                <span style="font-size: 18px;"><?php echo $c_avg; ?></span>
-                                <span style="font-size: 11px; color: #94a3b8; font-weight: 700;">/ session</span>
-                            </td>
-                            <td style="text-align: center; border-radius: 0 20px 20px 0; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
-                                <button style="background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 12px; color: #0f172a; cursor: pointer;">
-                                    <i data-lucide="chevron-right" style="width: 18px;"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div style="flex: 1; position: relative;">
+                <canvas id="attendanceTrendChart"></canvas>
+            </div>
         </div>
 
-        <!-- Right: Intelligence Sidebar -->
+        <!-- Radar & Side Intel -->
         <div style="display: flex; flex-direction: column; gap: 35px;">
-            <!-- Top Performers (Compact) -->
-            <div style="background: #0f172a; border-radius: 40px; padding: 40px; color: white;">
-                <h3 style="font-size: 18px; font-weight: 900; margin-bottom: 25px; letter-spacing: -0.5px;">Elite Nodes</h3>
-                <?php foreach($top_performers as $tp): ?>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden; border: 1.5px solid rgba(255,255,255,0.1);">
-                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=<?php echo $tp['username']; ?>" style="width: 100%;">
-                            </div>
-                            <div>
-                                <h4 style="font-size: 14px; font-weight: 800;"><?php echo htmlspecialchars($tp['username']); ?></h4>
-                                <p style="font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase;">Active Scan</p>
-                            </div>
-                        </div>
-                        <span style="color: #10b981; font-weight: 900; font-size: 15px;"><?php echo $tp['scan_count']; ?></span>
-                    </div>
-                <?php endforeach; ?>
+             <!-- Distribution Pie -->
+             <div style="background: white; border-radius: 40px; padding: 40px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 40px rgba(0,0,0,0.02);">
+                <h3 style="font-size: 18px; font-weight: 900; color: #0f172a; margin-bottom: 30px;">Course Distribution</h3>
+                <div style="height: 220px; position: relative;">
+                    <canvas id="courseDistributionChart"></canvas>
+                </div>
             </div>
 
-            <!-- Risk Radar (Actionable) -->
-            <div style="background: white; border-radius: 40px; padding: 40px; border: 1.5px solid #f1f5f9; box-shadow: 0 15px 40px rgba(0,0,0,0.02);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h3 style="font-size: 18px; font-weight: 950; color: #ef4444; letter-spacing: -0.5px;">Risk Radar</h3>
-                    <div style="width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulseShield 2s infinite;"></div>
-                </div>
-                
+            <!-- Risk List -->
+            <div style="background: #0f172a; border-radius: 40px; padding: 40px; color: white;">
+                <h3 style="font-size: 18px; font-weight: 900; margin-bottom: 25px;">Risk Analytics</h3>
                 <?php if (empty($at_risk)): ?>
-                    <div style="text-align: center; padding: 20px;">
-                        <i data-lucide="shield-check" style="width: 32px; height: 32px; color: #10b981; margin-bottom: 12px;"></i>
-                        <p style="color: #64748b; font-size: 14px; font-weight: 600;">System coverage optimal</p>
-                    </div>
+                    <p style="color: #10b981; font-weight: 700;">Coverage stable. No anomalies detected.</p>
                 <?php else: ?>
                     <?php foreach($at_risk as $r): ?>
-                        <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f8fafc;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                                <span style="font-size: 14px; font-weight: 850; color: #0f172a;"><?php echo htmlspecialchars($r['username']); ?></span>
-                                <span style="font-size: 14px; font-weight: 900; color: #ef4444;"><?php echo round($r['attendance_rate']); ?>%</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="font-size: 14px; font-weight: 800;"><?php echo htmlspecialchars($r['username']); ?></h4>
+                                <p style="font-size: 10px; color: rgba(255,255,255,0.4);"><?php echo $r['course_code']; ?></p>
                             </div>
-                            <div style="height: 6px; background: #fef2f2; border-radius: 10px; overflow: hidden;">
-                                <div style="width: <?php echo $r['attendance_rate']; ?>%; height: 100%; background: #ef4444; border-radius: 10px;"></div>
-                            </div>
-                            <p style="font-size: 11px; color: #94a3b8; font-weight: 700; margin-top: 8px;">Target: <?php echo $r['course_code']; ?></p>
+                            <span style="color: #ef4444; font-weight: 900;"><?php echo round($r['attendance_rate']); ?>%</span>
                         </div>
                     <?php endforeach; ?>
-                    <button style="width: 100%; height: 50px; background: #fef2f2; color: #ef4444; border: none; border-radius: 16px; font-size: 13px; font-weight: 850; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i data-lucide="megaphone" style="width: 16px;"></i> Dispatch Alerts
-                    </button>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
+<?php
+// Prepare chart data
+$trend_labels = [];
+$trend_values = [];
+foreach(array_reverse(array_slice($recent_sessions, 0, 15)) as $s) {
+    $trend_labels[] = date('M d', strtotime($s['created_at']));
+    $trend_values[] = $s['student_count'];
+}
+
+$dist_labels = [];
+$dist_values = [];
+foreach($courses as $c) {
+    $dist_labels[] = $c['course_code'];
+    // Count sessions for this course
+    $cs_stmt = $db->prepare("SELECT COUNT(*) FROM sessions WHERE course_id = ?");
+    $cs_stmt->execute([$c['id']]);
+    $dist_values[] = $cs_stmt->fetchColumn();
+}
+?>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Line Chart: Attendance Trend
+    const trendCtx = document.getElementById('attendanceTrendChart');
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: <?php echo json_encode($trend_labels); ?>,
+                datasets: [{
+                    label: 'Attendee Count',
+                    data: <?php echo json_encode($trend_values); ?>,
+                    borderColor: '#0066ff',
+                    backgroundColor: 'rgba(0, 102, 255, 0.05)',
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0066ff',
+                    pointBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Doughnut Chart: Distribution
+    const distCtx = document.getElementById('courseDistributionChart');
+    if (distCtx) {
+        new Chart(distCtx, {
+            type: 'doughnut',
+            data: {
+                labels: <?php echo json_encode($dist_labels); ?>,
+                datasets: [{
+                    data: <?php echo json_encode($dist_values); ?>,
+                    backgroundColor: ['#0066ff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
     }
 });
 </script>
+>
 
 <?php include '../includes/footer.php'; ?>
