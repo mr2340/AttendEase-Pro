@@ -42,7 +42,7 @@ $stats = StatEngine::getLecturerStats($user_id);
             <div class="greeting">
                 <p style="font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; margin-bottom: 5px;">Faculty Portal</p>
                 <h1 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--text-dark);">
-                    Welcome, <span style="color: var(--primary);">Dr. <?php echo explode('_', $_SESSION['username'])[1] ?? 'Lecturer'; ?></span>
+                    Welcome, <span style="color: var(--primary);">Dr. <?php echo htmlspecialchars(explode('_', $_SESSION['username'] ?? 'Lecturer_Name')[1] ?? 'Lecturer'); ?></span>
                 </h1>
             </div>
             <div class="profile-avatar" style="width: 60px; height: 60px; border-radius: 20px; border: 2px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow);">

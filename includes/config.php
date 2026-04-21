@@ -3,6 +3,17 @@
  * AttendEase Pro - Configuration File
  */
 
+// Production Environment Detection
+define('IS_PRODUCTION', true); // Toggle to false for dev
+
+if (IS_PRODUCTION) {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+} else {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 // Load .env file
 function loadEnv($path) {
     if (!file_exists($path)) return;
