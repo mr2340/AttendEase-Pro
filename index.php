@@ -76,21 +76,69 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
     <div class="welcome-footer">
-            <div class="pagination">
+        <div class="pagination">
             <div class="dot"></div><div class="dot"></div><div class="dot active"></div>
         </div>
-        <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
-            <a href="student/login.php" class="btn-primary" style="text-align: center; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i data-lucide="graduation-cap" style="width: 20px;"></i> Continue as Student
+        <div class="role-selection-group">
+            <a href="student/login.php" class="btn-role-primary">
+                <i data-lucide="graduation-cap"></i> Continue as Student
             </a>
-            <a href="lecturer/login.php" class="btn-role-secondary" style="text-align: center; text-decoration: none; background: white; color: var(--text-dark); border: 2px solid var(--border); padding: 18px; border-radius: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                <i data-lucide="briefcase" style="width: 20px;"></i> Continue as Lecturer
+            <a href="lecturer/login.php" class="btn-role-secondary">
+                <i data-lucide="briefcase"></i> Continue as Lecturer
             </a>
         </div>
     </div>
 </section>
 
 <style>
+.role-selection-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.screen[data-state="active"] .role-selection-group {
+    animation: revealText 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+.btn-role-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 20px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 102, 255, 0.3);
+    transition: var(--transition-bounce);
+}
+
+.btn-role-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px -5px rgba(0, 102, 255, 0.4);
+}
+
+.btn-role-secondary {
+    background: var(--surface);
+    color: var(--text-dark);
+    padding: 20px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: 2px solid var(--border);
+    transition: var(--transition-smooth);
+}
+
 .btn-role-secondary:hover {
     background: #f8fafc !important;
     border-color: var(--primary) !important;
@@ -98,8 +146,9 @@ if (isset($_SESSION['user_id'])) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 102, 255, 0.05);
 }
-.btn-role-secondary:active {
-    transform: translateY(0);
+
+.btn-role-primary:active, .btn-role-secondary:active {
+    transform: scale(0.98);
 }
 </style>
 

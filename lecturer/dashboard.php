@@ -21,12 +21,12 @@ $stmt = $db->prepare("SELECT * FROM courses WHERE lecturer_id = ?");
 $stmt->execute([$user_id]);
 $courses = $stmt->fetchAll();
 
-// Fetch Active Sessions
+// Fetch Active or Paused Sessions
 $stmt = $db->prepare("
     SELECT s.*, c.course_name 
     FROM sessions s 
     JOIN courses c ON s.course_id = c.id 
-    WHERE s.lecturer_id = ? AND s.status = 'active'
+    WHERE s.lecturer_id = ? AND s.status IN ('active', 'paused')
 ");
 $stmt->execute([$user_id]);
 $active_sessions = $stmt->fetchAll();
@@ -78,15 +78,33 @@ $stats = StatEngine::getLecturerStats($user_id);
                     </button>
                 </div>
             <?php else: ?>
-                <?php foreach($active_sessions as $sess): ?>
-                    <div style="background: var(--surface); padding: 20px; border-radius: 24px; border: 2px solid var(--primary); margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                <?php foreach($active_sessions as $sess): 
+                    $is_paused = $sess['status'] === 'paused';
+                ?>
+                    <div style="background: var(--surface); padding: 20px; border-radius: 24px; border: 2px solid <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
                         <div>
-                            <h4 style="font-weight: 800;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <h4 style="font-weight: 800;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
+                                <span style="font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; background: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; color: white; text-transform: uppercase;">
+                                    <?php echo $sess['status']; ?>
+                                </span>
+                            </div>
                             <p style="font-size: 12px; color: var(--text-muted);">Session ID: <?php echo $sess['id']; ?></p>
                         </div>
-                        <a href="view_qr?id=<?php echo $sess['id']; ?>" style="background: var(--primary); color: white; padding: 10px; border-radius: 12px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16h.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-                        </a>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="toggleSession(<?php echo $sess['id']; ?>, '<?php echo $sess['status']; ?>')" style="background: <?php echo $is_paused ? 'var(--success)' : 'var(--warning)'; ?>; color: white; border: none; padding: 10px 15px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 12px;">
+                                <?php if ($is_paused): ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    RESUME
+                                <?php else: ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                                    PAUSE
+<?php endif; ?>
+                            </button>
+                            <a href="generate_qr" style="background: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; color: white; padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16h.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                            </a>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -236,18 +254,32 @@ $stats = StatEngine::getLecturerStats($user_id);
                             <p style="color: #64748b; font-weight: 700; font-size: 18px;">No active attendance nodes detected.</p>
                         </div>
                     <?php else: ?>
-                        <?php foreach($active_sessions as $sess): ?>
-                            <div style="background: #fdfdfd; padding: 30px; border-radius: 35px; border: 2px solid var(--primary); position: relative;">
+                        <?php foreach($active_sessions as $sess): 
+                            $is_paused = $sess['status'] === 'paused';
+                        ?>
+                            <div style="background: #fdfdfd; padding: 30px; border-radius: 35px; border: 2px solid <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; position: relative;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                                     <div>
                                         <h4 style="font-size: 18px; font-weight: 900; color: #0f172a;"><?php echo htmlspecialchars($sess['course_name']); ?></h4>
-                                        <p style="font-size: 12px; color: var(--primary); font-weight: 800; margin-top: 5px;">LIVE NODE: #<?php echo $sess['id']; ?></p>
+                                        <p style="font-size: 12px; color: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; font-weight: 800; margin-top: 5px;">
+                                            <?php echo $is_paused ? 'PAUSED NODE' : 'LIVE NODE'; ?>: #<?php echo $sess['id']; ?>
+                                        </p>
                                     </div>
-                                    <div style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%; animation: pulseShield 2s infinite;"></div>
+                                    <div style="width: 12px; height: 12px; background: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; border-radius: 50%; <?php echo $is_paused ? '' : 'animation: pulseShield 2s infinite;'; ?>"></div>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
-                                    <a href="view_qr?id=<?php echo $sess['id']; ?>" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: white; height: 48px; border-radius: 14px; font-weight: 800; font-size: 13px; text-decoration: none;">
-                                        <i data-lucide="maximize" style="width: 16px;"></i> HUB VIEW
+                                    <button onclick="toggleSession(<?php echo $sess['id']; ?>, '<?php echo $sess['status']; ?>')" style="background: <?php echo $is_paused ? 'var(--success)' : 'var(--warning)'; ?>; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                                        <?php if ($is_paused): ?>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                            RESUME BROADCAST
+                                        <?php else: ?>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                                            PAUSE BROADCAST
+                                        <?php endif; ?>
+                                    </button>
+                                    <a href="generate_qr" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; color: white; height: 48px; border-radius: 14px; font-weight: 800; font-size: 13px; text-decoration: none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                                        HUB VIEW
                                     </a>
                                 </div>
                             </div>
@@ -376,6 +408,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileForm) mobileForm.addEventListener('submit', handleBroadcast);
     if (desktopForm) desktopForm.addEventListener('submit', handleBroadcast);
 });
+
+async function toggleSession(sessionId, currentStatus) {
+    const action = currentStatus === 'active' ? 'pause' : 'resume';
+    try {
+        const response = await fetch('../includes/toggle_session.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId, action: action })
+        });
+        const result = await response.json();
+        if (result.success) {
+            location.reload();
+        } else {
+            Swal.fire('Error', result.message, 'error');
+        }
+    } catch (err) {
+        Swal.fire('Error', 'Connection failed', 'error');
+    }
+}
 </script>
 
 <?php include '../includes/footer.php'; ?>

@@ -141,7 +141,10 @@ try {
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <button id="toggleBtn" onclick="togglePause()" style="height: 70px; border-radius: 20px; border: 2px solid #fffbeb; background: #fff; color: var(--warning); font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                        <i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 10px;">Toggle</span>
+                        <span id="toggleIcon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+                        </span>
+                        <span id="toggleText" style="font-size: 10px;">Pause</span>
                     </button>
                     <button onclick="closeSession()" style="height: 70px; border-radius: 20px; background: #fee2e2; color: #ef4444; border: none; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
                         <i data-lucide="power" style="width: 20px;"></i><span style="font-size: 10px;">Clear</span>
@@ -422,12 +425,27 @@ function updateUI() {
     const isPaused = currentStatus === 'paused';
     const mShield = document.getElementById('pauseShield');
     const dShield = document.getElementById('dt-pauseShield');
-    const tBtn = document.getElementById('toggleBtn');
+    const tIcon = document.getElementById('toggleIcon');
+    const tText = document.getElementById('toggleText');
     const dtTBtn = document.getElementById('dt-side-toggle');
+
     if (mShield) mShield.style.display = isPaused ? 'flex' : 'none';
     if (dShield) dShield.style.display = isPaused ? 'flex' : 'none';
-    if (tBtn) tBtn.innerHTML = isPaused ? '<i data-lucide="play-circle" style="width: 20px;"></i><span style="font-size: 10px;">Resume</span>' : '<i data-lucide="pause-circle" style="width: 20px;"></i><span style="font-size: 10px;">Pause</span>';
-    if (dtTBtn) { dtTBtn.innerText = isPaused ? 'Resume Broadcast' : 'Pause Broadcast'; dtTBtn.style.background = isPaused ? 'var(--success)' : 'white'; dtTBtn.style.color = isPaused ? 'white' : 'var(--warning)'; }
+
+    if (tIcon) {
+        tIcon.innerHTML = isPaused ? 
+            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>' : 
+            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>';
+    }
+    if (tText) tText.innerText = isPaused ? 'Resume' : 'Pause';
+
+    if (dtTBtn) { 
+        dtTBtn.innerHTML = isPaused ? 
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right:8px; vertical-align:middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume Broadcast' : 
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; vertical-align:middle;"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> Pause Broadcast'; 
+        dtTBtn.style.background = isPaused ? 'var(--success)' : 'white'; 
+        dtTBtn.style.color = isPaused ? 'white' : 'var(--warning)'; 
+    }
     if (window.lucide) lucide.createIcons();
 }
 

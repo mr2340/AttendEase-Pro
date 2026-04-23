@@ -46,7 +46,7 @@ Options +FollowSymLinks
 FileETag None
 
 # Block sensitive files
-<FilesMatch "(\.env|\.sql|service-account\.json|composer\.json|composer\.lock|package\.json|package-lock\.json)$">
+<FilesMatch "(\.env|\.sql|service-account\.json|composer\.json|composer\.lock|package\.json|package-lock\.json|config\.php|security\.php|.*Engine\.php|header\.php|footer\.php|navbar\.php|sidebar\.php)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -56,7 +56,8 @@ FileETag None
     </IfModule>
 </FilesMatch>
 
-# Block access to core directories
+# Block access to core directories but allow execution of PHP scripts in includes
+RewriteCond %{REQUEST_URI} !^/sodex/includes/.*\.php
 RewriteRule ^(includes|temp|assets/js/modules|vendor|\.git)($|/) - [F,L,NC]
 
 <IfModule mod_headers.c>

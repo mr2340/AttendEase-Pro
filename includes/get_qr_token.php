@@ -20,6 +20,21 @@ if (!$session_id) {
     exit;
 }
 
+try {
+    $db = get_db_connection();
+    $stmt = $db->prepare("SELECT status FROM sessions WHERE id = ?");
+    $stmt->execute([$session_id]);
+    $session = $stmt->fetch();
+
+    if (!$session || $session['status'] !== 'active') {
+        echo json_encode(['success' => false, 'message' => 'Session is not active (Paused or Closed)']);
+        exit;
+    }
+} catch (PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error']);
+    exit;
+}
+
 $block = floor(time() / 30);
 $raw_token = $session_id . ":" . $block;
 $hmac = hash_hmac('sha256', $raw_token, SECURE_KEY);
