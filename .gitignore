@@ -1,0 +1,42 @@
+# AttendEase Pro - Repository Ignore Rules
+
+# Security & Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+service-account.json
+
+# Dependencies
+node_modules/
+vendor/
+dist/
+.npm
+.eslintcache
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+*.sqlite
+attendease_db.sql
+
+# OS Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# PHP specific
+composer.phar
+.php_cs.cache
+.phpunit.result.cache
