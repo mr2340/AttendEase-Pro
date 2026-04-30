@@ -29,64 +29,187 @@ AttendEase Pro is built on a proprietary design language we call **"Aura"**. It 
 
 ### 2. 👨‍🏫 Faculty Hub: Master Command Terminal
 - **Dual-Viewport Architecture**:
-    - **Mobile View**: Optimized for lecturers walking around the class, featuring a simplified QR display and live attendee pulse.
-    - **Projection Mode (Desktop)**: A massive, cinematic interface intended for overhead projectors. It features a high-density 320px QR matrix and a telemetry sidebar.
+    - **Mobile View**: Optimized for lecturers walking around the class, featuring a live attendee pulse.
+    - **Projection Mode (Desktop)**: A massive, cinematic interface intended for overhead projectors.
+- **Session Control Center**: One-tap **Pause/Resume** and **Clear** controls available directly from the Dashboard and the QR Hub.
 - **Real-time Telemetry**: Instant updates on student check-ins with visual "ping" animations.
-- **Session Lifecycle Management**: One-tap deployment, pausing, and termination of attendance nodes.
 
 ### 3. 📊 Intelligence Command (Analytics)
 - **Risk Radar**: Automatically identifies students whose attendance falls below the 75% threshold using predictive logic.
-- **Attendance Trendlines**: Integrated **Chart.js** visualizations showing attendance patterns over the last 15 sessions.
-- **Presence Core**: Real-time average turnout metrics and course distribution maps.
+- **Attendance Trendlines**: Integrated **Chart.js** visualizations showing patterns over time.
 
-### 4. 📡 Broadcast Pulse Engine
-- **FCM Integrated Notifications**: Send instant push notifications to an entire course's student body with a single "Pulse" command.
-- **Instructional Alerts**: Alert students to room changes, session starts, or emergency updates with enterprise-grade reliability.
+### 4. 🛡️ High-Integrity Security Suite
+- **QR Rotation & Backend Verification**: QR tokens rotate every 30 seconds. The backend strictly enforces session status, refusing to generate tokens for paused sessions.
+- **Geo-Fencing & Anti-Proxy**: Integrated location validation ensures students are physically present in the classroom.
+- **Environment Protection**: Sensitive credentials managed via `.env` (ignored by version control).
 
-### 5. 📷 Secure QR Rotation System
-- **Anti-Proxy Logic**: QR tokens rotate every 15 seconds. If a student takes a photo to share with friends, the token will have expired before it can be effectively used.
-- **High-Contrast Matrix**: Optimized for quick scanning even in low-light environments.
+### 5. 💎 Resilient "Aura" Design
+- **Inline SVG Architecture**: Critical controls (Pause, Resume, Clear) use high-reliability inline SVGs, ensuring 100% visibility even if external icon libraries fail.
+- **Glassmorphism 2.0**: Utilizing `-webkit-backdrop-filter` for translucent layers that feel premium and tactile.
 
 ---
 
 ## 📂 Core Directory Structure
 
 ```text
-├── assets/
-│   ├── css/
-│   │   └── main.css            # "Aura" Design Tokens & UI Utilities
-│   ├── js/
-│   │   └── main.js             # PWA Logic, FCM Dispatch & QR Client
+├── assets/                     # Aura Design Tokens & JS Logic
 ├── includes/
-│   ├── config.php              # Global Sync & Secure DB Gateway
-│   ├── security.php            # Rate Limiter & CSP Enforcement
-│   ├── process_broadcast.php   # FCM Pulse Backend
-│   └── get_qr_token.php        # Dynamic Token Generator
-├── lecturer/
-│   ├── dashboard.php           # Faculty Entry Hub
-│   ├── generate_qr.php         # Master Projection Terminal
-│   └── reports.php             # Intelligence Analytics Matrix
-├── student/
-│   ├── dashboard.php           # Student Progress Tracking
-│   └── scan.php                # High-Speed Verification Engine
-├── firebase-messaging-sw.js    # Service Worker & FCM Relay
-└── manifest.json               # PWA App Identity Metadata
+│   ├── config.php              # Environment & DB Loader
+│   ├── security.php            # CSRF, Rate Limiting & Auth Guard
+│   ├── GeoEngine.php           # Geo-Spatial Logic
+│   ├── stat_engine.php         # Analytics & Metrics Logic
+│   ├── get_qr_token.php        # Secure Token Engine (Status Aware)
+│   └── process_attendance.php   # Attendance Logic & Geo-Verification
+├── lecturer/                   # Faculty Entry Hub & Projection
+├── student/                    # Student Progress & Verification
+├── .env                        # Local Environment Variables (Secret)
+├── .gitignore                  # Repository Ignore Rules
+└── manifest.json               # PWA App Identity
 ```
 
 ---
+
+## 📐 System Architecture & Data Models
+
+### 1. Entity Relationship Diagram (ERD)
+The database architecture is designed for high relational integrity and optimized for analytical queries.
+
+```mermaid
+erDiagram
+    USERS ||--o{ COURSES : "lectures"
+    USERS ||--o{ ENROLLMENTS : "enrolled_in"
+    COURSES ||--o{ ENROLLMENTS : "contains"
+    COURSES ||--o{ SESSIONS : "has"
+    USERS ||--o{ SESSIONS : "starts"
+    SESSIONS ||--o{ ATTENDANCE : "records"
+    USERS ||--o{ ATTENDANCE : "attends"
+
+    USERS {
+        int id PK
+        string username
+        string email
+        string password
+        string role "student/lecturer/admin"
+        boolean dark_mode
+        datetime created_at
+    }
+
+    COURSES {
+        int id PK
+        string course_name
+        string course_code
+        int lecturer_id FK
+        datetime created_at
+    }
+
+    ENROLLMENTS {
+        int student_id FK
+        int course_id FK
+        datetime created_at
+    }
+
+    SESSIONS {
+        int id PK
+        int course_id FK
+        int lecturer_id FK
+        string status "active/paused/closed"
+        string qr_token
+        decimal latitude
+        decimal longitude
+        datetime created_at
+    }
+
+    ATTENDANCE {
+        int id PK
+        int student_id FK
+        int session_id FK
+        string status "present/late/absent"
+        decimal latitude
+        decimal longitude
+        timestamp timestamp
+    }
+
+    RATE_LIMITS {
+        string ip PK
+        int request_count
+        bigint last_request
+        bigint blocked_until
+    }
+```
+
+### 2. Logic Class Diagram
+AttendEase Pro utilizes a modular service architecture to handle security, geo-fencing, and intelligence metrics.
+
+```mermaid
+classDiagram
+    class AttendEaseSecurity {
+        +init()
+        -secureSession()
+        +initCsrf()
+        +validateCsrf(token)
+        +getCsrfToken()
+        -checkRateLimit()
+        -setSecurityHeaders()
+    }
+
+    class GeoEngine {
+        +calculateDistance(lat1, lon1, lat2, lon2)
+        +isWithinRange(sLat, sLng, cLat, cLng, radius)
+    }
+
+    class StatEngine {
+        +getStudentAttendanceScore(student_id)
+        +getDetailedAttendanceByCourse(student_id)
+        +getRecentActivity(student_id, limit)
+        +getAttendanceByCourse(student_id, course_id)
+        +getLecturerStats(lecturer_id)
+    }
+
+    class Configuration {
+        <<Global>>
+        +loadEnv(path)
+        +get_db_connection()
+    }
+
+    AttendEaseSecurity ..> Configuration : Uses
+    StatEngine ..> Configuration : Uses
+```
+
+### 3. High-Level System Workflow
+A visualization of the secure attendance loop.
+
+```mermaid
+sequenceDiagram
+    participant S as Student App
+    participant B as Backend API
+    participant L as Lecturer Terminal (QR)
+
+    L->>B: Start Session (Course ID)
+    B->>L: Generate Secure QR Token (rotates 30s)
+    S->>L: Scan QR Code
+    S->>B: Submit Token + Geo-Location
+    B->>B: Validate Token Integrity
+    B->>B: Validate Geo-Fencing (GeoEngine)
+    B->>B: Record Attendance
+    B->>L: Push Live Pulse Update (Telemetry)
+    B->>S: Success Notification
+```
+
+---
+
 
 ## ⚙️ Engineering & Deployment
 
 ### Server Requirements
 - **PHP**: 8.1+ (PDO and JSON extensions required).
-- **Web Server**: Apache 2.4+ (mod_rewrite enabled for clean URLs).
-- **Security**: SSL/TLS certificate is mandatory for Camera/Geolocation API access.
+- **Web Server**: Apache 2.4+ (mod_rewrite enabled).
+- **Environment**: `.env` file support enabled.
 
 ### Quick Start
-1. **Repository Sync**: Clone to your local XAMPP/WAMP or production environment.
-2. **Database Deployment**: Import the SQL schema provided in `/db/schema.sql`.
-3. **Gateway Configuration**: Update `config.php` with your DB credentials and Firebase FCM VAPID keys.
-4. **Endpoint Verification**: Test the `/lecturer/generate_qr` and `/student/scan` routes to ensure camera permissions are active.
+1. **Repository Sync**: Clone to your local environment.
+2. **Environment Setup**: Copy your credentials into a `.env` file (see `.env.example` if available).
+3. **Database Deployment**: Import the SQL schema.
+4. **Endpoint Verification**: Test `/lecturer/dashboard` to access the command center.
 
 ---
 
