@@ -31,6 +31,18 @@ try {
     ");
     $stmt->execute([$user_id]);
     $existing_sessions = $stmt->fetchAll();
+
+    // Fetch Today's Schedule for the Lecturer
+    $day_now = date('w');
+    $stmt = $db->prepare("
+        SELECT s.*, c.course_name, c.course_code 
+        FROM schedules s 
+        JOIN courses c ON s.course_id = c.id 
+        WHERE c.lecturer_id = ? AND s.day_of_week = ? 
+        ORDER BY s.start_time ASC
+    ");
+    $stmt->execute([$user_id, $day_now]);
+    $todays_schedule = $stmt->fetchAll();
 } catch (PDOException $e) {
     echo "<h1>Database Error</h1>";
     echo "<p>" . htmlspecialchars($e->getMessage()) . "</p>";
@@ -76,6 +88,24 @@ try {
                         <h3 style="font-size: 24px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.5px;">Initialize Node</h3>
                         <p style="color: var(--text-muted); font-size: 14px; font-weight: 500;">Configure your attendance broadcast.</p>
                     </div>
+
+                    <!-- Today's Schedule Quick Select -->
+                    <?php if (!empty($todays_schedule)): ?>
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="font-size: 11px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Your Timeline Today</h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <?php foreach ($todays_schedule as $sched): ?>
+                            <div onclick="quickFill('<?php echo addslashes($sched['course_name']); ?>', <?php echo $sched['course_id']; ?>)" style="background: #f8fafc; padding: 15px; border-radius: 20px; border: 1.5px solid #e2e8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 800; font-size: 14px; color: #0f172a;"><?php echo htmlspecialchars($sched['course_code']); ?></div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b;"><?php echo date('h:i A', strtotime($sched['start_time'])); ?> - <?php echo htmlspecialchars($sched['location']); ?></div>
+                                </div>
+                                <i data-lucide="zap" style="width: 18px; color: var(--primary);"></i>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     
                     <form onsubmit="handleDeployment(event)">
                         <div class="form-group" style="margin-bottom: 20px;">
@@ -190,6 +220,21 @@ try {
             <div style="max-width: 500px;">
                 <h2 style="font-size: 32px; font-weight: 950; color: var(--text-dark); margin-bottom: 20px; letter-spacing: -1px;">Launch Attendance Node</h2>
                 <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 35px;">Students will scan the terminal to verify their presence in real-time.</p>
+
+                <!-- Desktop Timeline -->
+                <?php if (!empty($todays_schedule)): ?>
+                <div style="margin-bottom: 35px; background: #fbfcfd; padding: 25px; border-radius: 28px; border: 1.5px solid #f1f5f9;">
+                    <h4 style="font-size: 12px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Today's Deployment Targets</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <?php foreach ($todays_schedule as $sched): ?>
+                        <div onclick="quickFill('<?php echo addslashes($sched['course_name']); ?>', <?php echo $sched['course_id']; ?>)" style="background: white; padding: 20px; border-radius: 20px; border: 1.5px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 900; font-size: 16px; color: #0f172a;"><?php echo htmlspecialchars($sched['course_code']); ?></div>
+                            <div style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 4px;"><?php echo date('h:i A', strtotime($sched['start_time'])); ?> @ <?php echo htmlspecialchars($sched['location']); ?></div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
                 
                 <form onsubmit="handleDeployment(event)" style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="form-group">
@@ -282,6 +327,20 @@ let currentStatus = 'active';
 let rotationInterval = null;
 let statsInterval = null;
 let lastAttendeeCount = 0;
+
+function quickFill(topic, courseId) {
+    const topicInputs = document.querySelectorAll('input[name="topic"]');
+    const courseSelects = document.querySelectorAll('select[name="course_id"]');
+    
+    topicInputs.forEach(input => input.value = topic);
+    courseSelects.forEach(select => select.value = courseId);
+    
+    // Smooth scroll to action button on mobile
+    if (window.innerWidth < 768) {
+        const btn = document.querySelector('button[type="submit"]');
+        if (btn) btn.scrollIntoView({ behavior: 'smooth' });
+    }
+}
 
 async function updateLiveCount() {
     if (!currentSessionId || currentStatus !== 'active') return;
