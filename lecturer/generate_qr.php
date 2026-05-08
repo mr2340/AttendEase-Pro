@@ -14,33 +14,55 @@ include '../includes/header.php';
 
 $db = get_db_connection();
 $user_id = $_SESSION['user_id'];
+$url_course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : null;
 
 try {
-    // Fetch Courses
+    // Fetch Courses - If URL param exists, verify it belongs to lecturer
     $stmt = $db->prepare("SELECT * FROM courses WHERE lecturer_id = ?");
     $stmt->execute([$user_id]);
     $courses = $stmt->fetchAll();
 
+    // AUTO-CLEANUP: Mark expired sessions as closed
+    $now_php = date('Y-m-d H:i:s');
+    $db->prepare("UPDATE sessions SET status = 'closed' WHERE lecturer_id = ? AND status IN ('active', 'paused') AND expires_at < ?")->execute([$user_id, $now_php]);
+
+    // Check if the requested course exists and belongs to this lecturer
+    $target_course = null;
+    if ($url_course_id) {
+        foreach ($courses as $c) {
+            if ($c['id'] == $url_course_id) {
+                $target_course = $c;
+                break;
+            }
+        }
+    }
+
     // Fetch Active/Paused Sessions
-    $stmt = $db->prepare("
+    $session_query = "
         SELECT s.*, c.course_name 
         FROM sessions s 
         JOIN courses c ON s.course_id = c.id 
         WHERE s.lecturer_id = ? AND s.status IN ('active', 'paused')
-        ORDER BY s.created_at DESC
-    ");
+    ";
+    if ($url_course_id) $session_query .= " AND s.course_id = $url_course_id ";
+    $session_query .= " ORDER BY s.created_at DESC ";
+
+    $stmt = $db->prepare($session_query);
     $stmt->execute([$user_id]);
     $existing_sessions = $stmt->fetchAll();
 
-    // Fetch Today's Schedule for the Lecturer
+    // Fetch Today's Schedule
     $day_now = date('w');
-    $stmt = $db->prepare("
+    $schedule_query = "
         SELECT s.*, c.course_name, c.course_code 
         FROM schedules s 
         JOIN courses c ON s.course_id = c.id 
         WHERE c.lecturer_id = ? AND s.day_of_week = ? 
-        ORDER BY s.start_time ASC
-    ");
+    ";
+    if ($url_course_id) $schedule_query .= " AND s.course_id = $url_course_id ";
+    $schedule_query .= " ORDER BY s.start_time ASC ";
+
+    $stmt = $db->prepare($schedule_query);
     $stmt->execute([$user_id, $day_now]);
     $todays_schedule = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -70,7 +92,7 @@ try {
                 </button>
                 <?php if (!empty($existing_sessions)): ?>
                     <?php foreach($existing_sessions as $sess): ?>
-                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>', <?php echo $sess['course_id']; ?>)" 
+                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>', <?php echo $sess['course_id']; ?>, '<?php echo $sess['expires_at']; ?>', '<?php echo addslashes($sess['course_code']); ?>')" 
                                 class="session-nav-btn" 
                                 id="nav-sess-<?php echo $sess['id']; ?>"
                                 style="background: white; color: var(--text-dark); border: 1.5px solid var(--border); padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
@@ -117,7 +139,9 @@ try {
                             <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 10px;">Target Course</label>
                             <select name="course_id" class="form-control" style="height: 55px; border-radius: 18px; border: 2px solid var(--bg-main); background: var(--bg-main); font-weight: 700; font-size: 14px; padding: 0 20px;">
                                 <?php foreach($courses as $c): ?>
-                                    <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['course_name']); ?></option>
+                                    <option value="<?php echo $c['id']; ?>" <?php echo ($url_course_id == $c['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($c['course_name']); ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -157,9 +181,12 @@ try {
                         <div id="rotation-ring" style="position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border: 4px solid var(--primary); border-radius: 42px; border-top-color: transparent; border-left-color: transparent; animation: spin 30s linear infinite;"></div>
                     </div>
                     <div style="margin-top: 30px; position: relative; z-index: 1;">
-                        <span id="liveCourseCode" style="font-size: 11px; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 4px 12px; border-radius: 50px; text-transform: uppercase;">--</span>
+                        <span id="liveCourseCode" style="font-size: 11px; font-weight: 850; color: var(--primary); background: #eff6ff; padding: 4px 12px; border-radius: 50px; text-transform: uppercase;">--</span>
                         <h3 id="liveTopicName" style="font-weight: 900; color: var(--text-dark); font-size: 24px; letter-spacing: -1px; margin: 12px 0 5px;">Topic Name</h3>
                         <p id="liveCourseName" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Course Title</p>
+                        <div id="expiration-timer" style="font-size: 11px; font-weight: 850; color: #ef4444; margin-top: 10px; display: none;">
+                            <i data-lucide="clock" style="width: 12px; vertical-align: middle; margin-right: 4px;"></i> SESSION EXPIRES IN: <span id="timer-val" style="font-family: monospace;">--:--</span>
+                        </div>
                     </div>
                     <div id="pauseShield" style="display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); z-index: 100; flex-direction: column; justify-content: center; align-items: center; border-radius: 40px;">
                         <div style="width: 80px; height: 80px; background: var(--warning); border-radius: 28px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; box-shadow: 0 15px 35px var(--warning-glow);">
@@ -244,7 +271,11 @@ try {
                     <div class="form-group">
                         <label style="font-size: 11px; font-weight: 850; color: var(--text-muted); text-transform: uppercase;">Course</label>
                         <select name="course_id" style="width: 100%; height: 55px; border-radius: 16px; border: 1.5px solid var(--border); padding: 0 20px; font-weight: 700; margin-top: 8px;">
-                            <?php foreach($courses as $c): ?><option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['course_name']); ?></option><?php endforeach; ?>
+                            <?php foreach($courses as $c): ?>
+                                <option value="<?php echo $c['id']; ?>" <?php echo ($url_course_id == $c['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($c['course_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <button type="submit" class="btn-primary" style="height: 60px; border-radius: 18px; font-weight: 950; font-size: 16px; margin-top: 10px;">Initialize Gateway</button>
@@ -327,6 +358,8 @@ let currentStatus = 'active';
 let rotationInterval = null;
 let statsInterval = null;
 let lastAttendeeCount = 0;
+let currentExpiry = null;
+let timerInterval = null;
 
 function quickFill(topic, courseId) {
     const topicInputs = document.querySelectorAll('input[name="topic"]');
@@ -431,22 +464,61 @@ function showSetup() {
     if (statsInterval) clearInterval(statsInterval);
 }
 
-function manageSession(id, courseName, status, topic, courseId) {
+function manageSession(id, courseName, status, topic, courseId, expiry, courseCode) {
     currentSessionId = id;
     currentCourseId = courseId;
     currentStatus = status;
+    currentExpiry = expiry;
+    
     document.getElementById('setup-view').style.display = 'none';
     document.getElementById('hub-view').style.display = 'block';
     document.getElementById('dt-setup-view').style.display = 'none';
     document.getElementById('dt-hub-view').style.display = 'grid';
     document.getElementById('desktop-actions-hub').style.display = 'flex';
     document.getElementById('desktop-setup-actions').style.display = 'none';
+    
+    // Update Mobile UI
     document.getElementById('liveTopicName').innerText = topic;
     document.getElementById('liveCourseName').innerText = courseName;
+    const mCode = document.getElementById('liveCourseCode');
+    if (mCode) mCode.innerText = courseCode || '--';
+
+    // Update Desktop UI
     document.getElementById('dt-topic-name').innerText = topic;
-    document.getElementById('dt-course-name').innerText = courseName;
+    document.getElementById('dt-course-name').innerText = courseName + (courseCode ? ' (' + courseCode + ')' : '');
     document.getElementById('dt-session-id').innerText = 'Node: #' + id;
+    
     startMonitoring();
+    startTimer();
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    const timerBox = document.getElementById('expiration-timer');
+    const timerVal = document.getElementById('timer-val');
+    
+    if (!currentExpiry) {
+        timerBox.style.display = 'none';
+        return;
+    }
+
+    timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const expiryTime = new Date(currentExpiry).getTime();
+        const diff = expiryTime - now;
+
+        if (diff <= 0) {
+            clearInterval(timerInterval);
+            timerBox.style.display = 'none';
+            Swal.fire('Node Expired', 'The session duration has ended. Node closed.', 'info').then(() => location.reload());
+            return;
+        }
+
+        timerBox.style.display = 'block';
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        timerVal.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
 }
 
 async function handleDeployment(e) {
@@ -549,9 +621,20 @@ async function deployPulse(title, message) {
 
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCourseId = urlParams.get('course_id');
+
     <?php if (!empty($existing_sessions)): ?>
-        manageSession(<?php echo $existing_sessions[0]['id']; ?>, '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', '<?php echo $existing_sessions[0]['status']; ?>', '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>', <?php echo $existing_sessions[0]['course_id']; ?>);
-    <?php else: ?> showSetup(); <?php endif; ?>
+        // If course_id is in URL, we already filtered sessions in PHP
+        manageSession(<?php echo $existing_sessions[0]['id']; ?>, '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', '<?php echo $existing_sessions[0]['status']; ?>', '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>', <?php echo $existing_sessions[0]['course_id']; ?>, '<?php echo $existing_sessions[0]['expires_at']; ?>', '<?php echo addslashes($existing_sessions[0]['course_code']); ?>');
+    <?php else: ?> 
+        showSetup();
+        // If course_id provided but no session, ensure topic is focused
+        if (urlCourseId) {
+            const topicInput = document.querySelector('input[name="topic"]');
+            if (topicInput) topicInput.focus();
+        }
+    <?php endif; ?>
 });
 
 window.addEventListener('resize', () => { if (currentSessionId && currentStatus === 'active') updateQR(); });

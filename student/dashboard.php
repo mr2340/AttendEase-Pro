@@ -42,9 +42,10 @@ if($attendance_score < 75) {
 // Fetch Today's Classes
 $day_now = date('w');
 $sched_stmt = $db->prepare("
-    SELECT s.*, c.course_name, c.course_code 
+    SELECT s.*, c.course_name, c.course_code, u.fullname as lecturer_name
     FROM schedules s 
     JOIN courses c ON s.course_id = c.id 
+    LEFT JOIN users u ON c.lecturer_id = u.id
     WHERE s.day_of_week = ? 
     ORDER BY s.start_time ASC
 ");
@@ -140,7 +141,7 @@ $schedules = $sched_stmt->fetchAll();
                         <div style="flex: 1;">
                             <h3 style="font-size: 15px; font-weight: 800; color: #1e293b; margin: 0;"><?php echo htmlspecialchars($item['course_name']); ?></h3>
                             <p style="font-size: 12px; color: #64748b; margin: 4px 0 0; font-weight: 500;">
-                                <?php echo htmlspecialchars($item['location']); ?> • Prof. Davis
+                                <?php echo htmlspecialchars($item['location']); ?> • <?php echo htmlspecialchars($item['lecturer_name'] ?? 'Faculty'); ?>
                             </p>
                         </div>
                         <?php if($is_live): ?>

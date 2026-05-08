@@ -2,6 +2,7 @@
 /**
  * AttendEase Pro - Configuration File
  */
+date_default_timezone_set('Africa/Lagos'); // Synchronized with User Metadata
 
 // Production Environment Detection
 define('IS_PRODUCTION', true); // Toggle to false for dev

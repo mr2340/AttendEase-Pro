@@ -157,6 +157,9 @@ $stats = StatEngine::getLecturerStats($user_id);
                         <p style="font-size: 11px; color: var(--text-muted);"><?php echo htmlspecialchars($course['course_code']); ?></p>
                     </div>
                     <div style="display: flex; gap: 10px;">
+                        <button onclick="showCourseQR('<?php echo $course['permanent_token']; ?>', '<?php echo addslashes($course['course_code']); ?>', '<?php echo addslashes($course['course_name']); ?>')" style="width: 36px; height: 36px; background: var(--primary); color: white; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center;" title="View Master QR">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16h.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                        </button>
                         <a href="export_attendance?course_id=<?php echo $course['id']; ?>" style="width: 36px; height: 36px; background: #22c55e; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center;" title="Export CSV">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         </a>
@@ -296,8 +299,13 @@ $stats = StatEngine::getLecturerStats($user_id);
                         <div style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; cursor: pointer;">
                             <h4 style="font-size: 17px; font-weight: 850; margin-bottom: 10px;"><?php echo htmlspecialchars($c['course_name']); ?></h4>
                             <p style="font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 700;"><?php echo $c['course_code']; ?></p>
-                            <div style="margin-top: 25px; display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 13px; font-weight: 800;">
-                                View Analytics <i data-lucide="arrow-right" style="width: 16px;"></i>
+                            <div style="margin-top: 25px; display: flex; align-items: center; justify-content: space-between;">
+                                <div onclick="window.location.href='course_details?id=<?php echo $c['id']; ?>'" style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 13px; font-weight: 800;">
+                                    View Analytics <i data-lucide="arrow-right" style="width: 16px;"></i>
+                                </div>
+                                <button onclick="showCourseQR('<?php echo $c['permanent_token']; ?>', '<?php echo addslashes($c['course_code']); ?>', '<?php echo addslashes($c['course_name']); ?>')" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="qr-code" style="width: 14px;"></i> Master Node
+                                </button>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -426,6 +434,40 @@ async function toggleSession(sessionId, currentStatus) {
     } catch (err) {
         Swal.fire('Error', 'Connection failed', 'error');
     }
+}
+
+function showCourseQR(token, code, name) {
+    Swal.fire({
+        title: `<div style="font-weight:900; letter-spacing:-1px;">Master Gateway: ${code}</div>`,
+        html: `
+            <div style="text-align: center; padding: 20px;">
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 25px; font-weight: 600;">Students scan this permanent code to mark attendance when a session is live.</p>
+                <div id="swal-qrcode" style="display: flex; justify-content: center; margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 30px; border: 2.5px solid #e2e8f0;"></div>
+                <div style="background: #eff6ff; padding: 15px; border-radius: 15px; border: 1.5px solid #dbeafe; color: #1e40af; font-size: 13px; font-weight: 700;">
+                    Status: <span style="color: #22c55e;">● ACTIVE</span> (Routing to latest node)
+                </div>
+            </div>
+        `,
+        width: 500,
+        showConfirmButton: true,
+        confirmButtonText: 'Close Terminal',
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'btn-primary swal2-confirm'
+        },
+        didOpen: () => {
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById("swal-qrcode"), {
+                    text: token,
+                    width: 250,
+                    height: 250,
+                    colorDark: "#0f172a",
+                    colorLight: "#f8fafc",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }
+    });
 }
 </script>
 
