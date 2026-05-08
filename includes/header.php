@@ -48,10 +48,10 @@ if (isset($_SESSION['user_id'])) {
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 
     <!-- Cloudinary Widget SDK -->
-    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 
     <script>
         window.AttendEaseConfig = {

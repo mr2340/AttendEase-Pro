@@ -44,8 +44,8 @@
 </div>
 
 <!-- Scripts -->
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="<?php echo BASE_URL; ?>assets/js/main.js"></script>
+<script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/main.js?v=<?php echo time(); ?>"></script>
 <script>
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

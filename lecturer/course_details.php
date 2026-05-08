@@ -82,6 +82,10 @@ $sessions = $stmt->fetchAll();
                 <i data-lucide="plus" style="width: 18px;"></i>
                 New Session
             </button>
+            <button onclick="window.location.href='manage_schedule?course_id=<?php echo $course_id; ?>'" style="flex: 1; padding: 14px; font-size: 14px; border-radius: 16px; background: #0f172a; color: white; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i data-lucide="calendar" style="width: 18px;"></i>
+                Schedule
+            </button>
         </div>
 
         <!-- Attendance Roster -->
@@ -145,6 +149,9 @@ $sessions = $stmt->fetchAll();
             </a>
             <a href="generate_qr?course_id=<?php echo $course_id; ?>" style="background: white; color: #0f172a; border: 1.5px solid #e2e8f0; padding: 18px 30px; border-radius: 18px; text-decoration: none; font-weight: 850; display: flex; align-items: center; gap: 10px;">
                 <i data-lucide="zap" style="width: 20px;"></i> Deploy Node
+            </a>
+            <a href="manage_schedule?course_id=<?php echo $course_id; ?>" style="background: #0f172a; color: white; border: none; padding: 18px 30px; border-radius: 18px; text-decoration: none; font-weight: 850; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="calendar" style="width: 20px;"></i> Manage Schedule
             </a>
         </div>
     </header>

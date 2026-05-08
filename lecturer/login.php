@@ -17,8 +17,14 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
     <title>Lecturer Access | AttendEase Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
     <link rel="stylesheet" href="../assets/css/main.css">
+    <script>
+        window.AttendEaseConfig = {
+            baseUrl: '<?php echo BASE_URL; ?>',
+            csrfToken: '<?php echo AttendEaseSecurity::getCsrfToken(); ?>'
+        };
+    </script>
 </head>
 <body class="dark-mode">
     <div id="app-container" style="display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e293b, #0f172a);">
@@ -31,7 +37,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
                 <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Manage your classes and attendance</p>
             </div>
 
-            <form id="lecturerLoginForm" action="<?php echo BASE_URL; ?>includes/login_process.php" method="POST">
+            <form id="loginForm" action="<?php echo BASE_URL; ?>includes/login_process.php" method="POST">
                 <div class="form-group">
                     <label style="color: #cbd5e1;">Username / ID</label>
                     <input type="text" name="identifier" class="form-control" placeholder="dr_smith" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
@@ -55,57 +61,11 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
         </div>
     </div>
 
-    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/main.js?v=<?php echo time(); ?>"></script>
     <script>
         if (window.lucide) {
             lucide.createIcons();
         }
-        document.getElementById('lecturerLoginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const feedback = document.getElementById('login-feedback');
-            const submitBtn = form.querySelector('button');
-            const formData = new FormData(form);
-            
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Verifying...';
-            feedback.style.display = 'none';
-
-            try {
-                const response = await fetch(form.getAttribute('action'), {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json' },
-                    body: formData
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    if (result.role === 'lecturer' || result.role === 'admin') {
-                        submitBtn.innerText = 'Access Granted...';
-                        feedback.innerText = 'Welcome back! Redirecting to faculty dashboard...';
-                        feedback.style.background = 'rgba(16, 185, 129, 0.1)';
-                        feedback.style.color = '#10b981';
-                        feedback.style.display = 'block';
-                        
-                        // Bulletproof redirection
-                        window.location.replace('dashboard');
-                    } else {
-                        // Student trying to login here
-                        AttendEase.notify('warning', 'Access Denied', 'Unauthorized: This portal is for Faculty members only.');
-                        window.location.href = '../student/dashboard';
-                    }
-                } else {
-                    AttendEase.notify('error', 'Login Failed', result.message || 'Invalid credentials.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Authorize Access';
-                }
-            } catch (err) {
-                console.error(err);
-                AttendEase.notify('error', 'Fault', 'Authentication system error. Check console.');
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Authorize Access';
-            }
-        });
     </script>
 </body>
 </html>

@@ -326,7 +326,7 @@ async function updateQR() {
                 height: 220,
                 colorDark : "#0f172a",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
+                correctLevel : QRCode.CorrectLevel.L
             });
         }
 
@@ -340,7 +340,7 @@ async function updateQR() {
                 height: 320,
                 colorDark : "#020617",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                correctLevel : QRCode.CorrectLevel.M
             });
         }
 
