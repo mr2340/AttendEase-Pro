@@ -13,7 +13,7 @@ service-account.json
 # Dependencies
 node_modules/
 vendor/
-scratc
+scratch/
 dist/
 .npm
 .eslintcache

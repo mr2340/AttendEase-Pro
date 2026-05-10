@@ -196,9 +196,9 @@ $ordered_indices = [1, 2, 3, 4, 5, 6, 0];
                             </div>
                         </div>
 
-                        <a href="scan" style="width: 60px; height: 60px; background: #0f172a; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;">
+                        <button onclick="AttendEase.startScanner()" style="width: 60px; height: 60px; background: #0f172a; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; border: none; cursor: pointer;">
                             <i data-lucide="qr-code" style="width: 24px;"></i>
-                        </a>
+                        </button>
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
