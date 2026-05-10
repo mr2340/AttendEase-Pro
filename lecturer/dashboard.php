@@ -46,7 +46,7 @@ $stats = StatEngine::getLecturerStats($user_id);
                 </h1>
             </div>
             <div class="profile-avatar" style="width: 60px; height: 60px; border-radius: 20px; border: 2px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow);">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lecturer" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo $_SESSION['username'] ?? 'Lecturer'; ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         </div>
 
@@ -196,7 +196,7 @@ $stats = StatEngine::getLecturerStats($user_id);
                 <p style="font-size: 18px; font-weight: 900; color: var(--primary);">100% ONLINE</p>
             </div>
             <div style="width: 70px; height: 70px; border-radius: 24px; border: 3px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: hidden;">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lecturer" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo $_SESSION['username'] ?? 'Lecturer'; ?>" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         </div>
     </header>

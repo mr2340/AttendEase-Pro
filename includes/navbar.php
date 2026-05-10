@@ -3,7 +3,13 @@ $role = $_SESSION['role'] ?? 'student';
 $base = BASE_URL;
 
 // Define Navigation sets
-if ($role === 'lecturer' || $role === 'admin') {
+if ($role === 'admin') {
+    $nav_items = [
+        ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'admin/index.php'],
+        ['label' => 'Infrastructure', 'icon' => 'shield-check', 'url' => $base . 'admin/index.php'],
+        ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
+    ];
+} else if ($role === 'lecturer') {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'lecturer/dashboard.php'],
         ['label' => 'Analytics', 'icon' => 'bar-chart-2', 'url' => $base . 'lecturer/reports.php'],

@@ -14,17 +14,18 @@ $db = get_db_connection();
 $user_id = $_SESSION['user_id'];
 $selected_day = isset($_GET['day']) ? (int)$_GET['day'] : (int)date('w');
 
-// Fetch schedules for the selected day
+// Fetch schedules for the selected day (Filtered by Enrollment)
 $sched_stmt = $db->prepare("
     SELECT s.*, c.course_name, c.course_code, u.username as lecturer_name, u.avatar_url as lecturer_avatar,
     (SELECT status FROM sessions WHERE course_id = c.id AND status = 'active' ORDER BY created_at DESC LIMIT 1) as live_status
     FROM schedules s 
     JOIN courses c ON s.course_id = c.id 
+    JOIN enrollments e ON c.id = e.course_id
     LEFT JOIN users u ON c.lecturer_id = u.id
-    WHERE s.day_of_week = ?
+    WHERE e.student_id = ? AND s.day_of_week = ?
     ORDER BY s.start_time ASC
 ");
-$sched_stmt->execute([$selected_day]);
+$sched_stmt->execute([$user_id, $selected_day]);
 $day_schedules = $sched_stmt->fetchAll();
 
 // Calculate dates for the week

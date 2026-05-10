@@ -18,7 +18,7 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
             <span>Home</span>
         </a>
         
-        <?php if ($is_lecturer || $is_admin): ?>
+        <?php if ($is_lecturer): ?>
             <a href="<?php echo BASE_URL; ?>lecturer/courses" class="sidebar-item <?php echo ($page_title == 'My Portfolio' || $page_title == 'Courses') ? 'active' : ''; ?>">
                 <i data-lucide="book-open"></i>
                 <span>My Portfolio</span>
@@ -27,13 +27,14 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="bar-chart-3"></i>
                 <span>Intelligence</span>
             </a>
-            <?php if ($is_admin): ?>
-                <a href="<?php echo BASE_URL; ?>admin/index" class="sidebar-item <?php echo ($page_title == 'Admin Control' || $page_title == 'Infrastructure') ? 'active' : ''; ?>">
-                    <i data-lucide="shield-check" style="color: #ef4444;"></i>
-                    <span style="color: #ef4444; font-weight: 800;">Admin Matrix</span>
-                </a>
-            <?php endif; ?>
-        <?php else: ?>
+        <?php endif; ?>
+
+        <?php if ($is_admin): ?>
+            <a href="<?php echo BASE_URL; ?>admin/index" class="sidebar-item <?php echo ($page_title == 'Admin Control' || $page_title == 'Infrastructure') ? 'active' : ''; ?>">
+                <i data-lucide="shield-check" style="color: #ef4444;"></i>
+                <span style="color: #ef4444; font-weight: 800;">Admin Matrix</span>
+            </a>
+        <?php if (!$is_lecturer && !$is_admin): ?>
             <a href="<?php echo BASE_URL; ?>student/schedule" class="sidebar-item <?php echo ($page_title == 'Schedule') ? 'active' : ''; ?>">
                 <i data-lucide="calendar"></i>
                 <span>Schedule</span>
@@ -51,12 +52,12 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
     </nav>
 
     <div class="sidebar-footer">
-        <?php if ($is_lecturer || $is_admin): ?>
+        <?php if ($is_lecturer): ?>
             <a href="<?php echo BASE_URL; ?>lecturer/generate_qr" class="btn-primary" style="padding: 18px; border-radius: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 15px; border: none; cursor: pointer; text-decoration: none; color: white;">
                 <i data-lucide="qr-code"></i>
                 <span>Deploy Pulse Node</span>
             </a>
-        <?php else: ?>
+        <?php elseif (!$is_admin): ?>
             <button onclick="AttendEase.startScanner()" class="btn-primary" style="padding: 18px; border-radius: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 15px; border: none; cursor: pointer;">
                 <i data-lucide="scan"></i>
                 <span>Scan Attendance</span>

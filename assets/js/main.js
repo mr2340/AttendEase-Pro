@@ -121,7 +121,9 @@ const AttendEase = {
                 setTimeout(() => {
                     const baseUrl = window.AttendEaseConfig ? window.AttendEaseConfig.baseUrl : '/sodex/';
                     // Use replace to prevent back-button loops
-                    const path = result.role === 'lecturer' || result.role === 'admin' ? 'lecturer/dashboard' : 'student/dashboard';
+                    let path = 'student/dashboard';
+                    if (result.role === 'admin') path = 'admin/index';
+                    else if (result.role === 'lecturer') path = 'lecturer/dashboard';
                     window.location.replace(baseUrl + path);
                 }, 800);
             } else {

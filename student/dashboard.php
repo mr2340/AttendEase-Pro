@@ -10,6 +10,16 @@ if (!isset($_SESSION['user_id'])) {
 
 $db = get_db_connection();
 $user_id = $_SESSION['user_id'];
+
+// Calculate Student Context
+$score_stmt = $db->prepare("SELECT COUNT(*) FROM attendance WHERE student_id = ?");
+$score_stmt->execute([$user_id]);
+$total_scans = $score_stmt->fetchColumn();
+
+$course_count_stmt = $db->prepare("SELECT COUNT(*) FROM enrollments WHERE student_id = ?");
+$course_count_stmt->execute([$user_id]);
+$total_courses = $course_count_stmt->fetchColumn();
+
 $user_stmt = $db->prepare("SELECT username, avatar_url FROM users WHERE id = ?");
 $user_stmt->execute([$user_id]);
 $user = $user_stmt->fetch();
@@ -39,17 +49,18 @@ if($attendance_score < 75) {
     $risk_color = '#f59e0b';
 }
 
-// Fetch Today's Classes
+// Fetch Today's Classes (Filtered by Enrollment)
 $day_now = date('w');
 $sched_stmt = $db->prepare("
     SELECT s.*, c.course_name, c.course_code, u.fullname as lecturer_name
     FROM schedules s 
     JOIN courses c ON s.course_id = c.id 
+    JOIN enrollments e ON c.id = e.course_id
     LEFT JOIN users u ON c.lecturer_id = u.id
-    WHERE s.day_of_week = ? 
+    WHERE e.student_id = ? AND s.day_of_week = ? 
     ORDER BY s.start_time ASC
 ");
-$sched_stmt->execute([$day_now]);
+$sched_stmt->execute([$user_id, $day_now]);
 $schedules = $sched_stmt->fetchAll();
 ?>
 
