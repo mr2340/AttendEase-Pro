@@ -32,7 +32,7 @@ class AttendEaseSecurity {
             session_start();
         }
     }
-
+p
     /**
      * CSRF Protection Engine
      */
@@ -120,11 +120,11 @@ class AttendEaseSecurity {
             
             // Hardened CSP (Synchronized with .htaccess)
             $csp = "default-src 'self'; ";
-            $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://upload-widget.cloudinary.com; ";
+            $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://upload-widget.cloudinary.com https://widget.cloudinary.com; ";
             $csp .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
             $csp .= "font-src 'self' https://fonts.gstatic.com; ";
             $csp .= "img-src 'self' data: https://api.dicebear.com https://*.googleusercontent.com https://*.cloudinary.com; ";
-            $csp .= "connect-src 'self' https://fcmregistrations.googleapis.com https://www.gstatic.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.cloudinary.com;";
+            $csp .= "connect-src 'self' https://fcmregistrations.googleapis.com https://www.gstatic.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.cloudinary.com https://widget.cloudinary.com;";
             header("Content-Security-Policy: " . $csp);
         }
     }

@@ -7,10 +7,13 @@
 *.key
 *.pem
 service-account.json
+*.sql
+.sql
 
 # Dependencies
 node_modules/
 vendor/
+scratc
 dist/
 .npm
 .eslintcache
