@@ -101,6 +101,9 @@ $stats = StatEngine::getLecturerStats($user_id);
                                     PAUSE
 <?php endif; ?>
                             </button>
+                            <button onclick="deleteSession(<?php echo $sess['id']; ?>)" style="background: #fee2e2; color: #ef4444; border: none; padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            </button>
                             <a href="generate_qr" style="background: <?php echo $is_paused ? 'var(--warning)' : 'var(--primary)'; ?>; color: white; padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16h.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
                             </a>
@@ -416,6 +419,37 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileForm) mobileForm.addEventListener('submit', handleBroadcast);
     if (desktopForm) desktopForm.addEventListener('submit', handleBroadcast);
 });
+
+async function deleteSession(sessionId) {
+    const res = await Swal.fire({
+        title: 'Delete Session?',
+        text: 'This will permanently remove all attendance records for this session.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        buttonsStyling: false,
+        customClass: { confirmButton: 'btn-primary swal2-confirm', cancelButton: 'swal2-cancel' }
+    });
+    
+    if (res.isConfirmed) {
+        try {
+            const response = await fetch('../includes/toggle_session.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, action: 'delete' })
+            });
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                Swal.fire('Error', result.message, 'error');
+            }
+        } catch (err) {
+            Swal.fire('Error', 'Connection failed', 'error');
+        }
+    }
+}
 
 async function toggleSession(sessionId, currentStatus) {
     const action = currentStatus === 'active' ? 'pause' : 'resume';

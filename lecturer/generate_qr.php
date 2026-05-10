@@ -313,6 +313,14 @@ try {
                         <h3 id="dt-attendee-count" style="font-size: 72px; font-weight: 950; color: var(--text-dark); line-height: 1; letter-spacing: -4px;">0</h3>
                         <span style="font-weight: 800; color: var(--text-muted); font-size: 18px;">Present</span>
                     </div>
+                    
+                    <div id="live-feed" style="margin-top: 30px; text-align: left; border-top: 1.5px solid #f1f5f9; padding-top: 20px;">
+                        <h4 style="font-size: 10px; font-weight: 850; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;">Live Verification</h4>
+                        <div id="attendee-list" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Dynamic Content -->
+                            <p style="font-size: 12px; color: #cbd5e1; text-align: center;">Waiting for scans...</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="flex: 1; background: var(--text-dark); border-radius: 40px; padding: 40px; color: white;">
@@ -392,6 +400,17 @@ async function updateLiveCount() {
                     setTimeout(() => dtCountEl.style.transform = 'scale(1)', 400);
                 }
                 lastAttendeeCount = newCount;
+
+                // Update Live Feed
+                const listEl = document.getElementById('attendee-list');
+                if (listEl && result.recent) {
+                    listEl.innerHTML = result.recent.map(a => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px 15px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                            <span style="font-size: 13px; font-weight: 800; color: #0f172a;">${a.fullname}</span>
+                            <span style="font-size: 10px; font-weight: 700; color: #94a3b8;">${new Date(a.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    `).join('') || '<p style="font-size: 12px; color: #cbd5e1; text-align: center;">Waiting for scans...</p>';
+                }
             }
         }
     } catch (err) { console.error("Stats update failed", err); }

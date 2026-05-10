@@ -50,6 +50,9 @@ if (isset($_SESSION['user_id'])) {
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <!-- Cloudinary Widget SDK -->
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 

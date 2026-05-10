@@ -46,9 +46,22 @@ try {
         exit;
     }
 
+    // Fetch recent attendees
+    $attendees_stmt = $db->prepare("
+        SELECT u.fullname, a.timestamp 
+        FROM attendance a 
+        JOIN users u ON a.student_id = u.id 
+        WHERE a.session_id = ? 
+        ORDER BY a.timestamp DESC 
+        LIMIT 5
+    ");
+    $attendees_stmt->execute([$session_id]);
+    $recent_attendees = $attendees_stmt->fetchAll(PDO::FETCH_ASSOC);
+
     echo json_encode([
         'success' => true,
-        'count' => (int)$result['attendee_count']
+        'count' => (int)$result['attendee_count'],
+        'recent' => $recent_attendees
     ]);
 
 } catch (PDOException $e) {
