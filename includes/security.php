@@ -1,6 +1,6 @@
 <?php
 /**
- * AttendEase Pro - Security & Rate Limiting Engine
+ * AttendEase vscode-webview://1en2phd04qt4o5vbc35r61023ttgsv8qpfk9fcf8dc2f8bomugcc/index.html?id=8f9e5a0c-aa75-480c-9930-be7d0e5f0033&parentId=1&origin=bc05882a-762d-4cc6-9069-e70cc0c16a9d&swVersion=4&extensionId=eamodio.gitlens&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=vscode-file%3A%2F%2Fvscode-app&purpose=webviewView#Pro - Security & Rate Limiting Engine
  */
 
 class AttendEaseSecurity {
@@ -32,7 +32,7 @@ class AttendEaseSecurity {
             session_start();
         }
     }
-p
+
     /**
      * CSRF Protection Engine
      */
