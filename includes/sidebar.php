@@ -34,6 +34,8 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="shield-check" style="color: #ef4444;"></i>
                 <span style="color: #ef4444; font-weight: 800;">Admin Matrix</span>
             </a>
+        <?php endif; ?>
+
         <?php if (!$is_lecturer && !$is_admin): ?>
             <a href="<?php echo BASE_URL; ?>student/schedule" class="sidebar-item <?php echo ($page_title == 'Schedule') ? 'active' : ''; ?>">
                 <i data-lucide="calendar"></i>
