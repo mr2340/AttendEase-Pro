@@ -449,3 +449,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(renderIcons, 2000);
     setInterval(renderIcons, 5000); // Heartbeat scan
 });
+
+// Toggle password input visibility
+function togglePasswordVisibility(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    
+    const isPassword = field.type === 'password';
+    field.type = isPassword ? 'text' : 'password';
+    
+    // Update Lucide icon inside the button
+    const icon = button.querySelector('i, svg');
+    if (icon) {
+        icon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;

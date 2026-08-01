@@ -19,7 +19,12 @@ include '../includes/header.php';
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="student-password" class="form-control" placeholder="••••••••" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('student-password', this)">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div style="text-align: right; margin-bottom: 20px;">

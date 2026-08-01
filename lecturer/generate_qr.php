@@ -421,7 +421,7 @@ async function updateQR() {
     if (!currentSessionId || currentStatus !== 'active') return;
 
     try {
-        const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}`);
+        const response = await fetch(`../includes/get_qr_token.php?session_id=${currentSessionId}&t=${Date.now()}`);
         const result = await response.json();
         if (!result.success) return;
         

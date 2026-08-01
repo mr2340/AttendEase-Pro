@@ -27,6 +27,10 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="bar-chart-3"></i>
                 <span>Intelligence</span>
             </a>
+            <a href="<?php echo BASE_URL; ?>lecturer/student_roster" class="sidebar-item <?php echo ($page_title == 'Student Roster') ? 'active' : ''; ?>">
+                <i data-lucide="users"></i>
+                <span>Student Roster</span>
+            </a>
         <?php endif; ?>
 
         <?php if ($is_admin): ?>

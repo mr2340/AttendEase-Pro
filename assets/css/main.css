@@ -889,6 +889,9 @@ html, body {
     flex-direction: column;
     height: 100%;
     justify-content: center;
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .auth-header {
@@ -1313,4 +1316,42 @@ html, body {
 .swal2-icon.swal2-success {
     border-color: var(--success) !important;
     color: var(--success) !important;
+}
+
+/* Password eye icon toggler styling */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-wrapper .form-control {
+    padding-right: 48px !important;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 16px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    z-index: 10;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.password-toggle-btn svg,
+.password-toggle-btn i {
+    width: 20px;
+    height: 20px;
 }

@@ -45,7 +45,16 @@ define('DB_PASS', getenv('DB_PASS') ?: '');
 
 // App Configuration
 define('APP_NAME', getenv('APP_NAME') ?: 'AttendEase Pro');
-define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost/sodex/');
+
+// Dynamically determine BASE_URL based on the request host to prevent connection timeouts when the IP changes.
+if (php_sapi_name() === 'cli') {
+    define('BASE_URL', 'http://127.0.0.1/sodex/');
+} else {
+    $scheme = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] === 1) || 
+               (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    define('BASE_URL', $scheme . '://' . $host . '/sodex/');
+}
 
 // Security Settings
 define('HASH_ALGO', PASSWORD_ARGON2ID);

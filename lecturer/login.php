@@ -45,7 +45,12 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {
                 
                 <div class="form-group" style="margin-top: 20px;">
                     <label style="color: #cbd5e1;">Security Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="lecturer-password" class="form-control" placeholder="••••••••" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('lecturer-password', this)">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-primary" style="margin-top: 40px; height: 55px; font-size: 16px;">
