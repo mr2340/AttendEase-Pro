@@ -3,7 +3,9 @@
  * AttendEase Pro - FCM Token Persistence
  */
 require_once __DIR__ . '/config.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 header('Content-Type: application/json');
 
