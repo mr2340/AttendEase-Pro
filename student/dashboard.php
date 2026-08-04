@@ -134,6 +134,74 @@ $last_scan = $last_scan_stmt->fetch();
             </div>
         </div>
 
+        <!-- Mobile Timeline -->
+        <div style="padding: 0 20px 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Timeline</h3>
+                <a href="schedule" style="font-size: 11px; font-weight: 800; color: var(--primary); text-decoration: none; background: #eff6ff; padding: 6px 14px; border-radius: 100px;">View All</a>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <?php if(empty($schedules)): ?>
+                    <div style="background: white; border-radius: 25px; padding: 30px 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.02); border: 1px dashed #cbd5e1;">
+                        <i data-lucide="calendar-x" style="color: #cbd5e1; width: 32px; height: 32px; margin-bottom: 10px;"></i>
+                        <h4 style="font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 5px 0;">Clear Schedule</h4>
+                        <p style="color: #94a3b8; font-size: 12px; font-weight: 500; margin: 0;">No active classes today.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach(array_slice($schedules, 0, 3) as $item): 
+                        $is_live = (time() >= strtotime(date('Y-m-d') . ' ' . $item['start_time']) && time() <= strtotime(date('Y-m-d') . ' ' . $item['end_time']));
+                    ?>
+                    <div style="display: flex; gap: 15px; align-items: center; padding: 15px; background: <?php echo $is_live ? '#eff6ff' : 'white'; ?>; border: 1px solid <?php echo $is_live ? '#bfdbfe' : 'rgba(0,0,0,0.05)'; ?>; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.02);">
+                        <div style="text-align: center; min-width: 45px;">
+                            <div style="font-weight: 900; color: <?php echo $is_live ? 'var(--primary)' : '#1e293b'; ?>; font-size: 14px;"><?php echo date('H:i', strtotime($item['start_time'])); ?></div>
+                            <div style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase;"><?php echo date('A', strtotime($item['start_time'])); ?></div>
+                        </div>
+                        
+                        <div style="width: 2px; height: 25px; background: #e2e8f0; border-radius: 2px;"></div>
+                        
+                        <div style="flex: 1;">
+                            <div style="font-weight: 900; font-size: 14px; color: #0f172a; margin-bottom: 2px;"><?php echo htmlspecialchars($item['course_code']); ?></div>
+                            <div style="font-size: 11px; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                <i data-lucide="map-pin" style="width: 10px;"></i> <?php echo htmlspecialchars($item['location']); ?>
+                            </div>
+                        </div>
+                        
+                        <?php if($is_live): ?>
+                            <div style="width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); animation: pulse-shake 2s infinite;"></div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Mobile Last Scan -->
+        <div style="padding: 0 20px 100px;">
+            <h3 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0 0 15px 0; letter-spacing: -0.5px;">Last Check-In</h3>
+            
+            <?php if($last_scan): ?>
+                <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 20px; border-radius: 25px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: white; border-radius: 15px; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                        <i data-lucide="scan-face" style="width: 24px; height: 24px; color: var(--primary);"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0 0 3px 0; letter-spacing: -0.5px;"><?php echo htmlspecialchars($last_scan['course_code']); ?></h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span style="font-size: 11px; color: #64748b; font-weight: 600;"><i data-lucide="clock" style="width: 12px; display: inline; vertical-align: -2px;"></i> <?php echo date('M d, h:i A', strtotime($last_scan['marked_at'])); ?></span>
+                            <span style="font-size: 9px; background: #ecfdf5; color: #10b981; padding: 3px 8px; border-radius: 8px; font-weight: 800;">VERIFIED</span>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div style="background: white; padding: 30px 20px; border-radius: 25px; border: 1px dashed #cbd5e1; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.02);">
+                    <i data-lucide="history" style="width: 24px; height: 24px; color: #94a3b8; margin-bottom: 10px;"></i>
+                    <h4 style="font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 5px 0;">No History Found</h4>
+                    <p style="font-size: 12px; color: #64748b; font-weight: 500; margin: 0;">Scan your first QR code to build your profile.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <!-- Mobile Floating Action Button -->
         <button onclick="AttendEase.startScanner()" style="position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); border-radius: 20px; color: white; border: none; box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100;">
             <i data-lucide="scan-line" style="width: 28px; height: 28px;"></i>

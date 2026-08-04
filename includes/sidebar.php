@@ -38,6 +38,14 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <i data-lucide="shield-check" style="color: #ef4444;"></i>
                 <span style="color: #ef4444; font-weight: 800;">Admin Matrix</span>
             </a>
+            <a href="<?php echo BASE_URL; ?>admin/lecturers" class="sidebar-item <?php echo ($page_title == 'Lecturers' || $page_title == 'Faculty Management') ? 'active' : ''; ?>">
+                <i data-lucide="users-2" style="color: #3b82f6;"></i>
+                <span style="font-weight: 700;">Faculty Management</span>
+            </a>
+            <a href="<?php echo BASE_URL; ?>admin/courses" class="sidebar-item <?php echo ($page_title == 'Courses' || $page_title == 'Course Matrix') ? 'active' : ''; ?>">
+                <i data-lucide="layout-grid" style="color: #10b981;"></i>
+                <span style="font-weight: 700;">Course Matrix</span>
+            </a>
         <?php endif; ?>
 
         <?php if (!$is_lecturer && !$is_admin): ?>
