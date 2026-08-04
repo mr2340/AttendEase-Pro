@@ -16,7 +16,7 @@ $selected_day = isset($_GET['day']) ? (int)$_GET['day'] : (int)date('w');
 
 // Fetch schedules for the selected day (Filtered by Enrollment)
 $sched_stmt = $db->prepare("
-    SELECT s.*, c.course_name, c.course_code, u.username as lecturer_name, u.avatar_url as lecturer_avatar,
+    SELECT s.*, c.course_name, c.course_code, u.username as lecturer_name,
     (SELECT status FROM sessions WHERE course_id = c.id AND status = 'active' ORDER BY created_at DESC LIMIT 1) as live_status
     FROM schedules s 
     JOIN courses c ON s.course_id = c.id 
