@@ -528,7 +528,7 @@ html, body {
 
     /* Hero Card Overrides */
     .bento-hero-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+        background: linear-gradient(135deg, #0062ff 0%, #00d2ff 100%) !important;
         position: relative;
     }
 

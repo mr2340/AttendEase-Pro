@@ -20,11 +20,13 @@ $course_count_stmt = $db->prepare("SELECT COUNT(*) FROM enrollments WHERE studen
 $course_count_stmt->execute([$user_id]);
 $total_courses = $course_count_stmt->fetchColumn();
 
-$user_stmt = $db->prepare("SELECT username, avatar_url FROM users WHERE id = ?");
+$user_stmt = $db->prepare("SELECT username, fullname FROM users WHERE id = ?");
 $user_stmt->execute([$user_id]);
 $user = $user_stmt->fetch();
 
 $username = $user['username'] ?? 'Student';
+$fullname = $user['fullname'] ?? $username;
+$first_name = explode(' ', $fullname)[0];
 $avatar_url = $user['avatar_url'] ?? null;
 $display_avatar = $avatar_url ? BASE_URL . $avatar_url : "https://api.dicebear.com/7.x/avataaars/svg?seed=" . htmlspecialchars($username);
 
@@ -62,180 +64,225 @@ $sched_stmt = $db->prepare("
 ");
 $sched_stmt->execute([$user_id, $day_now]);
 $schedules = $sched_stmt->fetchAll();
+
+// Fetch Last Check-In (Vital Sign)
+$last_scan_stmt = $db->prepare("SELECT a.*, c.course_code FROM attendance a JOIN sessions s ON a.session_id = s.id JOIN courses c ON s.course_id = c.id WHERE a.student_id = ? ORDER BY a.marked_at DESC LIMIT 1");
+$last_scan_stmt->execute([$user_id]);
+$last_scan = $last_scan_stmt->fetch();
 ?>
 
-<section id="main-dashboard">
-    <!-- MOBILE CLASSIC VIEW (Matches Image 2) -->
-    <div class="mobile-only-layout">
-        <header class="dashboard-header-mobile">
-            <div class="header-left">
-                <span class="mobile-greeting-meta"><?php echo date('D, M d'); ?></span>
-                <h1 class="mobile-greeting-name">Hi, <?php echo htmlspecialchars(explode(' ', $username)[0]); ?></h1>
+<section id="main-dashboard" style="position: relative;">
+    
+    <!-- Premium Ambient Background Glows -->
+    <div style="position: absolute; top: -10%; left: -5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 102, 255, 0.08) 0%, transparent 70%); filter: blur(60px); z-index: -1;"></div>
+    <div style="position: absolute; bottom: 20%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); filter: blur(60px); z-index: -1;"></div>
+
+    <!-- MOBILE PREMIUM VIEW -->
+    <div class="mobile-only-layout" style="padding: 10px;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 10px;">
+            <div>
+                <p style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 0;"><?php echo date('l, d M Y'); ?></p>
+                <h1 style="font-size: 24px; font-weight: 900; color: var(--text-dark); margin: 4px 0 0; letter-spacing: -0.5px;">Hi, <?php echo htmlspecialchars($first_name); ?> ✨</h1>
             </div>
-            <div class="header-right">
-                <div class="mobile-avatar-frame">
-                    <img src="<?php echo $display_avatar; ?>" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">
-                </div>
+            <div style="width: 45px; height: 45px; border-radius: 15px; overflow: hidden; border: 2px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                <img src="<?php echo $display_avatar; ?>" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">
             </div>
         </header>
 
-        <div class="mobile-content">
-            <!-- Classic Hero Card -->
-            <div class="mobile-hero-card">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                    <div>
-                        <span style="font-size: 13px; color: #94a3b8; font-weight: 600;">Semester Attendance</span>
-                        <div style="font-size: 48px; font-weight: 800; margin: 5px 0;"><?php echo $attendance_score; ?>%</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px;">
-                        <i data-lucide="trending-up" style="color: #38bdf8; width: 24px; height: 24px;"></i>
-                    </div>
+        <!-- Mobile Hero Card -->
+        <div style="background: linear-gradient(135deg, #0062ff 0%, #00d2ff 100%); border-radius: 35px; padding: 30px; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 102, 255, 0.3); margin-bottom: 25px;">
+            <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%); filter: blur(20px);"></div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span style="font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1.5px;">Performance</span>
+                    <div style="font-size: 56px; font-weight: 900; color: white; line-height: 1; margin: 10px 0; letter-spacing: -2px;"><?php echo $attendance_score; ?>%</div>
                 </div>
-                
-                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 15px; overflow: hidden;">
-                    <div style="width: <?php echo $attendance_score; ?>%; height: 100%; background: #38bdf8; border-radius: 10px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);"></div>
-                </div>
-                
-                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0;">
-                    <?php if($attendance_score >= 75): ?>
-                        Great job! You are above the 75% threshold. Keep it up!
-                    <?php else: ?>
-                        Attention: Your attendance is below the minimum threshold.
-                    <?php endif; ?>
-                </p>
-            </div>
-
-            <!-- Recent Scan Pulse (Mobile Detail Restoration) -->
-            <div style="padding: 0 20px 20px;">
-                <h3 style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Recent Vital Signs</h3>
-                <?php 
-                $last_scan_stmt = $db->prepare("SELECT a.*, c.course_code FROM attendance a JOIN sessions s ON a.session_id = s.id JOIN courses c ON s.course_id = c.id WHERE a.student_id = ? ORDER BY a.timestamp DESC LIMIT 1");
-                $last_scan_stmt->execute([$user_id]);
-                $last_scan = $last_scan_stmt->fetch();
-                ?>
-                <div style="background: white; border-radius: 30px; padding: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
-                    <div style="width: 48px; height: 48px; background: #ecfdf5; color: #10b981; border-radius: 16px; display: flex; justify-content: center; align-items: center;">
-                        <i data-lucide="check-circle-2" style="width: 24px;"></i>
-                    </div>
-                    <div>
-                        <?php if($last_scan): ?>
-                            <h4 style="font-size: 15px; font-weight: 900; color: #0f172a;"><?php echo $last_scan['course_code']; ?> Validated</h4>
-                            <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px;">Sync: <?php echo date('M d, h:i A', strtotime($last_scan['timestamp'])); ?></p>
-                        <?php else: ?>
-                            <h4 style="font-size: 15px; font-weight: 900; color: #0f172a;">No Active Pulse</h4>
-                            <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px;">Start scanning to build history.</p>
-                        <?php endif; ?>
-                    </div>
+                <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 12px; border-radius: 20px;">
+                    <i data-lucide="activity" style="color: white; width: 24px; height: 24px;"></i>
                 </div>
             </div>
 
-            <!-- Today's Schedule -->
-            <div style="padding: 10px 20px 30px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-                    <h2 style="font-size: 19px; font-weight: 900; color: #1e293b; margin: 0; letter-spacing: -0.5px;">Today's Classes</h2>
-                    <a href="schedule" style="font-size: 13px; font-weight: 800; color: var(--primary); text-decoration: none;">View Timeline</a>
+            <!-- Dynamic Ring Progress -->
+            <div style="margin-top: 30px; display: flex; align-items: center; gap: 15px;">
+                <svg width="40" height="40" viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4" />
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="white" stroke-width="4" stroke-dasharray="<?php echo $attendance_score; ?>, 100" />
+                </svg>
+                <div style="flex: 1;">
+                    <div style="font-size: 12px; color: #cbd5e1; font-weight: 600;">Status</div>
+                    <div style="font-size: 14px; color: <?php echo $risk_color; ?>; font-weight: 800;"><?php echo $risk_level; ?> RISK</div>
                 </div>
-
-                <?php if(empty($schedules)): ?>
-                    <div style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 25px; border: 1.5px dashed #e2e8f0;">
-                        <p style="color: #94a3b8; font-size: 14px; font-weight: 600;">No classes for today</p>
-                    </div>
-                <?php else: ?>
-                    <?php foreach($schedules as $item): 
-                        $is_live = (time() >= strtotime(date('Y-m-d') . ' ' . $item['start_time']) && time() <= strtotime(date('Y-m-d') . ' ' . $item['end_time']));
-                    ?>
-                    <div class="mobile-class-card">
-                        <div class="class-time-box">
-                            <div class="class-time-main"><?php echo date('H:i', strtotime($item['start_time'])); ?></div>
-                            <div class="class-time-period"><?php echo date('A', strtotime($item['start_time'])); ?></div>
-                        </div>
-                        <div style="flex: 1;">
-                            <h3 style="font-size: 15px; font-weight: 800; color: #1e293b; margin: 0;"><?php echo htmlspecialchars($item['course_name']); ?></h3>
-                            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0; font-weight: 500;">
-                                <?php echo htmlspecialchars($item['location']); ?> • <?php echo htmlspecialchars($item['lecturer_name'] ?? 'Faculty'); ?>
-                            </p>
-                        </div>
-                        <?php if($is_live): ?>
-                            <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);"></div>
-                        <?php else: ?>
-                            <div style="width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; opacity: 0.3;"></div>
-                        <?php endif; ?>
-                    </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
             </div>
         </div>
+
+        <!-- Mobile Quick Stats -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+            <div style="background: white; border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                <div style="width: 40px; height: 40px; background: #eff6ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                    <i data-lucide="book-open" style="width: 20px;"></i>
+                </div>
+                <h4 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 0;"><?php echo $total_courses; ?></h4>
+                <p style="font-size: 12px; color: #64748b; font-weight: 600; margin: 4px 0 0;">Active Courses</p>
+            </div>
+            <div style="background: white; border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                <div style="width: 40px; height: 40px; background: #ecfdf5; color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                    <i data-lucide="check-circle" style="width: 20px;"></i>
+                </div>
+                <h4 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 0;"><?php echo $total_scans; ?></h4>
+                <p style="font-size: 12px; color: #64748b; font-weight: 600; margin: 4px 0 0;">Total Scans</p>
+            </div>
+        </div>
+
+        <!-- Mobile Floating Action Button -->
+        <button onclick="AttendEase.startScanner()" style="position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); border-radius: 20px; color: white; border: none; box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100;">
+            <i data-lucide="scan-line" style="width: 28px; height: 28px;"></i>
+        </button>
     </div>
 
-    <!-- DESKTOP BENTO VIEW -->
-    <div class="desktop-only-layout">
-        <header class="desktop-header">
-            <div class="header-breadcrumb">
-                <span class="date-pill"><?php echo date('l, d M Y'); ?></span>
-                <div class="clock-badge"><i data-lucide="zap"></i> <span id="dashboard-status">SYSTEM ACTIVE</span></div>
+    <!-- DESKTOP PREMIUM BENTO VIEW -->
+    <div class="desktop-only-layout" style="max-width: 1400px; margin: 0 auto;">
+        
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <h1 style="font-size: 42px; font-weight: 900; color: #0f172a; letter-spacing: -1.5px; margin: 0; line-height: 1.2;">
+                    <?php echo $greeting; ?>, <span style="background: linear-gradient(90deg, var(--primary), #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><?php echo htmlspecialchars($first_name); ?></span> ✨
+                </h1>
+                <p style="color: #64748b; font-size: 16px; font-weight: 500; margin: 5px 0 0;">Here's your academic status for <?php echo date('l, F jS'); ?></p>
             </div>
-            <h1 class="desktop-greeting"><?php echo $greeting; ?>, <?php echo htmlspecialchars($username); ?> ✨</h1>
+            
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div style="background: white; padding: 12px 24px; border-radius: 100px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05);">
+                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse-shake 2s infinite;"></div>
+                    <span style="font-size: 12px; font-weight: 800; color: #1e293b; letter-spacing: 1px;">SYSTEM ONLINE</span>
+                </div>
+            </div>
         </header>
 
         <div class="bento-grid">
-        <div class="bento-card bento-hero-card card-large">
-            <div class="card-header-flex">
-                <div>
-                    <span class="card-meta" style="color: #38bdf8; font-weight: 800; font-size: 12px; letter-spacing: 2px;">SEMESTER PERFORMANCE</span>
-                    <h2 class="metric-value"><?php echo $attendance_score; ?>%</h2>
-                </div>
-                <div class="risk-badge" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 20px; backdrop-filter: blur(10px);">
-                    <span style="display: block; font-size: 10px; font-weight: 800; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase;">AI Risk Analysis</span>
-                    <div style="color: <?php echo $risk_color; ?>; font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
-                        <?php echo $risk_level; ?> RISK
-                    </div>
-                </div>
-            </div>
             
-            <div class="progress-track" style="background: rgba(255,255,255,0.05); height: 14px; border-radius: 20px; margin: 40px 0;">
-                <div class="progress-fill" style="width: <?php echo $attendance_score; ?>%; background: linear-gradient(90deg, #0ea5e9, #38bdf8); height: 100%; border-radius: 20px; box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);"></div>
-            </div>
-            
-            <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; font-weight: 500; max-width: 600px; margin: 0;">
-                <?php if($attendance_score >= 75): ?>
-                    Your attendance score is currently optimal. You are maintaining a highly stable trend across all courses for the current semester.
-                <?php else: ?>
-                    Priority Action Required: Your attendance has dropped below the safety threshold. Increase your presence to ensure exam eligibility.
-                <?php endif; ?>
-            </p>
-        </div>
-
-            <!-- Medium Card: Schedule -->
-            <div class="bento-card card-medium">
-                <div class="card-header-flex">
-                    <h3 class="card-title">Today's Schedule</h3>
-                    <a href="schedule" class="view-all">View All</a>
+            <!-- 1. Massive Hero Card (Span 8) -->
+            <div class="bento-card bento-hero-card card-large" style="display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; padding: 40px;">
+                <div style="position: absolute; right: -80px; top: -80px; opacity: 0.05; pointer-events: none;">
+                    <i data-lucide="trending-up" style="width: 400px; height: 400px; color: white;"></i>
                 </div>
-                <div class="schedule-mini-list" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <?php foreach(array_slice($schedules, 0, 3) as $item): ?>
-                    <div class="schedule-item-alt" style="display: flex; gap: 15px; align-items: center; padding: 15px; background: #f8fafc; border-radius: 20px;">
-                        <div style="font-weight: 800; color: #1e293b; font-size: 13px;"><?php echo date('H:i', strtotime($item['start_time'])); ?></div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 800; font-size: 14px; color: #0f172a;"><?php echo htmlspecialchars($item['course_code']); ?></div>
-                            <div style="font-size: 11px; color: #64748b;"><?php echo htmlspecialchars($item['location']); ?></div>
+                
+                <div style="display: flex; gap: 50px; align-items: center; z-index: 1;">
+                    <div style="position: relative; width: 180px; height: 180px; flex-shrink: 0;">
+                        <svg viewBox="0 0 36 36" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" />
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="white" stroke-width="2.5" stroke-dasharray="<?php echo $attendance_score; ?>, 100" style="filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4)); transition: stroke-dasharray 1s ease-out;" />
+                        </svg>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <span style="font-size: 42px; font-weight: 900; color: white; line-height: 1; letter-spacing: -2px;"><?php echo $attendance_score; ?><span style="font-size: 20px; color: rgba(255,255,255,0.8);">%</span></span>
                         </div>
                     </div>
-                    <?php endforeach; ?>
+
+                    <div style="flex: 1;">
+                        <div style="display: inline-block; padding: 6px 14px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 100px; margin-bottom: 20px;">
+                            <span style="font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1.5px;">Semester Trajectory</span>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 0 20px rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                <i data-lucide="sparkles" style="color: white; width: 20px; height: 20px;"></i>
+                                <h4 style="color: white; font-size: 17px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">AI Diagnostic</h4>
+                            </div>
+                            <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin: 0; font-weight: 500; line-height: 1.6;">
+                                <?php if($attendance_score >= 75): ?>
+                                    Highly stable attendance pattern. You are safely above the examination threshold.
+                                <?php else: ?>
+                                    Critical: Your pattern is unstable. Immediate action required to restore examination eligibility.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Small Card: Analytics -->
-            <div class="bento-card card-small">
-                <h3 class="card-title">Weekly Trend</h3>
-                <div class="mini-chart-container" style="height: 100px; display: flex; align-items: flex-end; gap: 8px; margin-top: 20px;">
-                    <div class="bar" style="flex:1; background: #e2e8f0; border-radius: 4px; height: 40%"></div>
-                    <div class="bar" style="flex:1; background: #e2e8f0; border-radius: 4px; height: 60%"></div>
-                    <div class="bar" style="flex:1; background: var(--primary); border-radius: 4px; height: 90%"></div>
-                    <div class="bar" style="flex:1; background: #e2e8f0; border-radius: 4px; height: 50%"></div>
-                    <div class="bar" style="flex:1; background: #e2e8f0; border-radius: 4px; height: 70%"></div>
+            <!-- 2. Today's Schedule (Span 4) -->
+            <div class="bento-card card-medium" style="background: white; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3 style="font-size: 20px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Timeline</h3>
+                    <a href="schedule" style="font-size: 13px; font-weight: 800; color: var(--primary); text-decoration: none; background: #eff6ff; padding: 6px 14px; border-radius: 100px;">View All</a>
+                </div>
+                
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto;">
+                    <?php if(empty($schedules)): ?>
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+                            <div style="width: 80px; height: 80px; background: #f8fafc; border-radius: 25px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                                <i data-lucide="calendar-x" style="color: #cbd5e1; width: 40px; height: 40px;"></i>
+                            </div>
+                            <h4 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0 0 5px 0;">Clear Schedule</h4>
+                            <p style="color: #94a3b8; font-size: 13px; font-weight: 500; margin: 0; max-width: 200px;">You have no active classes mapped for today.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach(array_slice($schedules, 0, 4) as $item): 
+                            $is_live = (time() >= strtotime(date('Y-m-d') . ' ' . $item['start_time']) && time() <= strtotime(date('Y-m-d') . ' ' . $item['end_time']));
+                        ?>
+                        <div style="display: flex; gap: 20px; align-items: center; padding: 18px; background: <?php echo $is_live ? '#eff6ff' : '#f8fafc'; ?>; border: 1px solid <?php echo $is_live ? '#bfdbfe' : 'transparent'; ?>; border-radius: 20px; transition: all 0.3s; cursor: pointer;">
+                            <div style="text-align: center; min-width: 50px;">
+                                <div style="font-weight: 900; color: <?php echo $is_live ? 'var(--primary)' : '#1e293b'; ?>; font-size: 16px;"><?php echo date('H:i', strtotime($item['start_time'])); ?></div>
+                                <div style="font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase;"><?php echo date('A', strtotime($item['start_time'])); ?></div>
+                            </div>
+                            
+                            <div style="width: 2px; height: 30px; background: #e2e8f0; border-radius: 2px;"></div>
+                            
+                            <div style="flex: 1;">
+                                <div style="font-weight: 900; font-size: 15px; color: #0f172a; margin-bottom: 3px;"><?php echo htmlspecialchars($item['course_code']); ?></div>
+                                <div style="font-size: 12px; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                                    <i data-lucide="map-pin" style="width: 12px;"></i> <?php echo htmlspecialchars($item['location']); ?>
+                                </div>
+                            </div>
+                            
+                            <?php if($is_live): ?>
+                                <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); animation: pulse-shake 2s infinite;"></div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
+
+            <!-- 3. Pulse / Last Scan (Span 6) -->
+            <div class="bento-card card-small" style="background: white; grid-column: span 6;">
+                <h3 style="font-size: 20px; font-weight: 900; color: #0f172a; margin: 0 0 25px 0; letter-spacing: -0.5px;">Last Check-In</h3>
+                
+                <?php if($last_scan): ?>
+                    <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 30px; border-radius: 25px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 25px;">
+                        <div style="width: 70px; height: 70px; background: white; border-radius: 22px; display: flex; justify-content: center; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                            <i data-lucide="scan-face" style="width: 32px; height: 32px; color: var(--primary);"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -0.5px;"><?php echo htmlspecialchars($last_scan['course_code']); ?></h4>
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <span style="font-size: 13px; color: #64748b; font-weight: 600;"><i data-lucide="clock" style="width: 14px; display: inline; vertical-align: -2px;"></i> <?php echo date('M d, h:i A', strtotime($last_scan['marked_at'])); ?></span>
+                                <span style="font-size: 11px; background: #ecfdf5; color: #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 800;">VERIFIED</span>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div style="background: #f8fafc; padding: 40px 20px; border-radius: 25px; border: 1px dashed #cbd5e1; text-align: center;">
+                        <i data-lucide="history" style="width: 32px; height: 32px; color: #94a3b8; margin-bottom: 15px;"></i>
+                        <h4 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0 0 5px 0;">No History Found</h4>
+                        <p style="font-size: 13px; color: #64748b; font-weight: 500; margin: 0;">Scan your first QR code to build your profile.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- 4. Quick Metrics / Trend (Span 6) -->
+            <div class="bento-card card-small" style="background: white; grid-column: span 6; display: flex; gap: 20px;">
+                <div style="flex: 1; background: #f8fafc; padding: 25px; border-radius: 25px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Enrolled Courses</span>
+                    <h2 style="font-size: 48px; font-weight: 900; color: #0f172a; margin: 10px 0 0 0; line-height: 1;"><?php echo $total_courses; ?></h2>
+                </div>
+                
+                <div style="flex: 1; background: #f8fafc; padding: 25px; border-radius: 25px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Total Validations</span>
+                    <h2 style="font-size: 48px; font-weight: 900; color: var(--primary); margin: 10px 0 0 0; line-height: 1;"><?php echo $total_scans; ?></h2>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
