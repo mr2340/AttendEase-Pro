@@ -27,29 +27,52 @@ if (!$token) {
     exit;
 }
 
-// --- SECURE DECODING & HMAC VERIFICATION ---
+// --- SECURE DECODING & ROUTING ---
 try {
-    $decoded = base64_decode($token);
-    $parts = explode(':', $decoded);
-    
-    if (count($parts) !== 3) {
-        throw new Exception("Malformed Secure Token");
-    }
-    
-    list($session_id, $client_block, $client_hmac) = $parts;
-    
-    // 1. Verify Signature Integrity
-    $expected_hmac = hash_hmac('sha256', $session_id . ":" . $client_block, SECURE_KEY);
-    if (!hash_equals($expected_hmac, $client_hmac)) {
-        throw new Exception("Security Alert: QR Signature Mismatch");
-    }
+    $db = get_db_connection();
+    $user_id = $_SESSION['user_id'];
 
-    // 2. Verify Time Window expiration
-    $current_block = floor(time() / 30);
-    // Allow ±1 block (30s window)
-    if (abs($current_block - $client_block) > 1) {
-        echo json_encode(['success' => false, 'message' => 'QR EXPIRED: This code is no longer valid. Please scan the current live QR.']);
-        exit;
+    // Check if it's a Permanent Course Token
+    if (strpos($token, 'COURSE_') === 0) {
+        $stmt = $db->prepare("
+            SELECT s.id 
+            FROM sessions s 
+            JOIN courses c ON s.course_id = c.id 
+            WHERE c.permanent_token = ? AND s.status = 'active'
+            ORDER BY s.created_at DESC LIMIT 1
+        ");
+        $stmt->execute([$token]);
+        $session_row = $stmt->fetch();
+        
+        if (!$session_row) {
+            echo json_encode(['success' => false, 'message' => 'No active attendance session found for this course. Please ask the lecturer to start a session.']);
+            exit;
+        }
+        $session_id = $session_row['id'];
+    } else {
+        // Standard Secure Token Decoding
+        $decoded = base64_decode($token);
+        $parts = explode(':', $decoded);
+        
+        if (count($parts) !== 3) {
+            throw new Exception("Malformed Secure Token");
+        }
+        
+        list($session_id, $client_block, $client_hmac) = $parts;
+        
+        // 1. Verify Signature Integrity
+        $expected_hmac = hash_hmac('sha256', $session_id . ":" . $client_block, SECURE_KEY);
+        if (!hash_equals($expected_hmac, $client_hmac)) {
+            throw new Exception("Security Alert: QR Signature Mismatch");
+        }
+
+        // 2. Verify Time Window expiration
+        $current_block = floor(time() / 30);
+        // Allow ±2 blocks (60s window) for better reliability against clock drift
+        if (abs($current_block - $client_block) > 2) {
+            echo json_encode(['success' => false, 'message' => 'QR EXPIRED: This code is no longer valid. Please scan the current live QR.']);
+            exit;
+        }
     }
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Security Error: ' . $e->getMessage()]);
@@ -57,9 +80,6 @@ try {
 }
 
 try {
-    $db = get_db_connection();
-    $user_id = $_SESSION['user_id'];
-
     // 1. Verify if the session exists and is active
     $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
     $stmt->execute([$session_id]);

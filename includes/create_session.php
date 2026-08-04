@@ -3,7 +3,6 @@
  * AttendEase Pro - Advanced Session Creator
  */
 require_once __DIR__ . '/config.php';
-session_start();
 
 header('Content-Type: application/json');
 
@@ -29,25 +28,47 @@ if (!$course_id) {
 try {
     $db = get_db_connection();
     $lecturer_id = $_SESSION['user_id'];
+    // 1. Verify Course Ownership
+    $stmt = $db->prepare("SELECT id FROM courses WHERE id = ? AND lecturer_id = ?");
+    $stmt->execute([$course_id, $lecturer_id]);
+    if (!$stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: You do not have permission to manage this course.']);
+        exit;
+    }
 
-    // 1. Calculate expiration
+    // 2. Calculate expiration and current timestamp
+    $now = date('Y-m-d H:i:s');
     $expires_at = null;
     if ($duration > 0) {
         $expires_at = date('Y-m-d H:i:s', strtotime("+$duration minutes"));
     }
 
-    // 2. Create New Session
-    $stmt = $db->prepare("INSERT INTO sessions (course_id, topic, lecturer_id, status, scan_limit, expires_at, created_at, latitude, longitude) VALUES (?, ?, ?, 'active', ?, ?, NOW(), ?, ?)");
-    $stmt->execute([$course_id, $topic, $lecturer_id, $scan_limit, $expires_at, $lat, $lng]);
+    // 3. Create New Session
+    $stmt = $db->prepare("INSERT INTO sessions 
+        (course_id, topic, lecturer_id, status, scan_limit, expires_at, session_date, created_at, latitude, longitude) 
+        VALUES (?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)");
+    
+    $stmt->execute([
+        $course_id, 
+        $topic, 
+        $lecturer_id, 
+        $scan_limit, 
+        $expires_at, 
+        $now, // session_date
+        $now, // created_at
+        $lat, 
+        $lng
+    ]);
     
     $session_id = $db->lastInsertId();
 
     echo json_encode([
         'success' => true, 
         'session_id' => $session_id,
-        'message' => 'Session initialized successfully'
+        'message' => 'Node successfully initialized on the academic matrix.'
     ]);
 
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    error_log("AttendEase Session Creation Error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Database integrity error. Check logs.']);
 }

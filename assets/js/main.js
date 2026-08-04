@@ -3,6 +3,7 @@
  */
 const AttendEase = {
     scanner: null,
+    isProcessing: false,
 
     // Celebration Engine: Creates floating bubbles
     fireConfetti: () => {
@@ -55,22 +56,28 @@ const AttendEase = {
 
     // Premium Notifications
     notify: (type, title, text) => {
-        return Swal.fire({
-            icon: type,
-            title: title,
-            text: text,
-            confirmButtonText: 'Got it',
-            buttonsStyling: false,
-            customClass: {
-                confirmButton: 'btn-primary swal2-confirm'
-            },
-            showClass: {
-                popup: 'animate__animated animate__fadeInUp animate__faster'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutDown animate__faster'
-            }
-        });
+        if (typeof Swal !== 'undefined') {
+            return Swal.fire({
+                icon: type,
+                title: title,
+                text: text,
+                confirmButtonText: 'Got it',
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: 'btn-primary swal2-confirm'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInUp animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutDown animate__faster'
+                }
+            });
+        } else {
+            console.warn(`[AttendEase] Notification (${type}): ${title} - ${text}`);
+            alert(`${title}\n\n${text}`);
+            return Promise.resolve();
+        }
     },
 
     // Auth Handling
@@ -87,17 +94,37 @@ const AttendEase = {
         try {
             const response = await fetch(form.action, {
                 method: 'POST',
+                headers: { 'Accept': 'application/json' },
                 body: formData
             });
+            
+            // Check if response is actually JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await response.text();
+                console.error("Non-JSON response received:", text.substring(0, 200));
+                throw new Error("Invalid server response (not JSON)");
+            }
+
             const result = await response.json();
 
             if (result.success) {
+                const feedback = document.getElementById('login-feedback');
+                if (feedback) {
+                    feedback.innerText = result.message || 'Access Granted. Synchronizing...';
+                    feedback.style.background = 'rgba(16, 185, 129, 0.1)';
+                    feedback.style.color = '#10b981';
+                    feedback.style.display = 'block';
+                }
+                
                 submitBtn.innerText = 'Redirecting...';
                 setTimeout(() => {
-                    // Role-based redirection
                     const baseUrl = window.AttendEaseConfig ? window.AttendEaseConfig.baseUrl : '/sodex/';
-                    const redirectPath = result.role === 'lecturer' ? baseUrl + 'lecturer/dashboard' : baseUrl + 'student/dashboard';
-                    window.location.href = redirectPath;
+                    // Use replace to prevent back-button loops
+                    let path = 'student/dashboard';
+                    if (result.role === 'admin') path = 'admin/index';
+                    else if (result.role === 'lecturer') path = 'lecturer/dashboard';
+                    window.location.replace(baseUrl + path);
                 }, 800);
             } else {
                 AttendEase.notify('error', 'Login Failed', result.message || 'Check your credentials and try again.');
@@ -106,7 +133,7 @@ const AttendEase = {
             }
         } catch (error) {
             console.error('Login Error:', error);
-            AttendEase.notify('error', 'Connection Error', 'We couldn\'t reach the server. Please check your internet.');
+            AttendEase.notify('error', 'Protocol Error', 'The authentication node returned an invalid response. Contact system admin.');
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         }
@@ -179,8 +206,8 @@ const AttendEase = {
     // FCM Integration
     initFCM: async () => {
         if (!('serviceWorker' in navigator)) return;
-        if (!window.AttendEaseConfig || !window.AttendEaseConfig.fcm.apiKey) {
-            console.warn('FCM Config missing. Skipping initialization.');
+        if (!window.AttendEaseConfig || !window.AttendEaseConfig.fcm.apiKey || !window.AttendEaseConfig.fcm.vapidKey) {
+            console.warn('FCM Config or VAPID key missing. Skipping push notification initialization.');
             return;
         }
 
@@ -248,10 +275,13 @@ const AttendEase = {
     },
 
     onScanSuccess: async (decodedText, decodedResult) => {
+        if (AttendEase.isProcessing) return;
+        AttendEase.isProcessing = true;
+        
         console.log(`Scan Result: ${decodedText}`);
         
-        // Stop scanner to prevent multiple scans
-        await AttendEase.closeScanner();
+        // Stop scanner immediately (non-blocking)
+        AttendEase.closeScanner();
 
         // 📍 GEO-FENCING INTEGRATION
         let lat = null, lng = null;
@@ -275,7 +305,8 @@ const AttendEase = {
 
         // Process Attendance
         try {
-            const response = await fetch('../includes/process_attendance', {
+            const baseUrl = window.AttendEaseConfig ? window.AttendEaseConfig.baseUrl : '/sodex/';
+            const response = await fetch(baseUrl + 'includes/process_attendance.php', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -306,9 +337,11 @@ const AttendEase = {
                 
                 location.reload(); // Refresh to see updated stats
             } else {
+                AttendEase.isProcessing = false;
                 AttendEase.notify('warning', 'Almost There', result.message || "Failed to mark attendance.");
             }
         } catch (err) {
+            AttendEase.isProcessing = false;
             AttendEase.notify('error', 'Server Error', "Server connection error. Please try again.");
         }
     },
@@ -342,30 +375,36 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent default browser prompt
     e.preventDefault();
-    
-    // Final check: if installed or standalone, kill the button and exit
-    if (checkStandalone()) {
-        deferredPrompt = null;
-        return;
-    }
-
-    // Stash the event
     deferredPrompt = e;
     
-    // Force show the button with high priority
-    const installBtn = document.getElementById('pwa-install-mini');
-    if (installBtn) {
-        installBtn.style.setProperty('display', 'flex', 'important');
+    // Show the custom install button if we're not already standalone
+    if (!checkStandalone()) {
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) installBtn.style.display = 'flex';
     }
 });
 
-window.addEventListener('appinstalled', (e) => {
-    console.log('Pulse PWA installed successfully');
-    const installBtn = document.getElementById('pwa-install-mini');
-    if (installBtn) {
-        installBtn.remove(); // Kill on success
+AttendEase.installPWA = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the PWA install prompt');
+        }
+        deferredPrompt = null;
+        
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) installBtn.style.display = 'none';
+    } else {
+        AttendEase.notify('info', 'App Installation', 'To install the app, look for the install icon in your browser address bar or use the "Add to Home Screen" option in your browser menu.');
     }
+};
+
+window.addEventListener('appinstalled', (e) => {
+    console.log('AttendEase PWA installed successfully');
     deferredPrompt = null;
+    const installBtn = document.getElementById('pwa-install-mini');
+    if (installBtn) installBtn.style.display = 'none';
 });
 
 // Auto-init for forms and PWA
@@ -377,16 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginForm.addEventListener('submit', AttendEase.handleLogin);
         }
 
-        const installBtn = document.getElementById('pwa-install-mini');
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBtn.style.display = 'none';
-            });
-        }
+        // Universal print logic can optionally handle PWA if wanted, but it's handled via HTML onclick
 
         // Register SW
         if ('serviceWorker' in navigator) {
@@ -416,3 +446,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(renderIcons, 2000);
     setInterval(renderIcons, 5000); // Heartbeat scan
 });
+
+// Toggle password input visibility
+function togglePasswordVisibility(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    
+    const isPassword = field.type === 'password';
+    field.type = isPassword ? 'text' : 'password';
+    
+    // Update Lucide icon inside the button
+    const icon = button.querySelector('i, svg');
+    if (icon) {
+        icon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;

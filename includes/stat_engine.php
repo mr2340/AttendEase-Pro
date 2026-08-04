@@ -193,7 +193,7 @@ class StatEngine {
             return [
                 'total_students' => $total_students,
                 'total_sessions' => $total_sessions,
-                'growth' => '+12.5%' // Mock growth for now, could be calculated by comparing weeks
+                'growth' => null // To be implemented with weekly delta logic
             ];
             
         } catch (PDOException $e) {

@@ -39,6 +39,42 @@
     background-color: #000000;
 }
 
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
+}
+
+/* Password Toggle Visibility Styles */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.password-toggle-btn i {
+    width: 20px;
+    height: 20px;
+}
+
 .dark-mode #app-container {
     border-color: #0f172a;
     box-shadow: 0 0 50px rgba(0, 102, 255, 0.1);
@@ -111,6 +147,14 @@
     pointer-events: none;
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -153,6 +197,8 @@
 #app-container {
     width: 100%;
     height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     background-color: var(--bg-main);
     position: relative;
     overflow: hidden;
@@ -174,6 +220,9 @@
         border: none;
         box-shadow: none;
         display: flex;
+        /* Ensure content is centered if not a dashboard */
+        justify-content: center;
+        align-items: center;
     }
 
     .main-wrapper {
@@ -479,7 +528,7 @@
 
     /* Hero Card Overrides */
     .bento-hero-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+        background: linear-gradient(135deg, #0062ff 0%, #00d2ff 100%) !important;
         position: relative;
     }
 
@@ -622,22 +671,63 @@
     -webkit-text-fill-color: transparent;
 }
 
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+    background-color: var(--bg-main);
+    overflow: hidden;
+    z-index: 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
+}
+
 .screen[data-state="active"] {
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
+    z-index: 50;
+    visibility: visible;
+}
+
+.screen[data-state="active"] .text-group {
+    animation: revealText 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.screen[data-state="active"] .illustration {
+    animation: revealIllustration 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes revealText {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes revealIllustration {
+    from { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+    to { opacity: 1; transform: scale(1) rotate(0); }
 }
 
 .screen[data-state="next"] {
     transform: translateX(100%);
     opacity: 0;
     pointer-events: none;
+    z-index: 5;
+    visibility: hidden;
 }
 
 .screen[data-state="prev"] {
     transform: translateX(-100%);
     opacity: 0;
     pointer-events: none;
+    z-index: 5;
+    visibility: hidden;
 }
 
 .scrollable-content {
@@ -672,24 +762,22 @@
 }
 
 #pwa-install-mini {
-    display: none;
-    position: absolute;
-    right: 15px;
-    bottom: 95px;
-    z-index: 150;
-    width: 42px !important;
-    height: 42px !important;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 50% !important;
-    display: flex;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 102, 255, 0.3);
+    cursor: pointer;
+    display: none; /* Controlled by JS now */
     justify-content: center;
     align-items: center;
-    box-shadow: 0 10px 20px var(--primary-glow);
-    cursor: pointer;
-    animation: pulse-shake 3s ease-in-out infinite;
-    transition: var(--transition-bounce);
+    z-index: 99;
+    transition: all 0.3s ease;
 }
 
 #pwa-install-mini i {
@@ -729,14 +817,18 @@
 /* Onboarding Screens */
 .intro-bg {
     position: absolute;
-    top: -10%;
-    left: -10%;
-    right: -10%;
-    height: 60%;
-    background: radial-gradient(circle at top left, var(--primary-glow), transparent 60%),
-        radial-gradient(circle at bottom right, var(--primary-glow), transparent 60%);
+    top: -20%;
+    left: -20%;
+    right: -20%;
+    height: 70%;
+    background: radial-gradient(circle at 20% 30%, var(--primary-glow), transparent 40%),
+                radial-gradient(circle at 80% 70%, var(--primary-glow), transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05), transparent 60%);
     z-index: 0;
-    border-radius: 0 0 50% 50%;
+    border-radius: 0 0 40% 40%;
+    filter: blur(40px);
+    -webkit-filter: blur(40px);
+    pointer-events: none;
 }
 
 .welcome-content {
@@ -745,39 +837,49 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 30px;
+    padding: 20px 30px;
     text-align: center;
     position: relative;
     z-index: 1;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .illustration {
-    width: 240px;
-    height: 240px;
+    width: min(240px, 40vh);
+    height: min(240px, 40vh);
+    aspect-ratio: 1/1;
     background: var(--surface);
     border-radius: 48px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 40px;
+    margin-bottom: clamp(20px, 5vh, 40px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    transition: var(--transition-bounce);
+    opacity: 0; /* Handled by animation */
+}
+
+.illustration:hover {
+    transform: translateY(-10px) rotate(2deg);
+    box-shadow: 0 30px 60px rgba(0, 102, 255, 0.1);
 }
 
 .illustration svg {
-    width: 100px;
-    height: 100px;
+    width: 40%;
+    height: 40%;
     color: var(--primary);
 }
 
 .text-group h1 {
-    font-size: 28px;
+    font-size: clamp(24px, 4vw, 32px);
     font-weight: 800;
     color: var(--text-dark);
     margin-bottom: 12px;
 }
 
 .text-group p {
-    font-size: 15px;
+    font-size: clamp(14px, 2vw, 16px);
     color: var(--text-muted);
     line-height: 1.6;
 }
@@ -788,6 +890,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
 }
 
 .pagination {
@@ -816,6 +923,9 @@
     flex-direction: column;
     height: 100%;
     justify-content: center;
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .auth-header {
@@ -1240,4 +1350,42 @@
 .swal2-icon.swal2-success {
     border-color: var(--success) !important;
     color: var(--success) !important;
+}
+
+/* Password eye icon toggler styling */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-wrapper .form-control {
+    padding-right: 48px !important;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 16px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    z-index: 10;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.password-toggle-btn svg,
+.password-toggle-btn i {
+    width: 20px;
+    height: 20px;
 }

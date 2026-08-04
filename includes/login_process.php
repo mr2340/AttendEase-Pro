@@ -3,7 +3,6 @@
  * AttendEase Pro - Login Processor
  */
 require_once __DIR__ . '/config.php';
-session_start();
 
 header('Content-Type: application/json');
 
@@ -25,14 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Login success
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['fullname'] = $user['fullname'];
         $_SESSION['role'] = $user['role'];
         
-        // Determine if it's an AJAX request
+        // Determine if it's an AJAX/Fetch request
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
         $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
         $isFetch = strpos($accept, 'application/json') !== false;
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $isJsonPost = strpos($contentType, 'application/json') !== false;
 
-        if ($isAjax || $isFetch || isset($_POST['ajax'])) {
+        if ($isAjax || $isFetch || $isJsonPost || isset($_POST['ajax'])) {
             echo json_encode([
                 'success' => true, 
                 'message' => 'Login successful!',
@@ -45,8 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     } else {
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strpos(($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false) {
-            echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $isFetch = strpos($accept, 'application/json') !== false;
+
+        if ($isAjax || $isFetch || isset($_POST['ajax'])) {
+            echo json_encode(['success' => false, 'message' => 'Invalid credentials. Please verify your ID and password.']);
         } else {
             $referrer = $_SERVER['HTTP_REFERER'] ?? BASE_URL;
             header("Location: " . $referrer . "?error=invalid");

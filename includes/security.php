@@ -117,7 +117,26 @@ class AttendEaseSecurity {
             header("X-XSS-Protection: 1; mode=block");
             header("X-Content-Type-Options: nosniff");
             header("Referrer-Policy: strict-origin-when-cross-origin");
-            header("Content-Security-Policy: default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data:; img-src 'self' https: data:; font-src 'self' https: data:;");
+            
+            // Hardened CSP (Synchronized with .htaccess)
+            $baseUrlHost = '';
+            if (defined('BASE_URL')) {
+                $parsed = parse_url(BASE_URL);
+                if (isset($parsed['scheme']) && isset($parsed['host'])) {
+                    $baseUrlHost = ' ' . $parsed['scheme'] . '://' . $parsed['host'];
+                    if (isset($parsed['port'])) {
+                        $baseUrlHost .= ':' . $parsed['port'];
+                    }
+                }
+            }
+
+            $csp = "default-src 'self'$baseUrlHost; ";
+            $csp .= "script-src 'self'$baseUrlHost 'unsafe-inline' 'unsafe-eval' blob: https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://upload-widget.cloudinary.com https://widget.cloudinary.com; ";
+            $csp .= "style-src 'self'$baseUrlHost 'unsafe-inline' https://fonts.googleapis.com; ";
+            $csp .= "font-src 'self'$baseUrlHost https://fonts.gstatic.com; ";
+            $csp .= "img-src 'self'$baseUrlHost data: https://api.dicebear.com https://*.googleusercontent.com https://*.cloudinary.com; ";
+            $csp .= "connect-src 'self'$baseUrlHost https://fcmregistrations.googleapis.com https://www.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://api.cloudinary.com https://widget.cloudinary.com;";
+            header("Content-Security-Policy: " . $csp);
         }
     }
 }
