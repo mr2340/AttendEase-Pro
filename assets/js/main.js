@@ -206,8 +206,8 @@ const AttendEase = {
     // FCM Integration
     initFCM: async () => {
         if (!('serviceWorker' in navigator)) return;
-        if (!window.AttendEaseConfig || !window.AttendEaseConfig.fcm.apiKey) {
-            console.warn('FCM Config missing. Skipping initialization.');
+        if (!window.AttendEaseConfig || !window.AttendEaseConfig.fcm.apiKey || !window.AttendEaseConfig.fcm.vapidKey) {
+            console.warn('FCM Config or VAPID key missing. Skipping push notification initialization.');
             return;
         }
 
@@ -375,30 +375,36 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent default browser prompt
     e.preventDefault();
-    
-    // Final check: if installed or standalone, kill the button and exit
-    if (checkStandalone()) {
-        deferredPrompt = null;
-        return;
-    }
-
-    // Stash the event
     deferredPrompt = e;
     
-    // Force show the button with high priority
-    const installBtn = document.getElementById('pwa-install-mini');
-    if (installBtn) {
-        installBtn.style.setProperty('display', 'flex', 'important');
+    // Show the custom install button if we're not already standalone
+    if (!checkStandalone()) {
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) installBtn.style.display = 'flex';
     }
 });
 
-window.addEventListener('appinstalled', (e) => {
-    console.log('Pulse PWA installed successfully');
-    const installBtn = document.getElementById('pwa-install-mini');
-    if (installBtn) {
-        installBtn.remove(); // Kill on success
+AttendEase.installPWA = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the PWA install prompt');
+        }
+        deferredPrompt = null;
+        
+        const installBtn = document.getElementById('pwa-install-mini');
+        if (installBtn) installBtn.style.display = 'none';
+    } else {
+        AttendEase.notify('info', 'App Installation', 'To install the app, look for the install icon in your browser address bar or use the "Add to Home Screen" option in your browser menu.');
     }
+};
+
+window.addEventListener('appinstalled', (e) => {
+    console.log('AttendEase PWA installed successfully');
     deferredPrompt = null;
+    const installBtn = document.getElementById('pwa-install-mini');
+    if (installBtn) installBtn.style.display = 'none';
 });
 
 // Auto-init for forms and PWA
@@ -410,16 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginForm.addEventListener('submit', AttendEase.handleLogin);
         }
 
-        const installBtn = document.getElementById('pwa-install-mini');
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBtn.style.display = 'none';
-            });
-        }
+        // Universal print logic can optionally handle PWA if wanted, but it's handled via HTML onclick
 
         // Register SW
         if ('serviceWorker' in navigator) {

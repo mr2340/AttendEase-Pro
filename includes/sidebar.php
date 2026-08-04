@@ -75,8 +75,8 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo $_SESSION['username'] ?? 'user'; ?>" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; overflow: hidden;">
-                <p style="font-weight: 700; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo $_SESSION['username'] ?? 'User'; ?></p>
-                <p style="font-size: 11px; color: var(--text-muted);"><?php echo $is_lecturer ? 'Lecturer Alias' : ($is_admin ? 'Admin' : 'Student ID'); ?>: #<?php echo $_SESSION['user_id'] ?? '??'; ?></p>
+                <p style="font-weight: 700; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username'] ?? 'User'); ?></p>
+                <p style="font-size: 11px; color: var(--text-muted);"><?php echo $is_lecturer ? 'Lecturer ID' : ($is_admin ? 'Admin ID' : 'Student ID'); ?>: #<?php echo $_SESSION['user_id'] ?? '??'; ?></p>
             </div>
             <a href="<?php echo BASE_URL; ?>logout.php" style="color: var(--text-muted);"><i data-lucide="log-out" style="width: 18px; height: 18px;"></i></a>
         </div>

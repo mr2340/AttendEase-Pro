@@ -42,7 +42,7 @@ $stats = StatEngine::getLecturerStats($user_id);
             <div class="greeting">
                 <p style="font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; margin-bottom: 5px;">Faculty Portal</p>
                 <h1 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--text-dark);">
-                    Welcome, <span style="color: var(--primary);">Dr. <?php echo htmlspecialchars(explode('_', $_SESSION['username'] ?? 'Lecturer_Name')[1] ?? 'Lecturer'); ?></span>
+                    Welcome, <span style="color: var(--primary);"><?php echo htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username'] ?? 'Lecturer'); ?></span>
                 </h1>
             </div>
             <div class="profile-avatar" style="width: 60px; height: 60px; border-radius: 20px; border: 2px solid var(--surface); box-shadow: 0 10px 30px var(--primary-glow);">
@@ -190,7 +190,7 @@ $stats = StatEngine::getLecturerStats($user_id);
                 <div style="background: var(--primary); width: 12px; height: 12px; border-radius: 4px;"></div>
                 <span style="color: #64748b; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">Faculty Terminal</span>
             </div>
-            <h1 style="font-size: 52px; font-weight: 950; color: #0f172a; letter-spacing: -2.5px;">Welcome Back, <span style="color: var(--primary);">Dr. <?php echo explode('_', $_SESSION['username'])[1] ?? 'Faculty'; ?></span></h1>
+            <h1 style="font-size: 52px; font-weight: 950; color: #0f172a; letter-spacing: -2.5px;">Welcome Back, <span style="color: var(--primary);"><?php echo htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username'] ?? 'Faculty'); ?></span></h1>
             <p style="color: #94a3b8; font-size: 18px; font-weight: 500; margin-top: 10px;">System synchronized. Intelligence nodes active.</p>
         </div>
         <div style="display: flex; gap: 20px; align-items: center;">

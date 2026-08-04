@@ -1,6 +1,6 @@
 <?php
 /**
- * AttendEase vscode-webview://1en2phd04qt4o5vbc35r61023ttgsv8qpfk9fcf8dc2f8bomugcc/index.html?id=8f9e5a0c-aa75-480c-9930-be7d0e5f0033&parentId=1&origin=bc05882a-762d-4cc6-9069-e70cc0c16a9d&swVersion=4&extensionId=eamodio.gitlens&platform=electron&vscode-resource-base-authority=vscode-resource.vscode-cdn.net&parentOrigin=vscode-file%3A%2F%2Fvscode-app&purpose=webviewView#Pro - Security & Rate Limiting Engine
+ * AttendEase Pro - Security & Rate Limiting Engine
  */
 
 class AttendEaseSecurity {
@@ -135,7 +135,7 @@ class AttendEaseSecurity {
             $csp .= "style-src 'self'$baseUrlHost 'unsafe-inline' https://fonts.googleapis.com; ";
             $csp .= "font-src 'self'$baseUrlHost https://fonts.gstatic.com; ";
             $csp .= "img-src 'self'$baseUrlHost data: https://api.dicebear.com https://*.googleusercontent.com https://*.cloudinary.com; ";
-            $csp .= "connect-src 'self'$baseUrlHost https://fcmregistrations.googleapis.com https://www.gstatic.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.cloudinary.com https://widget.cloudinary.com;";
+            $csp .= "connect-src 'self'$baseUrlHost https://fcmregistrations.googleapis.com https://www.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://api.cloudinary.com https://widget.cloudinary.com;";
             header("Content-Security-Policy: " . $csp);
         }
     }

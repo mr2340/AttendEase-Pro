@@ -5,7 +5,7 @@
 date_default_timezone_set('Africa/Lagos'); // Synchronized with User Metadata
 
 // Production Environment Detection
-define('IS_PRODUCTION', true); // Toggle to false for dev
+define('IS_PRODUCTION', false); // Toggle to false for dev
 
 if (IS_PRODUCTION) {
     error_reporting(0);

@@ -1,7 +1,8 @@
 <?php
 require_once '../includes/config.php';
-session_start();
-
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // Auth Check
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'lecturer' && $_SESSION['role'] !== 'admin')) {
     die("Unauthorized access.");
@@ -21,12 +22,12 @@ if (!$course) die("Unauthorized course access.");
 
 // Fetch Attendance Data
 $stmt = $db->prepare("
-    SELECT u.username, u.email, a.status, a.timestamp 
+    SELECT u.username, u.email, a.status, a.marked_at 
     FROM attendance a
     JOIN users u ON a.student_id = u.id
     JOIN sessions s ON a.session_id = s.id
     WHERE s.course_id = ?
-    ORDER BY a.timestamp DESC
+    ORDER BY a.marked_at DESC
 ");
 $stmt->execute([$course_id]);
 $data = $stmt->fetchAll();

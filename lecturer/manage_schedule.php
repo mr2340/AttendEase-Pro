@@ -72,7 +72,7 @@ include '../includes/header.php';
 ?>
 
 <div class="desktop-only-layout" style="background: #f8fafc; min-height: 100vh;">
-    <header style="padding: 60px 80px 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <header style="padding: 60px 5% 40px; max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
                 <a href="course_details?id=<?php echo $course_id; ?>" style="color: #64748b; margin-right: 10px;"><i data-lucide="arrow-left-circle" style="width: 24px;"></i></a>
@@ -83,7 +83,7 @@ include '../includes/header.php';
         </div>
     </header>
 
-    <div style="padding: 0 80px 80px; display: grid; grid-template-columns: 7fr 4fr; gap: 40px; align-items: start;">
+    <div style="padding: 0 5%; padding-bottom: 80px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: minmax(500px, 1.5fr) 1fr; gap: 40px; align-items: start;">
         
         <!-- Left: Current Timeline -->
         <div style="background: white; border-radius: 50px; padding: 45px; border: 1.5px solid #f1f5f9; box-shadow: 0 20px 60px rgba(0,0,0,0.03);">
@@ -97,11 +97,14 @@ include '../includes/header.php';
             <?php else: ?>
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <?php foreach ($schedules as $item): ?>
-                        <div style="background: #fff; padding: 25px 35px; border-radius: 30px; border: 1.5px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;">
-                            <div style="display: flex; align-items: center; gap: 30px;">
+                        <div style="background: #fff; padding: 25px; border-radius: 30px; border: 1.5px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; transition: all 0.2s ease;">
+                            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; flex: 1;">
                                 <div style="min-width: 100px;">
                                     <span style="background: #eff6ff; color: var(--primary); padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 850; text-transform: uppercase;">
-                                        <?php echo $days[$item['day_of_week']]; ?>
+                                        <?php 
+                                            $d = $item['day_of_week'];
+                                            echo isset($days[$d]) ? $days[$d] : htmlspecialchars($d); 
+                                        ?>
                                     </span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -115,8 +118,8 @@ include '../includes/header.php';
                                         <p style="font-size: 10px; font-weight: 700; color: #94a3b8;">END</p>
                                     </div>
                                 </div>
-                                <div style="margin-left: 20px;">
-                                    <p style="font-size: 14px; font-weight: 700; color: #64748b;">
+                                <div style="margin-left: auto; padding-right: 15px;">
+                                    <p style="font-size: 14px; font-weight: 700; color: #64748b; white-space: nowrap;">
                                         <i data-lucide="map-pin" style="width: 14px; margin-right: 5px; vertical-align: middle;"></i>
                                         <?php echo htmlspecialchars($item['location']); ?>
                                     </p>
@@ -209,7 +212,10 @@ include '../includes/header.php';
         <?php foreach ($schedules as $item): ?>
             <div style="background: white; padding: 20px; border-radius: 28px; border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <span style="font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase;"><?php echo $days[$item['day_of_week']]; ?></span>
+                    <span style="font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase;"><?php 
+                        $d = $item['day_of_week'];
+                        echo isset($days[$d]) ? $days[$d] : htmlspecialchars($d); 
+                    ?></span>
                     <h4 style="font-size: 15px; font-weight: 800; margin-top: 2px;"><?php echo date('h:i A', strtotime($item['start_time'])); ?> - <?php echo date('h:i A', strtotime($item['end_time'])); ?></h4>
                     <p style="font-size: 12px; color: #64748b; margin-top: 2px;"><?php echo htmlspecialchars($item['location']); ?></p>
                 </div>

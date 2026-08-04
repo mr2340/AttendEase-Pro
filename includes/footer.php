@@ -1,5 +1,5 @@
-    <!-- PWA Install Button (Mini Right Icon) -->
-    <button id="pwa-install-mini" title="Install App">
+    <!-- PWA Install Button -->
+    <button id="pwa-install-mini" title="Install Web App" onclick="AttendEase.installPWA()" style="display: none;">
         <i data-lucide="download"></i>
     </button>
 

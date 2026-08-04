@@ -3,7 +3,6 @@
  * AttendEase Pro - Login Processor
  */
 require_once __DIR__ . '/config.php';
-session_start();
 
 header('Content-Type: application/json');
 
@@ -25,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Login success
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['fullname'] = $user['fullname'];
         $_SESSION['role'] = $user['role'];
         
         // Determine if it's an AJAX/Fetch request

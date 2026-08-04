@@ -4,7 +4,6 @@
  * Returns current attendee count for the polling service
  */
 require_once __DIR__ . '/config.php';
-session_start();
 
 header('Content-Type: application/json');
 

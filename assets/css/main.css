@@ -39,6 +39,42 @@
     background-color: #000000;
 }
 
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
+}
+
+/* Password Toggle Visibility Styles */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.password-toggle-btn i {
+    width: 20px;
+    height: 20px;
+}
+
 .dark-mode #app-container {
     border-color: #0f172a;
     box-shadow: 0 0 50px rgba(0, 102, 255, 0.1);
@@ -726,24 +762,22 @@ html, body {
 }
 
 #pwa-install-mini {
-    display: none;
-    position: absolute;
-    right: 15px;
-    bottom: 95px;
-    z-index: 150;
-    width: 42px !important;
-    height: 42px !important;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 50% !important;
-    display: flex;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 102, 255, 0.3);
+    cursor: pointer;
+    display: none; /* Controlled by JS now */
     justify-content: center;
     align-items: center;
-    box-shadow: 0 10px 20px var(--primary-glow);
-    cursor: pointer;
-    animation: pulse-shake 3s ease-in-out infinite;
-    transition: var(--transition-bounce);
+    z-index: 99;
+    transition: all 0.3s ease;
 }
 
 #pwa-install-mini i {

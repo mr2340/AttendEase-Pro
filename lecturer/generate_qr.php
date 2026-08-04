@@ -92,7 +92,7 @@ try {
                 </button>
                 <?php if (!empty($existing_sessions)): ?>
                     <?php foreach($existing_sessions as $sess): ?>
-                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name']); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>', <?php echo $sess['course_id']; ?>, '<?php echo $sess['expires_at']; ?>', '<?php echo addslashes($sess['course_code']); ?>')" 
+                        <button onclick="manageSession(<?php echo $sess['id']; ?>, '<?php echo addslashes($sess['course_name'] ?? ''); ?>', '<?php echo $sess['status']; ?>', '<?php echo addslashes($sess['topic'] ?? 'General Session'); ?>', <?php echo $sess['course_id']; ?>, '<?php echo $sess['expires_at'] ?? ''; ?>', '<?php echo addslashes($sess['course_code'] ?? ''); ?>')" 
                                 class="session-nav-btn" 
                                 id="nav-sess-<?php echo $sess['id']; ?>"
                                 style="background: white; color: var(--text-dark); border: 1.5px solid var(--border); padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
@@ -242,11 +242,14 @@ try {
     </header>
 
     <div style="display: flex; gap: 30px; align-items: flex-start; position: relative; z-index: 5;">
-        <!-- Setup Projection (Left) -->
-        <div id="dt-setup-view" style="flex: 1; display: none; background: white; border-radius: 40px; padding: 50px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.03);">
-            <div style="max-width: 500px;">
-                <h2 style="font-size: 32px; font-weight: 950; color: var(--text-dark); margin-bottom: 20px; letter-spacing: -1px;">Launch Attendance Node</h2>
-                <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 35px;">Students will scan the terminal to verify their presence in real-time.</p>
+        <!-- Setup Projection (Left/Centered) -->
+        <div id="dt-setup-view" style="width: 100%; max-width: 800px; margin: 0 auto; display: none; background: white; border-radius: 40px; padding: 60px; border: 1px solid var(--border); box-shadow: 0 20px 80px rgba(0,0,0,0.05); flex-direction: column; align-items: center; text-align: center;">
+            <div style="width: 100%; max-width: 500px;">
+                <div style="width: 80px; height: 80px; background: var(--primary-glow); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i data-lucide="zap" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h2 style="font-size: 38px; font-weight: 950; color: var(--text-dark); margin-bottom: 15px; letter-spacing: -1.5px;">Launch Attendance Node</h2>
+                <p style="color: var(--text-muted); font-size: 16px; line-height: 1.6; margin-bottom: 40px;">Initialize the terminal so students can scan and verify their presence in real-time.</p>
 
                 <!-- Desktop Timeline -->
                 <?php if (!empty($todays_schedule)): ?>
@@ -645,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <?php if (!empty($existing_sessions)): ?>
         // If course_id is in URL, we already filtered sessions in PHP
-        manageSession(<?php echo $existing_sessions[0]['id']; ?>, '<?php echo addslashes($existing_sessions[0]['course_name']); ?>', '<?php echo $existing_sessions[0]['status']; ?>', '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>', <?php echo $existing_sessions[0]['course_id']; ?>, '<?php echo $existing_sessions[0]['expires_at']; ?>', '<?php echo addslashes($existing_sessions[0]['course_code']); ?>');
+        manageSession(<?php echo $existing_sessions[0]['id']; ?>, '<?php echo addslashes($existing_sessions[0]['course_name'] ?? ''); ?>', '<?php echo $existing_sessions[0]['status']; ?>', '<?php echo addslashes($existing_sessions[0]['topic'] ?? 'General Session'); ?>', <?php echo $existing_sessions[0]['course_id']; ?>, '<?php echo $existing_sessions[0]['expires_at'] ?? ''; ?>', '<?php echo addslashes($existing_sessions[0]['course_code'] ?? ''); ?>');
     <?php else: ?> 
         showSetup();
         // If course_id provided but no session, ensure topic is focused

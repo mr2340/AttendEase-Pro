@@ -1,7 +1,7 @@
 <?php
 $page_title = "Lecturer Login";
 require_once '../includes/config.php';
-session_start();
+
 
 // Redirect if already logged in as lecturer
 if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'lecturer') {

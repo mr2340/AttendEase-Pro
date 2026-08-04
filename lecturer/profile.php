@@ -11,7 +11,7 @@ $db = get_db_connection();
 $user_id = $_SESSION['user_id'];
 
 // Fetch User Profile
-$stmt = $db->prepare("SELECT username, dark_mode FROM users WHERE id = ?");
+$stmt = $db->prepare("SELECT username, fullname, dark_mode FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
@@ -41,14 +41,14 @@ $impact_score = min(100, $impact_score);
         <div style="padding: 24px;">
             <div style="text-align: center; margin-bottom: 35px;">
                 <div style="position: relative; display: inline-block;">
-                    <div style="width: 120px; height: 120px; border-radius: 44px; overflow: hidden; border: 5px solid var(--surface); box-shadow: 0 25px 50px var(--primary-glow); transform: rotate(-3deg);">
-                        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=<?php echo $user['username'] ?? 'lecturer'; ?>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; transform: rotate(3deg);">
+                    <div style="width: 120px; height: 120px; border-radius: 44px; overflow: hidden; border: 5px solid var(--surface); box-shadow: 0 25px 50px var(--primary-glow); transform: rotate(-3deg); background: #e2e8f0;">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo $user['username'] ?? 'lecturer'; ?>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; transform: rotate(3deg);">
                     </div>
                     <div style="position: absolute; bottom: -5px; right: -5px; width: 40px; height: 40px; background: var(--primary); border-radius: 14px; display: flex; justify-content: center; align-items: center; color: white; border: 4px solid var(--surface);">
                         <i data-lucide="verified" style="width: 18px; height: 18px;"></i>
                     </div>
                 </div>
-                <h2 style="margin-top: 25px; font-weight: 900; color: #0f172a; font-size: 26px; letter-spacing: -1px;">Dr. <?php echo htmlspecialchars($user['username'] ?? 'Faculty'); ?></h2>
+                <h2 style="margin-top: 25px; font-weight: 900; color: #0f172a; font-size: 26px; letter-spacing: -1px;"><?php echo htmlspecialchars($user['fullname'] ?? $user['username']); ?></h2>
                 <div style="display: flex; justify-content: center; gap: 8px; margin-top: 5px;">
                     <span style="background: var(--primary-glow); color: var(--primary); padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 800; text-transform: uppercase;">Senior Faculty</span>
                     <span style="background: #ecfdf5; color: #10b981; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 800; text-transform: uppercase;">Verified Node</span>
@@ -101,26 +101,26 @@ $impact_score = min(100, $impact_score);
 
 <!-- Desktop Content: Instructional Command Center -->
 <div class="desktop-only-layout" style="background: #f8fafc; min-height: 100vh;">
-    <header style="padding: 60px 80px 40px; display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 40px;">
-            <div style="position: relative;">
-                <div style="width: 140px; height: 140px; border-radius: 50px; overflow: hidden; border: 6px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.05); transform: rotate(-3deg);">
-                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=<?php echo $user['username'] ?? 'lecturer'; ?>" style="width: 100%; height: 100%; object-fit: cover; transform: rotate(3deg);">
+    <header style="padding: 60px 80px 40px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 40px; flex: 1; flex-wrap: wrap;">
+            <div style="position: relative; flex-shrink: 0;">
+                <div style="width: 140px; height: 140px; border-radius: 50px; overflow: hidden; border: 6px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.05); transform: rotate(-3deg); background: #e2e8f0;">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo $user['username'] ?? 'lecturer'; ?>" style="width: 100%; height: 100%; object-fit: cover; transform: rotate(3deg);">
                 </div>
-                <div style="position: absolute; -right: 10px; -bottom: 10px; width: 45px; height: 45px; background: #10b981; border-radius: 16px; border: 4px solid #f8fafc; display: flex; align-items: center; justify-content: center; color: white;">
+                <div style="position: absolute; right: -10px; bottom: -10px; width: 45px; height: 45px; background: #10b981; border-radius: 16px; border: 4px solid #f8fafc; display: flex; align-items: center; justify-content: center; color: white;">
                     <i data-lucide="shield-check" style="width: 20px;"></i>
                 </div>
             </div>
-            <div>
+            <div style="flex: 1; min-width: 250px;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                     <span style="background: var(--primary); color: white; padding: 5px 15px; border-radius: 8px; font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: 1px;">Senior Faculty</span>
                     <span style="color: #64748b; font-size: 14px; font-weight: 800;">Faculty ID: #<?php echo $user_id; ?></span>
                 </div>
-                <h1 style="font-size: 52px; font-weight: 950; color: #0f172a; letter-spacing: -2.5px;">Dr. <?php echo htmlspecialchars($user['username'] ?? 'Faculty'); ?></h1>
-                <p style="color: #94a3b8; font-size: 18px; font-weight: 500; margin-top: 5px;">Primary Administrator & Pulse Node Dispatcher</p>
+                <h1 style="font-size: clamp(32px, 4vw, 52px); font-weight: 950; color: #0f172a; letter-spacing: -1.5px; margin: 0; white-space: nowrap;"><?php echo htmlspecialchars($user['fullname'] ?? $user['username']); ?></h1>
+                <p style="color: #94a3b8; font-size: 16px; font-weight: 500; margin-top: 8px;">Faculty Member, Faculty of Science</p>
             </div>
         </div>
-        <a href="<?php echo BASE_URL; ?>logout.php" class="btn-primary" style="background: #fef2f2; color: #ef4444; border: 1.5px solid #fee2e2; padding: 15px 30px; border-radius: 18px; text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+        <a href="<?php echo BASE_URL; ?>logout.php" style="background: #fef2f2; color: #ef4444; border: 1.5px solid #fee2e2; padding: 15px 30px; border-radius: 18px; text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 10px; width: fit-content; flex-shrink: 0; transition: all 0.3s ease;">
             <i data-lucide="power" style="width: 18px;"></i>
             Sign Out
         </a>
@@ -229,7 +229,7 @@ function toggleDarkMode() {
     fetch('<?php echo BASE_URL; ?>includes/update_profile.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'dark_mode=toggle'
+        body: 'dark_mode=toggle&csrf_token=' + encodeURIComponent(window.AttendEaseConfig.csrfToken)
     });
 }
 document.addEventListener('DOMContentLoaded', () => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
