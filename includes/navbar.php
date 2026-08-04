@@ -5,9 +5,11 @@ $base = BASE_URL;
 // Define Navigation sets
 if ($role === 'admin') {
     $nav_items = [
-        ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'admin/index.php'],
-        ['label' => 'Infrastructure', 'icon' => 'shield-check', 'url' => $base . 'admin/index.php'],
-        ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
+        ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'admin/dashboard.php'],
+        ['label' => 'Lecturers', 'icon' => 'users', 'url' => $base . 'admin/lecturers.php'],
+        ['label' => 'FAB', 'icon' => 'shield', 'url' => $base . 'admin/dashboard.php'],
+        ['label' => 'Courses', 'icon' => 'book-open', 'url' => $base . 'admin/courses.php'],
+        ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'admin/profile.php']
     ];
 } else if ($role === 'lecturer') {
     $nav_items = [

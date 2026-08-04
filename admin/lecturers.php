@@ -110,36 +110,113 @@ $lecturers = $stmt->fetchAll();
     </div>
 </div>
 
+<!-- Mobile Interface -->
+<div class="mobile-only-layout">
+    <div class="dash-header" style="margin-bottom: 20px;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 22px;">Faculty <span style="color: #3b82f6;">Management</span></h2>
+            <p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Faculty Roster</p>
+        </div>
+    </div>
+
+    <div style="padding: 0 20px 30px;">
+        <button onclick="document.getElementById('mobileLecturerForm').style.display='block'" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 800; font-size: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i data-lucide="user-plus" style="width: 18px;"></i>
+            Provision Account
+        </button>
+
+        <div id="mobileLecturerForm" style="display: none; background: var(--surface); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="font-weight: 800; font-size: 15px; margin: 0;">New Lecturer</h4>
+                <button onclick="document.getElementById('mobileLecturerForm').style.display='none'" style="background: none; border: none; color: var(--text-muted);"><i data-lucide="x"></i></button>
+            </div>
+            
+            <form id="addLecturerFormMobile" action="process_lecturer.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="csrf_token" value="<?php echo AttendEaseSecurity::getCsrfToken(); ?>">
+                
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
+                    <input type="text" name="fullname" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="e.g. Dr. John Doe">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Username (Login ID)</label>
+                    <input type="text" name="username" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="e.g. jdoe">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Email Address (Optional)</label>
+                    <input type="email" name="email" style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="jdoe@university.edu">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Initial Password</label>
+                    <input type="password" name="password" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                </div>
+
+                <button type="submit" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800;">Register</button>
+            </form>
+        </div>
+
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 15px;">Active Lecturers (<?php echo count($lecturers); ?>)</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <?php if (empty($lecturers)): ?>
+                <div style="text-align: center; padding: 30px; background: var(--surface); border-radius: 20px;">
+                    <p style="color: var(--text-muted); font-weight: 600; font-size: 13px;">No faculty members found.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach($lecturers as $lec): 
+                    $avatar = $lec['avatar_url'] ? (strpos($lec['avatar_url'], 'http') === 0 ? $lec['avatar_url'] : BASE_URL . $lec['avatar_url']) : "https://api.dicebear.com/7.x/avataaars/svg?seed=" . urlencode($lec['username']);
+                ?>
+                    <div style="background: var(--surface); padding: 15px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden; background: #f1f5f9;">
+                                <img src="<?php echo $avatar; ?>" width="100%" height="100%" style="object-fit: cover;">
+                            </div>
+                            <div>
+                                <p style="font-size: 14px; font-weight: 800; color: var(--text-dark); margin: 0;"><?php echo htmlspecialchars($lec['fullname']); ?></p>
+                                <p style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin: 4px 0 0;">@<?php echo htmlspecialchars($lec['username']); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
 <script>
-document.getElementById('addLecturerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('button');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Provisioning...';
-    lucide.createIcons();
+['addLecturerForm', 'addLecturerFormMobile'].forEach(id => {
+    const form = document.getElementById(id);
+    if (!form) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Provisioning...';
+        lucide.createIcons();
 
-    try {
-        const formData = new FormData(form);
-        const res = await fetch(form.action, { method: 'POST', body: formData });
-        const data = await res.json();
+        try {
+            const formData = new FormData(form);
+            const res = await fetch(form.action, { method: 'POST', body: formData });
+            const data = await res.json();
 
-        if (data.status === 'success') {
-            Swal.fire({
-                title: 'Provisioned!',
-                text: 'Lecturer account created successfully.',
-                icon: 'success',
-                confirmButtonColor: '#3b82f6',
-                customClass: { popup: 'aura-popup' }
-            }).then(() => window.location.reload());
-        } else {
-            Swal.fire('Error', data.message, 'error');
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Provisioned!',
+                    text: 'Lecturer account created successfully.',
+                    icon: 'success',
+                    confirmButtonColor: '#3b82f6',
+                    customClass: { popup: 'aura-popup' }
+                }).then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.message, 'error');
+                btn.innerHTML = originalText;
+            }
+        } catch (err) {
+            Swal.fire('Error', 'Network Error', 'error');
             btn.innerHTML = originalText;
         }
-    } catch (err) {
-        Swal.fire('Error', 'Network Error', 'error');
-        btn.innerHTML = originalText;
-    }
+    });
 });
 </script>
 

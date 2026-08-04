@@ -34,7 +34,7 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         <?php endif; ?>
 
         <?php if ($is_admin): ?>
-            <a href="<?php echo BASE_URL; ?>admin/index" class="sidebar-item <?php echo ($page_title == 'Admin Control' || $page_title == 'Infrastructure') ? 'active' : ''; ?>">
+            <a href="<?php echo BASE_URL; ?>admin/dashboard" class="sidebar-item <?php echo ($page_title == 'Admin Control' || $page_title == 'Infrastructure') ? 'active' : ''; ?>">
                 <i data-lucide="shield-check" style="color: #ef4444;"></i>
                 <span style="color: #ef4444; font-weight: 800;">Admin Matrix</span>
             </a>
