@@ -37,14 +37,22 @@ function loadEnv($path) {
 }
 loadEnv(__DIR__ . '/../.env');
 
+// Helper to safely get env variables across all server configurations
+function env($key, $default = '') {
+    if (isset($_ENV[$key])) return $_ENV[$key];
+    if (isset($_SERVER[$key])) return $_SERVER[$key];
+    $val = getenv($key);
+    return $val !== false ? $val : $default;
+}
+
 // Database Configuration
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('DB_NAME') ?: 'attendease_db');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_HOST', env('DB_HOST', 'localhost'));
+define('DB_NAME', env('DB_NAME', 'attendease_db'));
+define('DB_USER', env('DB_USER', 'root'));
+define('DB_PASS', env('DB_PASS', ''));
 
 // App Configuration
-define('APP_NAME', getenv('APP_NAME') ?: 'AttendEase Pro');
+define('APP_NAME', env('APP_NAME', 'AttendEase Pro'));
 
 // Dynamically determine BASE_URL based on the request host to prevent connection timeouts when the IP changes.
 if (php_sapi_name() === 'cli') {
@@ -58,23 +66,23 @@ if (php_sapi_name() === 'cli') {
 
 // Security Settings
 define('HASH_ALGO', PASSWORD_ARGON2ID);
-define('SECURE_KEY', getenv('SECURE_KEY') ?: '8f9e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f');
+define('SECURE_KEY', env('SECURE_KEY', '8f9e1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f'));
 
 // FCM Configuration
 define('FCM_SERVICE_ACCOUNT', __DIR__ . '/../service-account.json');
-define('FCM_API_KEY', getenv('FCM_API_KEY'));
-define('FCM_AUTH_DOMAIN', getenv('FCM_AUTH_DOMAIN'));
-define('FCM_PROJECT_ID', getenv('FCM_PROJECT_ID'));
-define('FCM_STORAGE_BUCKET', getenv('FCM_STORAGE_BUCKET'));
-define('FCM_MESSAGING_SENDER_ID', getenv('FCM_MESSAGING_SENDER_ID'));
-define('FCM_APP_ID', getenv('FCM_APP_ID'));
-define('FCM_MEASUREMENT_ID', getenv('FCM_MEASUREMENT_ID'));
-define('FCM_VAPID_KEY', getenv('FCM_VAPID_KEY'));
+define('FCM_API_KEY', env('FCM_API_KEY'));
+define('FCM_AUTH_DOMAIN', env('FCM_AUTH_DOMAIN'));
+define('FCM_PROJECT_ID', env('FCM_PROJECT_ID'));
+define('FCM_STORAGE_BUCKET', env('FCM_STORAGE_BUCKET'));
+define('FCM_MESSAGING_SENDER_ID', env('FCM_MESSAGING_SENDER_ID'));
+define('FCM_APP_ID', env('FCM_APP_ID'));
+define('FCM_MEASUREMENT_ID', env('FCM_MEASUREMENT_ID'));
+define('FCM_VAPID_KEY', env('FCM_VAPID_KEY'));
 // Cloudinary Configuration
-define('CLOUDINARY_CLOUD_NAME', getenv('CLOUDINARY_CLOUD_NAME'));
-define('CLOUDINARY_UPLOAD_PRESET', getenv('CLOUDINARY_UPLOAD_PRESET'));
-define('CLOUDINARY_API_KEY', getenv('CLOUDINARY_API_KEY'));
-define('CLOUDINARY_API_SECRET', getenv('CLOUDINARY_API_SECRET'));
+define('CLOUDINARY_CLOUD_NAME', env('CLOUDINARY_CLOUD_NAME'));
+define('CLOUDINARY_UPLOAD_PRESET', env('CLOUDINARY_UPLOAD_PRESET'));
+define('CLOUDINARY_API_KEY', env('CLOUDINARY_API_KEY'));
+define('CLOUDINARY_API_SECRET', env('CLOUDINARY_API_SECRET'));
 
 /**
  * Database Connection using PDO
