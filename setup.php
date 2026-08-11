@@ -48,14 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         (NULL, 'prof_oak', '\$2y\$10\$Av3e3cUeQP36n/PMG/Ip7uxrkW29kWeeRPbHx4DnQhlsaTyuZv7KS', 'Prof. Samuel Oak', 'lecturer'),
         (NULL, 'mr_feeny', '\$2y\$10\$Av3e3cUeQP36n/PMG/Ip7uxrkW29kWeeRPbHx4DnQhlsaTyuZv7KS', 'Mr. George Feeny', 'lecturer')");
         
-        // 3. Seed 80 students dynamically
-        $students_sql = "INSERT IGNORE INTO users (student_id, username, password, fullname, role) VALUES ";
+        // 3. Seed 80 students dynamically with real names
+        $firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen', 'Christopher', 'Lisa', 'Daniel', 'Nancy', 'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra', 'Emily', 'Ashley', 'Brian', 'Kevin', 'Steven', 'Emily', 'Rachel', 'Justin'];
+        $lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzales', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright'];
+        
+        $students_sql = "INSERT INTO users (student_id, username, password, fullname, role) VALUES ";
         $student_values = [];
         for ($i = 3; $i < 83; $i++) {
             $padded_i = str_pad($i, 3, '0', STR_PAD_LEFT);
-            $student_values[] = "('STU{$padded_i}', 'student{$i}', '\$2y\$10\$Av3e3cUeQP36n/PMG/Ip7uxrkW29kWeeRPbHx4DnQhlsaTyuZv7KS', 'Student {$i}', 'student')";
+            $fName = $firstNames[array_rand($firstNames)];
+            $lName = $lastNames[array_rand($lastNames)];
+            $fullName = addslashes($fName . ' ' . $lName);
+            $student_values[] = "('STU{$padded_i}', 'student{$i}', '\$2y\$10\$Av3e3cUeQP36n/PMG/Ip7uxrkW29kWeeRPbHx4DnQhlsaTyuZv7KS', '{$fullName}', 'student')";
         }
-        $pdo->exec($students_sql . implode(", ", $student_values));
+        $pdo->exec($students_sql . implode(", ", $student_values) . " ON DUPLICATE KEY UPDATE fullname=VALUES(fullname)");
         
         // 4. Enroll the students in random courses
         $enroll_sql = "INSERT IGNORE INTO enrollments (student_id, course_id) VALUES ";
