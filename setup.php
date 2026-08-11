@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 foreach ($enrolled as $sid) {
                     if (rand(1, 100) > 20) { // 80% attendance rate
                         $att_time = date('Y-m-d H:i:s', strtotime($date) + rand(60, 300));
-                        $pdo->prepare("INSERT INTO attendance (session_id, student_id, student_location, timestamp) VALUES (?, ?, 'Room', ?)")
+                        $pdo->prepare("INSERT INTO attendance (session_id, student_id, status, marked_at) VALUES (?, ?, 'present', ?)")
                             ->execute([$last_session_id, $sid, $att_time]);
                     }
                 }
