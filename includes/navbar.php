@@ -16,6 +16,7 @@ if ($role === 'admin') {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'lecturer/dashboard.php'],
         ['label' => 'Analytics', 'icon' => 'bar-chart-2', 'url' => $base . 'lecturer/reports.php'],
+        ['label' => 'Logs', 'icon' => 'clipboard-list', 'url' => $base . 'lecturer/attendance_log.php'],
         ['label' => 'FAB', 'icon' => 'plus', 'url' => $base . 'lecturer/generate_qr.php'],
         ['label' => 'Courses', 'icon' => 'book-open', 'url' => $base . 'lecturer/courses.php'],
         ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'lecturer/profile.php']
