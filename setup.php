@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             for ($d = $past_days; $d >= 0; $d -= rand(2, 5)) { // random session every few days
                 $date = date('Y-m-d H:i:s', strtotime("-$d days"));
                 
-                $stmt = $pdo->prepare("INSERT INTO sessions (course_id, lecturer_id, token, expires_at, status, created_at, topic) VALUES (?, ?, ?, ?, 'closed', ?, ?)");
+                $stmt = $pdo->prepare("INSERT INTO sessions (course_id, lecturer_id, session_token, expires_at, status, created_at, topic) VALUES (?, ?, ?, ?, 'closed', ?, ?)");
                 $stmt->execute([
                     $c['id'], 
                     $c['lecturer_id'], 

@@ -36,14 +36,21 @@ AttendEase Pro is built on a proprietary design language we call **"Aura"**. It 
 
 ### 3. 📊 Intelligence Command (Analytics)
 - **Risk Radar**: Automatically identifies students whose attendance falls below the 75% threshold using predictive logic.
-- **Attendance Trendlines**: Integrated **Chart.js** visualizations showing patterns over time.
+- **Attendance Trendlines & Distribution**: Integrated **Chart.js** visualizations showing patterns over time, and class distribution, populated with rich historical data.
 
-### 4. 🛡️ High-Integrity Security Suite
+### 4. 🖨️ Printable Master Gateway
+- **A4-Optimized Node**: Lecturers can generate a massive, high-resolution QR code directly from their dashboard. This printable gateway is formatted specifically for physical display (e.g., taping to a classroom door) to facilitate rapid, mass scanning by students as they enter.
+
+### 5. 👥 Enterprise Administration
+- **Student Registry**: Complete CRUD interface for administrators to seamlessly enroll, monitor, and remove students from the ecosystem.
+- **Faculty Roster**: Provisioning hub for rapidly onboarding new teaching staff.
+
+### 6. 🛡️ High-Integrity Security Suite
 - **QR Rotation & Backend Verification**: QR tokens rotate every 30 seconds. The backend strictly enforces session status, refusing to generate tokens for paused sessions.
 - **Geo-Fencing & Anti-Proxy**: Integrated location validation ensures students are physically present in the classroom.
 - **Environment Protection**: Sensitive credentials managed via `.env` (ignored by version control).
 
-### 5. 💎 Resilient "Aura" Design
+### 7. 💎 Resilient "Aura" Design
 - **Inline SVG Architecture**: Critical controls (Pause, Resume, Clear) use high-reliability inline SVGs, ensuring 100% visibility even if external icon libraries fail.
 - **Glassmorphism 2.0**: Utilizing `-webkit-backdrop-filter` for translucent layers that feel premium and tactile.
 
