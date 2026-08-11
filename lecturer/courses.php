@@ -67,7 +67,7 @@ $courses = $stmt->fetchAll();
                             <span style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase;"><?php echo htmlspecialchars($c['course_code']); ?></span>
                             <h3 style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 10px; letter-spacing: -0.5px;"><?php echo htmlspecialchars($c['course_name']); ?></h3>
                         </div>
-                        <button onclick="showCourseQR('<?php echo $c['permanent_token']; ?>', '<?php echo addslashes($c['course_code']); ?>', '<?php echo addslashes($c['course_name']); ?>')" style="width: 44px; height: 44px; background: var(--primary); color: white; border: none; border-radius: 14px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 15px var(--primary-glow);">
+                        <button onclick="showCourseQR('<?php echo $c['permanent_token']; ?>', '<?php echo addslashes($c['course_code']); ?>', '<?php echo addslashes($c['course_name']); ?>', <?php echo $c['id']; ?>)" style="width: 44px; height: 44px; background: var(--primary); color: white; border: none; border-radius: 14px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 15px var(--primary-glow);">
                             <i data-lucide="qr-code" style="width: 20px;"></i>
                         </button>
                     </div>
@@ -171,7 +171,7 @@ $courses = $stmt->fetchAll();
                                 <i data-lucide="clock" style="width: 18px;"></i> Schedule
                             </a>
                         </div>
-                        <button onclick="showCourseQR('<?php echo $c['permanent_token']; ?>', '<?php echo addslashes($c['course_code']); ?>', '<?php echo addslashes($c['course_name']); ?>')" class="btn-primary" style="padding: 12px 30px; border-radius: 14px; font-size: 14px; font-weight: 900; border: none; cursor: pointer;">
+                        <button onclick="showCourseQR('<?php echo $c['permanent_token']; ?>', '<?php echo addslashes($c['course_code']); ?>', '<?php echo addslashes($c['course_name']); ?>', <?php echo $c['id']; ?>)" class="btn-primary" style="padding: 12px 30px; border-radius: 14px; font-size: 14px; font-weight: 900; border: none; cursor: pointer;">
                             <i data-lucide="qr-code" style="width: 18px; margin-right: 8px; vertical-align: middle;"></i> Master Node
                         </button>
                     </div>
@@ -182,32 +182,36 @@ $courses = $stmt->fetchAll();
 </div>
 
 <script>
-function showCourseQR(token, code, name) {
+function showCourseQR(token, code, name, courseId) {
+    if (!token) token = 'COURSE_' + courseId;
     Swal.fire({
         title: `<div style="font-weight:950; letter-spacing:-1.5px; font-size:28px;">Master Gateway: ${code}</div>`,
         html: `
-            <div style="text-align: center; padding: 20px;">
-                <p style="color: #64748b; font-size: 15px; margin-bottom: 30px; font-weight: 600; line-height:1.6;">Provide this permanent gateway for students to scan when any attendance node is live.</p>
-                <div id="cat-qrcode" style="display: flex; justify-content: center; margin-bottom: 30px; background: #f8fafc; padding: 30px; border-radius: 40px; border: 3px solid #e2e8f0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);"></div>
-                <div style="background: #0f172a; padding: 20px; border-radius: 20px; color: white; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e;"></div>
-                    SECURE BROADCAST ACTIVE
+            <div style="text-align: center; padding: 10px 20px;">
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px; font-weight: 600; line-height:1.6;">Fallback Static QR Code.</p>
+                <div id="cat-qrcode" style="display: flex; justify-content: center; margin-bottom: 25px; background: #f8fafc; padding: 25px; border-radius: 40px; border: 3px solid #e2e8f0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);"></div>
+                
+                <h4 style="font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase; margin-bottom: 15px;">Node Controls</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <a href="generate_qr?course_id=${courseId}" style="background: var(--primary); color: white; padding: 14px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="zap" style="width: 18px;"></i> Live Node
+                    </a>
+                    <a href="export_attendance?course_id=${courseId}" style="background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); padding: 14px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="download" style="width: 18px;"></i> Export
+                    </a>
                 </div>
             </div>
         `,
-        width: 550,
-        showConfirmButton: true,
-        confirmButtonText: 'Exit Terminal',
-        buttonsStyling: false,
-        customClass: {
-            confirmButton: 'btn-primary swal2-confirm'
-        },
+        width: 450,
+        showConfirmButton: false,
+        showCloseButton: true,
         didOpen: () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             if (typeof QRCode !== 'undefined') {
                 new QRCode(document.getElementById("cat-qrcode"), {
                     text: token,
-                    width: 280,
-                    height: 280,
+                    width: 200,
+                    height: 200,
                     colorDark: "#0f172a",
                     colorLight: "#f8fafc",
                     correctLevel: QRCode.CorrectLevel.H
