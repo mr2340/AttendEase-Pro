@@ -343,7 +343,46 @@ const AttendEase = {
                 location.reload(); // Refresh to see updated stats
             } else {
                 AttendEase.isProcessing = false;
-                AttendEase.notify('warning', 'Almost There', result.message || "Failed to mark attendance.");
+                let title = 'Scan Failed';
+                let icon = 'error';
+                let msg = result.message || "Failed to mark attendance.";
+
+                if (msg.includes('PAUSED')) {
+                    title = 'Session Paused';
+                    icon = 'info';
+                } else if (msg.includes('CLOSED')) {
+                    title = 'Session Closed';
+                    icon = 'error';
+                } else if (msg.includes('officially expired')) {
+                    title = 'Session Expired';
+                    icon = 'warning';
+                } else if (msg.includes('QR EXPIRED')) {
+                    title = 'QR Code Expired';
+                    icon = 'warning';
+                } else if (msg.includes('LOCATION REQUIRED')) {
+                    title = 'Location Needed';
+                    icon = 'warning';
+                } else if (msg.includes('OUT OF BOUNDS')) {
+                    title = 'Too Far Away';
+                    icon = 'error';
+                } else if (msg.includes('already recorded')) {
+                    title = 'Already Marked';
+                    icon = 'info';
+                } else if (msg.includes('maximum student capacity')) {
+                    title = 'Class Full';
+                    icon = 'info';
+                }
+
+                await Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: msg,
+                    confirmButtonText: 'Understood',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'btn-primary swal2-confirm'
+                    }
+                });
             }
         } catch (err) {
             AttendEase.isProcessing = false;
