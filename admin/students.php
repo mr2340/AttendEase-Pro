@@ -78,9 +78,19 @@ $students = $stmt->fetchAll();
                                     <p style="font-size: 12px; font-weight: 600; color: #64748b; margin: 4px 0 0;">@<?php echo htmlspecialchars($stu['username']); ?> &bull; <?php echo htmlspecialchars($stu['email'] ?? 'No Email'); ?></p>
                                 </div>
                             </div>
-                            <button onclick="deleteStudent(<?php echo $stu['id']; ?>)" style="background: #fee2e2; color: #ef4444; border: none; width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center;">
-                                <i data-lucide="trash-2" style="width: 20px;"></i>
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="editStudent(<?php echo htmlspecialchars(json_encode([
+                                    'id' => $stu['id'],
+                                    'student_id' => $stu['student_id'],
+                                    'fullname' => $stu['fullname'],
+                                    'username' => $stu['username']
+                                ])); ?>)" style="background: #eff6ff; color: #3b82f6; border: none; width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center;">
+                                    <i data-lucide="edit-2" style="width: 20px;"></i>
+                                </button>
+                                <button onclick="deleteStudent(<?php echo $stu['id']; ?>)" style="background: #fee2e2; color: #ef4444; border: none; width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center;">
+                                    <i data-lucide="trash-2" style="width: 20px;"></i>
+                                </button>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -113,9 +123,10 @@ $students = $stmt->fetchAll();
                     <input type="text" name="username" required style="width: 100%; box-sizing: border-box; padding: 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #0f172a;" placeholder="e.g. jdoe">
                 </div>
 
-                <div class="form-group" style="margin-bottom: 30px;">
+                <div class="form-group" style="margin-bottom: 30px; position: relative;">
                     <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Initial Password</label>
-                    <input type="password" name="password" required style="width: 100%; box-sizing: border-box; padding: 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #0f172a;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    <input type="password" name="password" required style="width: 100%; box-sizing: border-box; padding: 15px 45px 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #0f172a;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    <button type="button" onclick="togglePassword(this)" style="position: absolute; right: 15px; top: 38px; background: none; border: none; cursor: pointer; color: #94a3b8;"><i data-lucide="eye" style="width: 18px;"></i></button>
                 </div>
 
                 <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
@@ -164,9 +175,10 @@ $students = $stmt->fetchAll();
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Username</label>
                     <input type="text" name="username" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="jdoe">
                 </div>
-                <div>
+                <div style="position: relative;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Initial Password</label>
-                    <input type="password" name="password" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    <input type="password" name="password" required style="width: 100%; padding: 12px 40px 12px 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    <button type="button" onclick="togglePassword(this)" style="position: absolute; right: 12px; top: 30px; background: none; border: none; cursor: pointer; color: #94a3b8;"><i data-lucide="eye" style="width: 16px;"></i></button>
                 </div>
 
                 <button type="submit" style="width: 100%; background: #10b981; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800;">Register</button>
@@ -194,9 +206,19 @@ $students = $stmt->fetchAll();
                                 <p style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin: 4px 0 0;"><?php echo htmlspecialchars($stu['student_id']); ?></p>
                             </div>
                         </div>
-                        <button onclick="deleteStudent(<?php echo $stu['id']; ?>)" style="background: #fee2e2; color: #ef4444; border: none; width: 36px; height: 36px; border-radius: 10px; display: flex; justify-content: center; align-items: center;">
-                            <i data-lucide="trash-2" style="width: 16px;"></i>
-                        </button>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="editStudent(<?php echo htmlspecialchars(json_encode([
+                                'id' => $stu['id'],
+                                'student_id' => $stu['student_id'],
+                                'fullname' => $stu['fullname'],
+                                'username' => $stu['username']
+                            ])); ?>)" style="background: #eff6ff; color: #3b82f6; border: none; width: 36px; height: 36px; border-radius: 10px; display: flex; justify-content: center; align-items: center;">
+                                <i data-lucide="edit-2" style="width: 16px;"></i>
+                            </button>
+                            <button onclick="deleteStudent(<?php echo $stu['id']; ?>)" style="background: #fee2e2; color: #ef4444; border: none; width: 36px; height: 36px; border-radius: 10px; display: flex; justify-content: center; align-items: center;">
+                                <i data-lucide="trash-2" style="width: 16px;"></i>
+                            </button>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -205,6 +227,19 @@ $students = $stmt->fetchAll();
 </div>
 
 <script>
+function togglePassword(btn) {
+    const input = btn.previousElementSibling;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+}
+
 ['addStudentForm', 'addStudentFormMobile'].forEach(id => {
     const form = document.getElementById(id);
     if (!form) return;
@@ -239,6 +274,73 @@ $students = $stmt->fetchAll();
         }
     });
 });
+
+async function editStudent(studentData) {
+    // Generate the Edit Form Modal using SweetAlert2
+    const { value: formValues } = await Swal.fire({
+        title: 'Edit Student',
+        html: `
+            <form id="editStudentSwalForm" style="text-align: left; margin-top: 15px;">
+                <input type="hidden" name="csrf_token" value="<?php echo AttendEaseSecurity::getCsrfToken(); ?>">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="${studentData.id}">
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Reg Number</label>
+                    <input type="text" name="student_id" id="swal-student_id" class="swal2-input" style="width: 100%; box-sizing: border-box; margin-top: 5px;" value="${studentData.student_id}">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Full Name</label>
+                    <input type="text" name="fullname" id="swal-fullname" class="swal2-input" style="width: 100%; box-sizing: border-box; margin-top: 5px;" value="${studentData.fullname}">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Username</label>
+                    <input type="text" name="username" id="swal-username" class="swal2-input" style="width: 100%; box-sizing: border-box; margin-top: 5px;" value="${studentData.username}">
+                </div>
+                <div style="margin-bottom: 15px; position: relative;">
+                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">New Password (Optional)</label>
+                    <input type="password" name="password" id="swal-password" class="swal2-input" style="width: 100%; box-sizing: border-box; margin-top: 5px;" placeholder="Leave blank to keep current">
+                    <button type="button" onclick="togglePassword(this)" style="position: absolute; right: 15px; top: 38px; background: none; border: none; cursor: pointer; color: #94a3b8;"><i data-lucide="eye" style="width: 18px;"></i></button>
+                </div>
+            </form>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Save Changes',
+        confirmButtonColor: '#10b981',
+        didOpen: () => {
+            lucide.createIcons();
+        },
+        preConfirm: () => {
+            const form = document.getElementById('editStudentSwalForm');
+            if(!form.student_id.value || !form.fullname.value || !form.username.value) {
+                Swal.showValidationMessage('All fields (except password) are required.');
+                return false;
+            }
+            return new FormData(form);
+        }
+    });
+
+    if (formValues) {
+        try {
+            const res = await fetch('process_student.php', { method: 'POST', body: formValues });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Updated!',
+                    text: 'Student updated successfully.',
+                    icon: 'success',
+                    confirmButtonColor: '#10b981'
+                }).then(() => location.reload());
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch(e) {
+            Swal.fire('Error', 'Network Error', 'error');
+        }
+    }
+}
 
 async function deleteStudent(id) {
     const res = await Swal.fire({

@@ -47,6 +47,40 @@ if ($action === 'create') {
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => 'Database error.']);
     }
+} elseif ($action === 'update') {
+    $id = $_POST['id'] ?? 0;
+    $student_id = trim($_POST['student_id'] ?? '');
+    $fullname = trim($_POST['fullname'] ?? '');
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($id) || empty($student_id) || empty($fullname) || empty($username)) {
+        echo json_encode(['status' => 'error', 'message' => 'Required fields missing.']);
+        exit;
+    }
+
+    try {
+        // Check if student ID or username already exists for OTHER users
+        $stmt = $db->prepare("SELECT id FROM users WHERE (username = ? OR student_id = ?) AND id != ?");
+        $stmt->execute([$username, $student_id, $id]);
+        if ($stmt->fetch()) {
+            echo json_encode(['status' => 'error', 'message' => 'Username or Student ID already exists for another user.']);
+            exit;
+        }
+
+        if (!empty($password)) {
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $db->prepare("UPDATE users SET student_id = ?, fullname = ?, username = ?, password = ? WHERE id = ? AND role = 'student'");
+            $stmt->execute([$student_id, $fullname, $username, $hashed, $id]);
+        } else {
+            $stmt = $db->prepare("UPDATE users SET student_id = ?, fullname = ?, username = ? WHERE id = ? AND role = 'student'");
+            $stmt->execute([$student_id, $fullname, $username, $id]);
+        }
+
+        echo json_encode(['status' => 'success']);
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Database error.']);
+    }
 } elseif ($action === 'delete') {
     $id = $_POST['id'] ?? 0;
     try {
