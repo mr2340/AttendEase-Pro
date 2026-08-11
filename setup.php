@@ -42,6 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )");
         
+        // 1.1 Add fcm_token to existing users table (Safe Migration)
+        try {
+            $pdo->exec("ALTER TABLE users ADD COLUMN fcm_token VARCHAR(255) DEFAULT NULL");
+        } catch (PDOException $e) {
+            // Ignored if column already exists
+        }
+        
         // 2. Seed 3 more lecturers
         $pdo->exec("INSERT IGNORE INTO users (student_id, username, password, fullname, role) VALUES
         (NULL, 'dr_jones', '\$2y\$10\$Av3e3cUeQP36n/PMG/Ip7uxrkW29kWeeRPbHx4DnQhlsaTyuZv7KS', 'Dr. Indiana Jones', 'lecturer'),
