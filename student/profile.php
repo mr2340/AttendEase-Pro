@@ -128,6 +128,32 @@ $attendance_score = StatEngine::getStudentAttendanceScore($user_id);
             </form>
         </div>
 
+        <!-- Password Change Form -->
+        <div class="bento-card card-large">
+            <h3 class="card-title" style="margin-bottom: 30px;">Change Password</h3>
+            <form id="passwordFormDesktop" class="profile-form-ajax" action="../includes/update_password.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo AttendEaseSecurity::getCsrfToken(); ?>">
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-size: 11px; font-weight: 800; color: #64748b;">CURRENT PASSWORD</label>
+                    <input type="password" name="current_password" required class="form-control" style="height: 55px; border-radius: 16px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div class="form-group">
+                        <label style="font-size: 11px; font-weight: 800; color: #64748b;">NEW PASSWORD</label>
+                        <input type="password" name="new_password" required class="form-control" style="height: 55px; border-radius: 16px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 11px; font-weight: 800; color: #64748b;">CONFIRM NEW PASSWORD</label>
+                        <input type="password" name="confirm_password" required class="form-control" style="height: 55px; border-radius: 16px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    </div>
+                </div>
+
+                <button type="submit" style="background: #0f172a; color: white; border: none; height: 60px; border-radius: 20px; font-weight: 900; padding: 0 40px; cursor: pointer;">Update Password</button>
+            </form>
+        </div>
+
         <!-- Session & Logout -->
         <div class="bento-card card-wide" style="display: flex; justify-content: space-between; align-items: center; border-color: rgba(239, 68, 68, 0.1);">
             <div style="display: flex; align-items: center; gap: 15px;">

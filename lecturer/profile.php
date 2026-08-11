@@ -159,9 +159,36 @@ $impact_score = min(100, $impact_score);
                                 <p style="font-size: 12px; color: #94a3b8; font-weight: 600;">Update node credentials</p>
                             </div>
                         </div>
+                        </div>
                         <i data-lucide="chevron-right" style="color: #cbd5e1;"></i>
                     </div>
                 </div>
+            </div>
+
+            <!-- Password Change Form -->
+            <div style="background: white; border-radius: 45px; padding: 45px; border: 1.5px solid #f1f5f9; box-shadow: 0 20px 60px rgba(0,0,0,0.03);">
+                <h3 style="font-size: 22px; font-weight: 900; color: #0f172a; margin-bottom: 35px; letter-spacing: -0.5px;">Update Password</h3>
+                <form id="passwordFormDesktop" action="../includes/update_password.php" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo AttendEaseSecurity::getCsrfToken(); ?>">
+                    
+                    <div style="margin-bottom: 25px;">
+                        <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Current Password</label>
+                        <input type="password" name="current_password" required style="width: 100%; box-sizing: border-box; padding: 18px 25px; border-radius: 20px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 800; color: #0f172a; margin-top: 10px; font-size: 16px;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                        <div>
+                            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">New Password</label>
+                            <input type="password" name="new_password" required style="width: 100%; box-sizing: border-box; padding: 18px 25px; border-radius: 20px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 800; color: #0f172a; margin-top: 10px; font-size: 16px;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Confirm New</label>
+                            <input type="password" name="confirm_password" required style="width: 100%; box-sizing: border-box; padding: 18px 25px; border-radius: 20px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 800; color: #0f172a; margin-top: 10px; font-size: 16px;" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                        </div>
+                    </div>
+
+                    <button type="submit" style="width: 100%; background: #0f172a; color: white; border: none; padding: 18px; border-radius: 20px; font-weight: 900; font-size: 15px; cursor: pointer;">Save New Password</button>
+                </form>
             </div>
 
             <!-- Insight Hub -->
@@ -232,7 +259,34 @@ function toggleDarkMode() {
         body: 'dark_mode=toggle&csrf_token=' + encodeURIComponent(window.AttendEaseConfig.csrfToken)
     });
 }
-document.addEventListener('DOMContentLoaded', () => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
+document.addEventListener('DOMContentLoaded', () => { 
+    if (typeof lucide !== 'undefined') lucide.createIcons(); 
+    
+    const passForm = document.getElementById('passwordFormDesktop');
+    if (passForm) {
+        passForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = passForm.querySelector('button');
+            const orig = btn.innerText;
+            btn.innerText = 'Updating...';
+            
+            try {
+                const res = await fetch(passForm.action, { method: 'POST', body: new FormData(passForm) });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    Swal.fire('Updated', 'Password has been changed.', 'success').then(() => {
+                        passForm.reset();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Network error', 'error');
+            }
+            btn.innerText = orig;
+        });
+    }
+});
 </script>
 
 <?php include '../includes/footer.php'; ?>

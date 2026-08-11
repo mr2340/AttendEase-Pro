@@ -49,6 +49,10 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         <?php endif; ?>
 
         <?php if (!$is_lecturer && !$is_admin): ?>
+            <a href="<?php echo BASE_URL; ?>student/courses" class="sidebar-item <?php echo ($page_title == 'My Courses') ? 'active' : ''; ?>">
+                <i data-lucide="book-open"></i>
+                <span>My Courses</span>
+            </a>
             <a href="<?php echo BASE_URL; ?>student/schedule" class="sidebar-item <?php echo ($page_title == 'Schedule') ? 'active' : ''; ?>">
                 <i data-lucide="calendar"></i>
                 <span>Schedule</span>
