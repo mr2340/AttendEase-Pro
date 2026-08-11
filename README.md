@@ -207,9 +207,16 @@ sequenceDiagram
 
 ### Quick Start
 1. **Repository Sync**: Clone to your local environment.
-2. **Environment Setup**: Copy your credentials into a `.env` file (see `.env.example` if available).
-3. **Database Deployment**: Import the SQL schema and run `database.sql` to seed the initial data.
-4. **Endpoint Verification**: Test `/lecturer/dashboard` to access the command center.
+2. **Automatic Installation (Recommended)**: 
+   - Navigate to `/setup.php` in your browser.
+   - **Dev-Terminal Interface**: You will be greeted by a sleek, modern developer-focused mock terminal UI.
+   - **Intelligent Configuration**: Enter your MySQL parameters. The script will dynamically read the `database.sql` schema and adapt it to your inputs.
+   - **Automated Execution**: It will automatically run the schema creation, table setup, and populate the system with demo users and courses.
+   - **Environment Automation**: Finally, it generates and saves your secure `.env` file with the correct credentials and cryptographic keys, all while displaying a simulated CLI deployment log.
+3. **Manual Setup (Alternative)**: 
+   - Create and configure a `.env` file manually.
+   - Import the SQL schema from `database.sql` via your preferred SQL client (e.g., phpMyAdmin).
+4. **Endpoint Verification**: Open the root `/index.php` or navigate to `/lecturer/dashboard`.
 
 ### 🔑 Demo Accounts (Default Passwords: `password123`)
 

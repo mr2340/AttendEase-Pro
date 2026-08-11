@@ -146,6 +146,16 @@ try {
     require_once __DIR__ . '/notifications.php';
     NotificationEngine::notifyAttendanceMarked($user_id, $session['course_name'] ?? 'Class');
 
+    // 7. Admin Notification (New)
+    // Fetch student username
+    $stmtUser = $db->prepare("SELECT username FROM users WHERE id = ?");
+    $stmtUser->execute([$user_id]);
+    $username = $stmtUser->fetchColumn();
+    $adminTitle = "New Attendance Scan";
+    $adminMsg = "Student " . ($username ? $username : $user_id) . " scanned QR for Session " . $session_id;
+    $stmtAdmin = $db->prepare("INSERT INTO admin_notifications (title, message) VALUES (?, ?)");
+    $stmtAdmin->execute([$adminTitle, $adminMsg]);
+
     echo json_encode(['success' => true, 'message' => 'Verified: Attendance marked successfully!']);
 
 } catch (PDOException $e) {
