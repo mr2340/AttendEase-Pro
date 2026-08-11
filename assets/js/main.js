@@ -141,6 +141,11 @@ const AttendEase = {
 
     // QR Scanner Implementation
     startScanner: async () => {
+        if (window.isSecureContext === false) {
+            AttendEase.notify('error', 'Insecure Connection', 'Camera access requires a secure HTTPS connection. Please ensure you are visiting this site using https://.');
+            return;
+        }
+
         const overlay = document.getElementById('scanner-overlay');
         overlay.classList.add('active');
 

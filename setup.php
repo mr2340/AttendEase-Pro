@@ -125,6 +125,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     exit;
 }
+
+$defaultHost = 'localhost';
+$defaultUser = 'root';
+$defaultPass = '';
+$defaultDb = 'attendease_db';
+
+if (file_exists(__DIR__ . '/.env')) {
+    $envLines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($envLines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $val) = explode('=', $line, 2);
+            $key = trim($key);
+            $val = trim($val, " \t\n\r\0\x0B\"'");
+            if ($key === 'DB_HOST') $defaultHost = $val;
+            if ($key === 'DB_USER') $defaultUser = $val;
+            if ($key === 'DB_PASS') $defaultPass = $val;
+            if ($key === 'DB_NAME') $defaultDb = $val;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -373,28 +394,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label for="host">DB_HOST</label>
                         <div class="input-wrapper">
-                            <input type="text" id="host" name="host" value="localhost" required autocomplete="off">
+                            <input type="text" id="host" name="host" value="<?php echo htmlspecialchars($defaultHost); ?>" required autocomplete="off">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="user">DB_USER</label>
                         <div class="input-wrapper">
-                            <input type="text" id="user" name="user" value="root" required autocomplete="off">
+                            <input type="text" id="user" name="user" value="<?php echo htmlspecialchars($defaultUser); ?>" required autocomplete="off">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="pass">DB_PASS</label>
                         <div class="input-wrapper">
-                            <input type="password" id="pass" name="pass" placeholder="<empty>" autocomplete="new-password">
+                            <input type="password" id="pass" name="pass" value="<?php echo htmlspecialchars($defaultPass); ?>" placeholder="<empty>" autocomplete="new-password">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="dbname">DB_NAME</label>
                         <div class="input-wrapper">
-                            <input type="text" id="dbname" name="dbname" value="attendease_db" required autocomplete="off">
+                            <input type="text" id="dbname" name="dbname" value="<?php echo htmlspecialchars($defaultDb); ?>" required autocomplete="off">
                         </div>
                     </div>
 
