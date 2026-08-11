@@ -7,6 +7,7 @@ if ($role === 'admin') {
     $nav_items = [
         ['label' => 'Home', 'icon' => 'home', 'url' => $base . 'admin/dashboard.php'],
         ['label' => 'Lecturers', 'icon' => 'users', 'url' => $base . 'admin/lecturers.php'],
+        ['label' => 'Students', 'icon' => 'graduation-cap', 'url' => $base . 'admin/students.php'],
         ['label' => 'FAB', 'icon' => 'shield', 'url' => $base . 'admin/matrix.php'],
         ['label' => 'Courses', 'icon' => 'book-open', 'url' => $base . 'admin/courses.php'],
         ['label' => 'Profile', 'icon' => 'user', 'url' => $base . 'admin/profile.php']

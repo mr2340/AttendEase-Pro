@@ -200,6 +200,9 @@ function showCourseQR(token, code, name, courseId) {
                         <i data-lucide="download" style="width: 18px;"></i> Export
                     </a>
                 </div>
+                <a href="print_gateway?course_id=${courseId}" target="_blank" style="margin-top: 12px; background: #0f172a; color: white; padding: 14px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box;">
+                    <i data-lucide="printer" style="width: 18px;"></i> Print Gateway
+                </a>
             </div>
         `,
         width: 450,

@@ -102,6 +102,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         $pdo->exec($sched_sql . implode(", ", $sched_values));
+        // 6. Seed Historical Sessions & Attendance (For Analytics)
+        $session_values = [];
+        $attendance_values = [];
+        // Get courses and their lecturers
+        $stmt = $pdo->query("SELECT id, lecturer_id FROM courses");
+        $all_courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $past_days = 30;
+        $session_id_counter = 1; // Assuming table is truncated or empty for this setup run, or we can just insert and get IDs
+        // Actually, safer to insert them sequentially and fetch their IDs
+        $pdo->exec("DELETE FROM attendance; DELETE FROM sessions;"); // Reset for fresh analytics
+        
+        foreach ($all_courses as $c) {
+            for ($d = $past_days; $d >= 0; $d -= rand(2, 5)) { // random session every few days
+                $date = date('Y-m-d H:i:s', strtotime("-$d days"));
+                
+                $stmt = $pdo->prepare("INSERT INTO sessions (course_id, lecturer_id, token, expires_at, status, created_at, topic) VALUES (?, ?, ?, ?, 'closed', ?, ?)");
+                $stmt->execute([
+                    $c['id'], 
+                    $c['lecturer_id'], 
+                    'HIST_' . bin2hex(random_bytes(4)),
+                    $date,
+                    $date,
+                    "Topic " . rand(1, 15)
+                ]);
+                $last_session_id = $pdo->lastInsertId();
+                
+                // Get students enrolled in this course
+                $stmt2 = $pdo->prepare("SELECT student_id FROM enrollments WHERE course_id = ?");
+                $stmt2->execute([$c['id']]);
+                $enrolled = $stmt2->fetchAll(PDO::FETCH_COLUMN);
+                
+                // Randomly mark some present
+                foreach ($enrolled as $sid) {
+                    if (rand(1, 100) > 20) { // 80% attendance rate
+                        $att_time = date('Y-m-d H:i:s', strtotime($date) + rand(60, 300));
+                        $pdo->prepare("INSERT INTO attendance (session_id, student_id, student_location, timestamp) VALUES (?, ?, 'Room', ?)")
+                            ->execute([$last_session_id, $sid, $att_time]);
+                    }
+                }
+            }
+        }
         
         // ----------------------------------------
         
