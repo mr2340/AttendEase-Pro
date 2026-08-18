@@ -109,8 +109,8 @@ $students = $stmt->fetchAll();
                 <input type="hidden" name="action" value="create">
                 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Registration Number (Student ID)</label>
-                    <input type="text" name="student_id" required style="width: 100%; box-sizing: border-box; padding: 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #0f172a;" placeholder="e.g. STU001">
+                    <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Registration Number (Matric Number)</label>
+                    <input type="text" name="student_id" required style="width: 100%; box-sizing: border-box; padding: 15px 20px; border-radius: 15px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #0f172a;" placeholder="e.g. FPI/CSC/24/F001">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
@@ -164,8 +164,8 @@ $students = $stmt->fetchAll();
                 <input type="hidden" name="action" value="create">
                 
                 <div>
-                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Reg Number</label>
-                    <input type="text" name="student_id" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="STU001">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Matric Number</label>
+                    <input type="text" name="student_id" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); font-weight: 600;" placeholder="FPI/CSC/24/F001">
                 </div>
                 <div>
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Full Name</label>

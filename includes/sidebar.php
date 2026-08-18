@@ -88,7 +88,19 @@ $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
             </div>
             <div style="flex: 1; overflow: hidden;">
                 <p style="font-weight: 700; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username'] ?? 'User'); ?></p>
-                <p style="font-size: 11px; color: var(--text-muted);"><?php echo $is_lecturer ? 'Lecturer ID' : ($is_admin ? 'Admin ID' : 'Student ID'); ?>: #<?php echo $_SESSION['user_id'] ?? '??'; ?></p>
+                <p style="font-size: 11px; color: var(--text-muted);">
+                    <?php 
+                    if ($is_student) {
+                        echo 'Matric No: ' . htmlspecialchars($_SESSION['student_id'] ?? '??');
+                    } elseif ($is_lecturer) {
+                        echo 'Lecturer';
+                    } elseif ($is_admin) {
+                        echo 'Admin';
+                    } else {
+                        echo 'Parent';
+                    }
+                    ?>
+                </p>
             </div>
             <a href="<?php echo BASE_URL; ?>logout.php" style="color: var(--text-muted);"><i data-lucide="log-out" style="width: 18px; height: 18px;"></i></a>
         </div>

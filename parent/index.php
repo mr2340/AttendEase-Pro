@@ -47,9 +47,9 @@ include '../includes/header.php';
                         <i data-lucide="user-plus" style="width: 40px; height: 40px;"></i>
                     </div>
                     <h3 style="font-size: 20px; font-weight: 850; color: #1e293b; margin-bottom: 10px;">No Students Linked</h3>
-                    <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">Enter your child's unique Student ID to begin monitoring their attendance and academic performance.</p>
+                    <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">Enter your child's unique Matric Number to begin monitoring their attendance and academic performance.</p>
                     <button onclick="openLinkModal()" class="btn-primary" style="background: #0f172a; border-radius: 20px; height: 60px; font-size: 15px; font-weight: 800;">
-                        Link Student ID
+                        Link Matric Number
                     </button>
                 </div>
             <?php else: ?>

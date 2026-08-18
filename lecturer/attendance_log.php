@@ -144,7 +144,7 @@ if ($selected_course_id) {
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="border-bottom: 2px solid #f1f5f9;">
-                        <th style="text-align: left; padding: 20px 10px; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Student ID</th>
+                        <th style="text-align: left; padding: 20px 10px; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Matric Number</th>
                         <th style="text-align: left; padding: 20px 10px; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Name</th>
                         <th style="text-align: left; padding: 20px 10px; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Status</th>
                         <th style="text-align: right; padding: 20px 10px; font-size: 12px; font-weight: 850; color: #94a3b8; text-transform: uppercase;">Scan Timestamp</th>

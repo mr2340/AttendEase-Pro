@@ -41,7 +41,7 @@ header("Expires: 0");
 $output = fopen("php://output", "w");
 
 // Header row
-fputcsv($output, ['Date', 'Session Topic', 'Student ID', 'Full Name', 'Status', 'Timestamp']);
+fputcsv($output, ['Date', 'Session Topic', 'Matric Number', 'Full Name', 'Status', 'Timestamp']);
 
 // Fetch all sessions for this course
 $stmt = $db->prepare("

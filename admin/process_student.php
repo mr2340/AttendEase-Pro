@@ -35,7 +35,7 @@ if ($action === 'create') {
         $stmt = $db->prepare("SELECT id FROM users WHERE username = ? OR student_id = ?");
         $stmt->execute([$username, $student_id]);
         if ($stmt->fetch()) {
-            echo json_encode(['status' => 'error', 'message' => 'Username or Student ID already exists']);
+            echo json_encode(['status' => 'error', 'message' => 'Username or Matric Number already exists']);
             exit;
         }
 
@@ -64,7 +64,7 @@ if ($action === 'create') {
         $stmt = $db->prepare("SELECT id FROM users WHERE (username = ? OR student_id = ?) AND id != ?");
         $stmt->execute([$username, $student_id, $id]);
         if ($stmt->fetch()) {
-            echo json_encode(['status' => 'error', 'message' => 'Username or Student ID already exists for another user.']);
+            echo json_encode(['status' => 'error', 'message' => 'Username or Matric Number already exists for another user.']);
             exit;
         }
 

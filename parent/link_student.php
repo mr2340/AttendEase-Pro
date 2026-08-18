@@ -16,7 +16,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 $student_reg_id = $data['student_id'] ?? null;
 
 if (!$student_reg_id) {
-    echo json_encode(['success' => false, 'message' => 'Student ID is required']);
+    echo json_encode(['success' => false, 'message' => 'Matric Number is required']);
     exit;
 }
 

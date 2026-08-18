@@ -14,8 +14,8 @@ include '../includes/header.php';
 
             <form id="loginForm" action="<?php echo BASE_URL; ?>includes/login_process.php" method="POST">
                 <div class="form-group">
-                    <label>Student ID / Username</label>
-                    <input type="text" name="identifier" class="form-control" placeholder="2024/CS/120" required>
+                    <label>Matric Number / Username</label>
+                    <input type="text" name="identifier" class="form-control" placeholder="FPI/CSC/24/F001" required>
                 </div>
                 <div class="form-group">
                     <label>Password</label>
