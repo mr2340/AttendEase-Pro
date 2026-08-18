@@ -1,6 +1,7 @@
 <?php
 $is_lecturer = (isset($_SESSION['role']) && $_SESSION['role'] === 'lecturer');
 $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+$is_student = (isset($_SESSION['role']) && $_SESSION['role'] === 'student');
 ?>
 <aside class="sidebar">
     <div class="sidebar-logo">
